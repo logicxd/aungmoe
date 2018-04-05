@@ -1,6 +1,7 @@
 const PORT = process.env.PORT || 8081;
 
 var express = require('express');
+var exphbs = require('express-handlebars');
 var app = express();
 var path = require('path');
 var logger = require('morgan');
@@ -11,7 +12,8 @@ var server = app.listen(PORT, function () {
 });
 
 // View engine setup
-app.set('view engine', 'ejs');
+app.engine('handlebars', exphbs({defaultLayout: 'main'}));
+app.set('view engine', 'handlebars');
 
 // Create controllers
 var index = require('./controllers/index');
