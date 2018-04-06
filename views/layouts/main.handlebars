@@ -1,23 +1,27 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>{{title}}</title>
-    
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <link rel="stylesheet" href="css/index.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="{{ description }}">
+    <meta name="author" content="Aung David Moe">
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pace/1.0.2/pace.min.js"></script>
-    <script src="https://use.fontawesome.com/c47f013911.js"></script></head>
+    <title>{{ title }}</title>
+
+    {{#each css}}
+    <link rel="stylesheet" href="{{ this }}" />
+    {{/each}}
+</head>
 <body>
     
-    {{{body}}}
+    {{{ body }}}
 
-    Copyright &copy; 2018 David Moe | All Rights Reserved
-    <script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
-    <script src="js/_header.js"></script>
-    <script src="js/_footer.js"></script>
+    <footer>
+        Copyright &copy; 2018 David Moe | All Rights Reserved
+    </footer>
+
+    {{#each js}}
+    <script src="{{ this }}" ></script>
+    {{/each}}
 </body>
 </html>

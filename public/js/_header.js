@@ -1,1 +1,1 @@
-console.log("header loaded");
+alert("loaded header");
