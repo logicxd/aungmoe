@@ -1,0 +1,30 @@
+@import '../materialize.scss';
+
+.m-l-2 {
+    margin-left: 2em;
+}
+
+.m-r-2 {
+    margin-right: 2em;
+}
+
+.row-m-b-0 {
+    @extend .row;
+    margin-bottom: 0em;
+}
+
+.page-footer {
+    a {
+        @extend .my-skyblue-color;
+        -webkit-transition: color .1s ease-in;   
+        transition: color .1s ease-in;    
+    }
+
+    a:hover {
+        @extend .my-skyblue-color-dark;
+    }
+
+    .footer-copyright {
+        font-size: 0.8em;
+    }
+}
