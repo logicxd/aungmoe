@@ -34,25 +34,51 @@
 // 1. Colors
 // ==========================================================================
 
-// $primary-color: color("materialize-red", "lighten-2") !default;
-$primary-color: #2A3C50 !default;
-$primary-color-light: lighten($primary-color, 15%) !default;
-$primary-color-dark: darken($primary-color, 15%) !default;
-
-// $secondary-color: color("teal", "lighten-1") !default;
-$secondary-color: #FBFBFC !default;
-$success-color: color("green", "base") !default;
-$error-color: color("red", "base") !default;
-$link-color: color("light-blue", "darken-1") !default;
-
-$my-skyblue-color: #4597CE !default; 
+$my-dark-color: #2A3D50 !default;
+$my-white-color: #FBFBFB !default;
+$my-slate-color: #687D91 !default;
+$my-cyan-color: #62B7E6 !default;
+$my-cyan-color-light: lighten($my-cyan-color, 15%) !default;
+$my-cyan-color-dark: darken($my-cyan-color, 15%) !default;
+$my-cyan-color-darker: darken($my-cyan-color, 25%) !default;
+$my-skyblue-color: #4597CE !default;
+$my-skyblue-color-light: lighten($my-skyblue-color, 15%) !default;
 $my-skyblue-color-dark: darken($my-skyblue-color, 15%) !default;
+.my-cyan-color {
+    color: $my-cyan-color;
+}
+.my-cyan-color-light {
+    color: $my-cyan-color-light;
+}
+.my-cyan-color-dark {
+    color: $my-cyan-color-dark;
+}
+.my-cyan-color-darker {
+    color: $my-cyan-color-darker;
+}
 .my-skyblue-color {
     color: $my-skyblue-color;
+}
+.my-skyblue-color-light {
+    color: $my-skyblue-color-light;
 }
 .my-skyblue-color-dark {
     color: $my-skyblue-color-dark;
 }
+
+$primary-color: $my-cyan-color !default; 
+$primary-color-light: lighten($primary-color, 15%) !default;
+$primary-color-dark: darken($primary-color, 15%) !default;
+
+// $secondary-color: #A7E0F3 !default;
+$secondary-color: $my-dark-color !default;
+$secondary-color-light: lighten($secondary-color, 15%) !default;
+$secondary-color-dark: darken($secondary-color, 15%) !default;
+$secondary-color-darker: darken($secondary-color, 25%) !default;
+$success-color: color("green", "base") !default;
+$error-color: color("red", "base") !default;
+$link-color: color("light-blue", "darken-1") !default;
+
 
 // 2. Badges
 // ==========================================================================
@@ -252,12 +278,12 @@ $element-bottom-margin: ($gutter-width*2)/3 !default;
 // 13. Navigation Bar
 // ==========================================================================
 
-$navbar-height: 64px !default;
+$navbar-height: 3em !default;
 $navbar-line-height: $navbar-height !default;
 $navbar-height-mobile: 56px !default;
 $navbar-line-height-mobile: $navbar-height-mobile !default;
-$navbar-font-size: 1rem !default;
-$navbar-font-color: #fff !default;
+$navbar-font-size: 1.5rem !default;
+$navbar-font-color: $my-dark-color !default;
 $navbar-brand-font-size: 2.1rem !default;
 
 // 14. Side Navigation
@@ -326,11 +352,10 @@ $h6-fontsize: 1.15rem !default;
 // 21. Footer
 // ==========================================================================
 
-// $footer-font-color: #fff !default;
-$footer-font-color: $secondary-color !default;
-$footer-bg-color: $primary-color !default;
-$footer-copyright-font-color: darken($secondary-color, 15%) !default;
-$footer-copyright-bg-color: $primary-color !default;
+$footer-font-color: $my-white-color !default;
+$footer-bg-color: $my-dark-color !default;
+$footer-copyright-font-color: darken($my-white-color, 15%) !default;
+$footer-copyright-bg-color: $my-dark-color !default;
 
 
 // 22. Flow Text

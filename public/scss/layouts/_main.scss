@@ -1,5 +1,9 @@
 @import '../materialize.scss';
 
+.m-t-0 {
+    margin-top: 0;
+}
+
 .m-l-2 {
     margin-left: 2em;
 }
@@ -13,15 +17,36 @@
     margin-bottom: 0em;
 }
 
+.container-sm {
+    @extend .container;
+    width: 80%;
+}
+
+header {
+    nav {
+        background-color: $my-white-color;
+        box-shadow: 0 1px 1px 0 rgba(0, 0, 0, 0.14), 0 2px 1px -2px rgba(0, 0, 0, 0.12), 0 1px 3px 0 rgba(0, 0, 0, 0.2)
+    }
+    
+    .nav-wrapper {
+        @extend .container-sm;
+
+        a {
+            -webkit-transition: background-color .1s ease-in;   
+            transition: background-color .1s ease-in; 
+        }
+    }
+}
+
 .page-footer {
     a {
-        @extend .my-skyblue-color;
+        color: $my-cyan-color;
         -webkit-transition: color .1s ease-in;   
         transition: color .1s ease-in;    
     }
 
     a:hover {
-        @extend .my-skyblue-color-dark;
+        color: $my-cyan-color-darker;
     }
 
     .footer-copyright {
