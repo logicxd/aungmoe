@@ -52,7 +52,8 @@ app.use(function(err, req, res, next) {
 
 // Set reusable css or js links
 global.css = {
-    material_icons: 'https://fonts.googleapis.com/icon?family=Material+Icons'
+    material_icons: 'https://fonts.googleapis.com/icon?family=Material+Icons',
+    animate_css: "https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.5.2/animate.min.css"
 }
 global.js = {
     jquery: 'https://code.jquery.com/jquery-3.2.1.min.js'

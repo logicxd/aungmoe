@@ -1,5 +1,44 @@
 @import './layouts/main.scss';
 
 #home-body {
-    height: 80vh;
+    @keyframes expandUnderlineToFull {
+        0% {
+            width: 0%;
+        }
+        100% {
+            width: 95%;
+        }
+    }
+
+    #title {
+        font-size: 4.2em;               // Equivalent to H1
+        margin: 2.8rem 0 1.68rem 0;     // Equivalent to H1
+        color: $my-slate-color;
+
+        .states, .occupations {
+            position: relative;
+            display: inline-block;
+        }
+
+        .occupations {
+            color: $secondary-color;
+        }
+
+        .occupations:before {
+            content : "";   
+            position: absolute;
+            left    : 2.5%;
+            bottom  : -8px;
+            height  : 1px;
+            border-bottom: 4px solid $primary-color;
+            animation: expandUnderlineToFull 5s ease-out 1s 1 forwards; 
+        }
+    }
+
+    #details-card {
+        @extend .center;
+        background-color: $my-dark-color;
+        color: $my-white-color;
+        padding: 100px 20px;
+    }
 }

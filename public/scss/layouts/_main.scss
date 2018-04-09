@@ -17,9 +17,14 @@
     margin-bottom: 0em;
 }
 
-.container-sm {
+.container-med {
     @extend .container;
     width: 80%;
+}
+
+.container-sm {
+    @extend .container;
+    width: 95%;
 }
 
 header {
