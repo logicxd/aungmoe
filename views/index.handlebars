@@ -2,16 +2,14 @@
     <div class="container">
             <div class="row-m-b-0 center">
                 <h1 id="title">
-                    I
-                    <div id="state-1" class="states">
-                        am a
+                    {{#each occupations}}
+                    <div id="states-{{@index}}" class="states" data-value="{{this.state}}">
+                        {{this.state}}
                     </div>
-                    <div id="occupation-1" class="occupations">
-                        Backend Developer
+                    <div id="occupations-{{@index}}" class="occupations" data-value="{{this.occupation}}">
+                        {{this.occupation}}
                     </div>
-                     <div id="occupation-2" class="occupations" style="display: none">
-                        Frontend Developer
-                    </div>
+                    {{/each}}
                 </h1>
             </div>
              <div id="details-card" class="card animated bounceInLeft">

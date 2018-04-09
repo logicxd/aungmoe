@@ -14,10 +14,16 @@
         font-size: 4.2em;               // Equivalent to H1
         margin: 2.8rem 0 1.68rem 0;     // Equivalent to H1
         color: $my-slate-color;
+        height: 1.1em;
 
         .states, .occupations {
             position: relative;
-            display: inline-block;
+            display: none;
+        }
+
+        .states {
+            animation-delay: 0s;
+            animation-duration: .2s;
         }
 
         .occupations {
