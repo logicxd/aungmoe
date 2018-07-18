@@ -6174,7 +6174,7 @@ input[type=range].focused:focus:not(.active)::-ms-thumb {
   .tap-target-wrapper.open .tap-target-wave::after {
     visibility: visible;
     animation: pulse-animation 1s cubic-bezier(0.24, 0, 0.38, 1) infinite;
-    transition: opacity .3s, transform .3s, visibility 0s 1s; }
+    transition: opacity .3s, transform .3s, visibility 0s 1s; }
 
 .tap-target {
   position: absolute;
@@ -6209,7 +6209,7 @@ input[type=range].focused:focus:not(.active)::-ms-thumb {
     transition: transform .3s; }
   .tap-target-wave::after {
     visibility: hidden;
-    transition: opacity .3s, transform .3s, visibility 0s;
+    transition: opacity .3s, transform .3s, visibility 0s;
     z-index: -1; }
 
 .tap-target-origin {
@@ -6569,35 +6569,36 @@ header .nav-wrapper a {
 .page-footer .footer-copyright {
   font-size: 0.8em; }
 
+#home-body {
+  overflow: hidden; }
+
 @keyframes expandUnderlineToFull {
   0% {
     width: 0%; }
   100% {
     width: 95%; } }
-
-#home-body #title {
-  font-size: 4.2em;
-  margin: 2.8rem 0 1.68rem 0;
-  color: #687D91;
-  height: 1.1em; }
-  #home-body #title .states, #home-body #title .occupations {
-    position: relative;
-    display: none; }
-  #home-body #title .states {
-    animation-delay: 0s;
-    animation-duration: .2s; }
-  #home-body #title .occupations {
-    color: #2A3D50; }
-  #home-body #title .occupations:before {
-    content: "";
-    position: absolute;
-    left: 2.5%;
-    bottom: -8px;
-    height: 1px;
-    border-bottom: 4px solid #62B7E6;
-    animation: expandUnderlineToFull 5s ease-out 1s 1 forwards; }
-
-#home-body #details-card {
-  background-color: #2A3D50;
-  color: #FBFBFB;
-  padding: 100px 20px; }
+  #home-body #title {
+    font-size: 4.2em;
+    margin: 2.8rem 0 1.68rem 0;
+    color: #687D91;
+    height: 1.1em; }
+    #home-body #title .states, #home-body #title .occupations {
+      position: relative;
+      display: none; }
+    #home-body #title .states {
+      animation-delay: 0s;
+      animation-duration: .2s; }
+    #home-body #title .occupations {
+      color: #2A3D50; }
+    #home-body #title .occupations:before {
+      content: "";
+      position: absolute;
+      left: 2.5%;
+      bottom: -8px;
+      height: 1px;
+      border-bottom: 4px solid #62B7E6;
+      animation: expandUnderlineToFull 5s ease-out 1s 1 forwards; }
+  #home-body #details-card {
+    background-color: #2A3D50;
+    color: #FBFBFB;
+    padding: 100px 20px; }

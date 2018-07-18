@@ -1,6 +1,7 @@
 @import './layouts/main.scss';
 
 #home-body {
+    overflow: hidden;
     @keyframes expandUnderlineToFull {
         0% {
             width: 0%;
