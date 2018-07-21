@@ -7,73 +7,94 @@ body {
 }
 
 #home-body {
-    overflow: hidden;
-    flex: 1 0 auto;
+    $top-shift: -150px;
 
-    @keyframes expandUnderlineToFull {
-        0% {
-            width: 0%;
-        }
-        100% {
-            width: 95%;
-        }
-    }
-
-    #profile-background {
+    #profile-header {
         text-align: center;
-        background: url("/img/profile-background.jpg");
-        background-size: cover;
-        background-position: center;
-        height: 300px;
-    }
-
-    #profile-picture {
-        margin-top: 150px;
-        height: 200px;
-        width: 200px;
-        border-radius: 50%;
-        border: 5px #FFF solid;
-    }
-
-    #profile-title {
-        margin-top: 0px;
-    }
-
-    #profile-title-message {
-        font-size: 4.0em;               
-        margin: 1.68rem 0 1.68rem 0;
-        color: $my-slate-color;
-        height: 1.1em;
-
-        .states, .occupations {
+        
+        #profile-background {
+            background: url("/img/profile-background.jpg");
+            background-size: cover;
+            background-position: center;
+            height: 300px;
+        }
+    
+        #profile-description-group {
             position: relative;
-            display: none;
+            top: $top-shift;
+            margin-bottom: $top-shift;
         }
 
-        .states {
-            animation-delay: 0s;
-            animation-duration: .2s;
+        #profile-picture {
+            height: 200px;
+            width: 200px;
+            border-radius: 50%;
+            border: 5px #FFF solid;
         }
-
-        .occupations {
-            color: $secondary-color;
+    
+        #profile-title {
+            margin-top: 0;
         }
+    
+        #profile-title-message {
+            font-size: 4.0em;               
+            margin: 0;
+            color: $my-slate-color;
+            height: 1.5em;
+            overflow: hidden;
+            flex: 1 0 auto;
+    
+            .states, .occupations {
+                position: relative;
+                display: none;
+            }
+    
+            .states {
+                animation-delay: 0s;
+                animation-duration: .2s;
+            }
+    
+            .occupations {
+                color: $secondary-color;
+            }
+    
+            @keyframes expandUnderlineToFull {
+                0% {
+                    width: 0%;
+                }
+                100% {
+                    width: 95%;
+                }
+            }
 
-        .occupations:before {
-            content : "";   
-            position: absolute;
-            left    : 2.5%;
-            bottom  : -8px;
-            height  : 1px;
-            border-bottom: 4px solid $primary-color;
-            animation: expandUnderlineToFull 3s ease-out 1s 1 forwards; 
+            .occupations:before {
+                content : "";   
+                position: absolute;
+                left    : 2.5%;
+                bottom  : -8px;
+                height  : 1px;
+                border-bottom: 4px solid $primary-color;
+                animation: expandUnderlineToFull 3s ease-out 1s 1 forwards; 
+            }
         }
     }
 
-    #details-card {
-        @extend .center;
-        background-color: $my-dark-color;
-        color: $my-white-color;
-        padding: 100px 20px;
+    #recent-highlights {
+        .card {
+            background-color: $my-dark-color;
+            color: $my-white-color;
+        }
+
+        a {
+            color: $my-cyan-color;
+            -webkit-transition: color .1s ease-in;   
+            transition: color .1s ease-in;    
+        }
+    
+        a:hover {
+            color: $my-cyan-color-darker;
+        }
     }
+    
+ 
 }

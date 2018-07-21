@@ -1621,6 +1621,9 @@
 .my-skyblue-color-dark {
   color: #296f9d; }
 
+.my-dark-color {
+  color: #2A3D50; }
+
 /*! normalize.css v7.0.0 | MIT License | github.com/necolas/normalize.css */
 /* Document
    ========================================================================== */
@@ -2505,7 +2508,7 @@ td, th {
 .right-align {
   text-align: right; }
 
-.center, #home-body #details-card, .center-align {
+.center, .center-align {
   text-align: center; }
 
 .left {
@@ -3202,7 +3205,7 @@ nav {
     display: inline-block;
     font-size: 1.5rem;
     padding: 0; }
-    nav .brand-logo.center, nav #home-body .brand-logo#details-card, #home-body nav .brand-logo#details-card {
+    nav .brand-logo.center {
       left: 50%;
       transform: translateX(-50%); }
     @media only screen and (max-width: 992px) {
@@ -6574,43 +6577,46 @@ body {
   min-height: 100vh;
   flex-direction: column; }
 
-#home-body {
-  overflow: hidden;
-  flex: 1 0 auto; }
+#home-body #profile-header {
+  text-align: center; }
+  #home-body #profile-header #profile-background {
+    background: url("/img/profile-background.jpg");
+    background-size: cover;
+    background-position: center;
+    height: 300px; }
+  #home-body #profile-header #profile-description-group {
+    position: relative;
+    top: -150px;
+    margin-bottom: -150px; }
+  #home-body #profile-header #profile-picture {
+    height: 200px;
+    width: 200px;
+    border-radius: 50%;
+    border: 5px #FFF solid; }
+  #home-body #profile-header #profile-title {
+    margin-top: 0; }
+  #home-body #profile-header #profile-title-message {
+    font-size: 4.0em;
+    margin: 0;
+    color: #687D91;
+    height: 1.5em;
+    overflow: hidden;
+    flex: 1 0 auto; }
+    #home-body #profile-header #profile-title-message .states, #home-body #profile-header #profile-title-message .occupations {
+      position: relative;
+      display: none; }
+    #home-body #profile-header #profile-title-message .states {
+      animation-delay: 0s;
+      animation-duration: .2s; }
+    #home-body #profile-header #profile-title-message .occupations {
+      color: #2A3D50; }
 
 @keyframes expandUnderlineToFull {
   0% {
     width: 0%; }
   100% {
     width: 95%; } }
-  #home-body #profile-background {
-    text-align: center;
-    background: url("/img/profile-background.jpg");
-    background-size: cover;
-    background-position: center;
-    height: 300px; }
-  #home-body #profile-picture {
-    margin-top: 150px;
-    height: 200px;
-    width: 200px;
-    border-radius: 50%;
-    border: 5px #FFF solid; }
-  #home-body #profile-title {
-    margin-top: 0px; }
-  #home-body #profile-title-message {
-    font-size: 4.0em;
-    margin: 1.68rem 0 1.68rem 0;
-    color: #687D91;
-    height: 1.1em; }
-    #home-body #profile-title-message .states, #home-body #profile-title-message .occupations {
-      position: relative;
-      display: none; }
-    #home-body #profile-title-message .states {
-      animation-delay: 0s;
-      animation-duration: .2s; }
-    #home-body #profile-title-message .occupations {
-      color: #2A3D50; }
-    #home-body #profile-title-message .occupations:before {
+    #home-body #profile-header #profile-title-message .occupations:before {
       content: "";
       position: absolute;
       left: 2.5%;
@@ -6618,7 +6624,15 @@ body {
       height: 1px;
       border-bottom: 4px solid #62B7E6;
       animation: expandUnderlineToFull 3s ease-out 1s 1 forwards; }
-  #home-body #details-card {
-    background-color: #2A3D50;
-    color: #FBFBFB;
-    padding: 100px 20px; }
+
+#home-body #recent-highlights .card {
+  background-color: #2A3D50;
+  color: #FBFBFB; }
+
+#home-body #recent-highlights a {
+  color: #62B7E6;
+  -webkit-transition: color .1s ease-in;
+  transition: color .1s ease-in; }
+
+#home-body #recent-highlights a:hover {
+  color: #1c79ad; }
