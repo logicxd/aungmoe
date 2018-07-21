@@ -6577,13 +6577,14 @@ body {
   min-height: 100vh;
   flex-direction: column; }
 
+#home-body #profile-background {
+  background: url("/img/profile-background.jpg");
+  background-size: cover;
+  background-position: center;
+  height: 400px; }
+
 #home-body #profile-header {
   text-align: center; }
-  #home-body #profile-header #profile-background {
-    background: url("/img/profile-background.jpg");
-    background-size: cover;
-    background-position: center;
-    height: 300px; }
   #home-body #profile-header #profile-description-group {
     position: relative;
     top: -150px;

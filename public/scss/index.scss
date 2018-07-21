@@ -9,16 +9,16 @@ body {
 #home-body {
     $top-shift: -150px;
 
+    #profile-background {
+        background: url("/img/profile-background.jpg");
+        background-size: cover;
+        background-position: center;
+        height: 400px;
+    }
+
     #profile-header {
         text-align: center;
         
-        #profile-background {
-            background: url("/img/profile-background.jpg");
-            background-size: cover;
-            background-position: center;
-            height: 300px;
-        }
-    
         #profile-description-group {
             position: relative;
             top: $top-shift;
