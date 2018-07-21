@@ -1,7 +1,15 @@
 @import './layouts/main.scss';
 
+body {
+    display: flex;
+    min-height: 100vh;
+    flex-direction: column;
+}
+
 #home-body {
     overflow: hidden;
+    flex: 1 0 auto;
+
     @keyframes expandUnderlineToFull {
         0% {
             width: 0%;
@@ -11,9 +19,29 @@
         }
     }
 
-    #title {
-        font-size: 4.2em;               // Equivalent to H1
-        margin: 2.8rem 0 1.68rem 0;     // Equivalent to H1
+    #profile-background {
+        text-align: center;
+        background: url("/img/profile-background.jpg");
+        background-size: cover;
+        background-position: center;
+        height: 300px;
+    }
+
+    #profile-picture {
+        margin-top: 150px;
+        height: 200px;
+        width: 200px;
+        border-radius: 50%;
+        border: 5px #FFF solid;
+    }
+
+    #profile-title {
+        margin-top: 0px;
+    }
+
+    #profile-title-message {
+        font-size: 4.0em;               
+        margin: 1.68rem 0 1.68rem 0;
         color: $my-slate-color;
         height: 1.1em;
 
@@ -38,7 +66,7 @@
             bottom  : -8px;
             height  : 1px;
             border-bottom: 4px solid $primary-color;
-            animation: expandUnderlineToFull 5s ease-out 1s 1 forwards; 
+            animation: expandUnderlineToFull 3s ease-out 1s 1 forwards; 
         }
     }
 

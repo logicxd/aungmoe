@@ -8,10 +8,10 @@ router.get('/', function (req, res) {
         css: [global.css.material_icons, 'css/index.css', global.css.animate_css],
         js: [global.js.jquery, 'js/_header.js', 'js/index.js'],
         occupations: [
-            { state: "I'm a", occupation: "Backend Developer" },
-            { state: "I also enjoy", occupation: "Frontend" },
-            { state: "I'm studying", occupation: "CS at UCI" },
-            { state: "So", occupation: "hire me pls" }
+            { state: "I'm a", occupation: "Software Engineer" },
+            { state: "Currently learning", occupation: "React + Nodejs" },
+            { state: "Just graduated from", occupation: "UCI with a BS" },
+            { state: "I'm available", occupation: "for hire" },
         ]
     });
 });

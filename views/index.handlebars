@@ -1,22 +1,30 @@
 <main id="home-body">
     <div class="container">
-            <div class="row-m-b-0 center">
-                <h1 id="title">
-                    {{#each occupations}}
-                    <div id="states-{{@index}}" class="states" data-value="{{this.state}}">
-                        {{this.state}}
-                    </div>
-                    <div id="occupations-{{@index}}" class="occupations" data-value="{{this.occupation}}">
-                        {{this.occupation}}
-                    </div>
-                    {{/each}}
-                </h1>
+        <div class="profile-header">
+            <div id="profile-background">
+                <img id="profile-picture" class="responsive-img" src="img/profile-picture.jpg" alt="profile-picture">
+                <h4 id="profile-title">Aung Moe</h4>
+                <div class="row-m-b-0 center">
+                    <h1 id="profile-title-message">
+                        {{#each occupations}}
+                        <div id="states-{{@index}}" class="states" data-value="{{this.state}}">
+                            {{this.state}}
+                        </div>
+                        <div id="occupations-{{@index}}" class="occupations" data-value="{{this.occupation}}">
+                            {{this.occupation}}
+                        </div>
+                        {{/each}}
+                    </h1>
+                </div>
             </div>
-             <div id="details-card" class="card animated bounceInLeft">
-                Test Card
-            </div>
-            {{!-- <div class="row-m-b-0 center"> --}}
-                 {{!-- <i class="material-icons">face</i> --}}
-            {{!-- </div> --}}
+        </div>
+
+
+        {{!--
+        <div id="details-card" class="card animated bounceInLeft">
+            Test Card
+        </div> --}} {{!--
+        <div class="row-m-b-0 center"> --}} {{!--
+            <i class="material-icons">face</i> --}} {{!-- </div> --}}
     </div>
 </main>

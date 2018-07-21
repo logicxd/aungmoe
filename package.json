@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node app.js",
     "start-forever": "forever start --minUptime 5000 --spinSleepTime 5000 app.js",
-    "watch-css": "node-sass -w public/scss/ -o public/css/"
+    "watch-css": "node-sass -w public/scss/ -o public/css/",
+    "update-css": "node-sass public/scss/ -o public/css/"
   },
   "repository": {
     "type": "git",
