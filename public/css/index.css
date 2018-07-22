@@ -6581,7 +6581,7 @@ body {
   background: url("/img/profile-background.jpg");
   background-size: cover;
   background-position: center;
-  height: 400px; }
+  height: 500px; }
 
 #home-body #profile-header {
   text-align: center; }
@@ -6589,13 +6589,17 @@ body {
     position: relative;
     top: -150px;
     margin-bottom: -150px; }
+  #home-body #profile-header #profile-name {
+    margin-top: 0px;
+    margin-bottom: 5px; }
+  #home-body #profile-header #profile-job {
+    font-size: 25px;
+    margin-bottom: 20px; }
   #home-body #profile-header #profile-picture {
     height: 200px;
     width: 200px;
     border-radius: 50%;
     border: 5px #FFF solid; }
-  #home-body #profile-header #profile-title {
-    margin-top: 0; }
   #home-body #profile-header #profile-title-message {
     font-size: 4.0em;
     margin: 0;

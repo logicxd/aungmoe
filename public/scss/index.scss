@@ -13,7 +13,7 @@ body {
         background: url("/img/profile-background.jpg");
         background-size: cover;
         background-position: center;
-        height: 400px;
+        height: 500px;
     }
 
     #profile-header {
@@ -25,15 +25,21 @@ body {
             margin-bottom: $top-shift;
         }
 
+        #profile-name {
+            margin-top: 0px;
+            margin-bottom: 5px;
+        }
+
+        #profile-job {
+            font-size: 25px;
+            margin-bottom: 20px;
+        }
+
         #profile-picture {
             height: 200px;
             width: 200px;
             border-radius: 50%;
             border: 5px #FFF solid;
-        }
-    
-        #profile-title {
-            margin-top: 0;
         }
     
         #profile-title-message {
