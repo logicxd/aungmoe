@@ -1,5 +1,5 @@
 var idNumber = 0;
-var animationEnd = (function(el) {
+var animationEnd = (function (el) {
     var animations = {
         animation: 'animationend',
         OAnimation: 'oAnimationEnd',
@@ -19,17 +19,17 @@ $('#states-' + idNumber).css('display', 'inline-block');
 $('#occupations-' + idNumber).css('display', 'inline-block');
 
 $.fn.extend({
-    animateCss: function(animationName, callback) {
-        this.addClass('animated ' + animationName).one(animationEnd, function() {
+    animateCss: function (animationName, callback) {
+        this.addClass('animated ' + animationName).one(animationEnd, function () {
             $(this).removeClass('animated ' + animationName);
             if (typeof callback === 'function') callback();
         });
-  
+
         return this;
     },
 });
 
-$('.occupations').on(animationEnd, function(e) {
+$('.occupations').on(animationEnd, function (e) {
     if (e.originalEvent.animationName === 'expandUnderlineToFull') {
         var currentState = $('#states-' + idNumber);
         var currentOccupation = $('#occupations-' + idNumber++);
@@ -43,13 +43,13 @@ $('.occupations').on(animationEnd, function(e) {
             nextState = $('#states-' + idNumber);
         }
 
-        
-        currentOccupation.animateCss('bounceOutDown', function() {
+
+        currentOccupation.animateCss('bounceOutDown', function () {
             nextOccupation.css('display', 'inline-block').animateCss('bounceInDown');
             currentOccupation.css('display', 'none');
 
             if (currentState.attr('data-value') !== nextState.attr('data-value')) {
-                currentState.animateCss('fadeOut', function() {
+                currentState.animateCss('fadeOut', function () {
                     currentState.css('display', 'none');
                 });
                 nextState.css('display', 'inline-block').animateCss('fadeIn');
