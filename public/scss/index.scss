@@ -86,22 +86,20 @@ body {
     }
 
     #recent-highlights {
-        
-    }
-    
-    .card {
-        background-color: $my-dark-color;
-        color: $my-white-color;
-    }
+        .card {
+            background-color: $my-dark-color;
+            color: $my-white-color;
+        }
 
-    a {
-        color: $my-cyan-color;
-        -webkit-transition: color .1s ease-in;   
-        transition: color .1s ease-in;    
-    }
+        a {
+            color: $my-cyan-color;
+            -webkit-transition: color .1s ease-in;   
+            transition: color .1s ease-in;    
+        }
 
-    a:hover {
-        color: $my-cyan-color-darker;
+        a:hover {
+            color: $my-cyan-color-darker;
+        }
     }
 
     #projects {
@@ -129,6 +127,16 @@ body {
             position: absolute;
             bottom: 0;
             left: 0;
+        }
+
+        a {
+            color: $my-dark-color;
+            -webkit-transition: color .1s ease-in;   
+            transition: color .1s ease-in;   
+        }
+
+        a:hover {
+            color: $my-slate-color;
         }
     }
 }

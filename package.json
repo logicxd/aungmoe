@@ -26,6 +26,6 @@
     "express-handlebars": "^3.0.0",
     "forever-monitor": "^1.7.1",
     "morgan": "^1.9.0",
-    "node-sass": "^4.8.3"
+    "node-sass": "^4.9.2"
   }
 }
