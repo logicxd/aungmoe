@@ -6662,7 +6662,8 @@ body {
 #home-body #projects .projects-description-links {
   position: absolute;
   bottom: 0;
-  left: 0; }
+  left: 0;
+  padding: 10px; }
 
 #home-body #projects a {
   color: #2A3D50;
