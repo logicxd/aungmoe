@@ -33,7 +33,7 @@ app.use('/', index);
 app.use('/credits', function (req, res) {
     res.render('credit', { 
         title: 'Credits - Aung Moe',
-        description: 'Copyright informations and citations',
+        description: 'Copyright informations and citations used in the production of this website.',
         css: [global.css.material_icons, 'css/main.css', global.css.animate_css, global.css.fontawesome],
         js: [global.js.jquery, global.js.materialize, global.js.header, global.js.footer]
     });
@@ -57,7 +57,7 @@ app.use(function(err, req, res, next) {
     res.status(err.status || 500);
     res.render('error', { 
         title: '404 - Aung Moe',
-        description: 'Page not found',
+        description: 'Page not found!',
         css: [global.css.material_icons, 'css/main.css', global.css.animate_css, global.css.fontawesome ],
         js: [global.js.jquery, global.js.materialize, global.js.header, global.js.footer]
     });

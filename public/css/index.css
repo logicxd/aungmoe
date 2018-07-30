@@ -6645,6 +6645,12 @@ body {
 #home-body #recent-highlights a:hover {
   color: #1c79ad; }
 
+#home-body #education #education-picture {
+  background: url("/img/education-background.jpg");
+  background-size: cover;
+  background-position: center;
+  height: 300px; }
+
 #home-body #projects .row, #home-body #projects .row-m-b-0 {
   height: 400px; }
 

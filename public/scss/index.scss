@@ -102,6 +102,16 @@ body {
         }
     }
 
+    #education {
+        
+        #education-picture {
+            background: url("/img/education-background.jpg");
+            background-size: cover;
+            background-position: center;
+            height: 300px;
+        }
+    }
+
     #projects {
         $project-row-height: 400px;
 
