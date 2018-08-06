@@ -115,7 +115,8 @@ body {
     #projects {
         $project-row-height: 400px;
 
-        .row {
+        .project-row {
+            @extend .row;
             height: $project-row-height;
         }
 
@@ -133,11 +134,15 @@ body {
             position: relative;
         }
 
-        .projects-description-links {
+        .projects-description-button-container {
             position: absolute;
             bottom: 0;
             left: 0;
             padding: 10px;
+        }
+
+        .projects-description-button {
+            color: $my-white-color;
         }
 
         a {
