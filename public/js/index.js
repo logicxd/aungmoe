@@ -15,8 +15,11 @@ var animationEnd = (function (el) {
     return 'animationend';
 })(document.createElement('div'));
 
-$('#states-' + idNumber).css('display', 'inline-block');
-$('#occupations-' + idNumber).css('display', 'inline-block');
+$(document).ready(function() {
+    $('#states-' + idNumber).css('display', 'inline-block');
+    $('#occupations-' + idNumber).css('display', 'inline-block');
+});
+
 
 $.fn.extend({
     animateCss: function (animationName, callback) {

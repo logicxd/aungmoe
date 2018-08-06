@@ -7,13 +7,10 @@ body {
 }
 
 #home-body {
-    $top-shift: -150px;
-
     #profile-background {
         background: url("/img/profile-background.jpg");
         background-size: cover;
         background-position: center;
-        height: 500px;
     }
 
     #profile-header {
@@ -21,32 +18,14 @@ body {
         
         #profile-description-group {
             position: relative;
-            top: $top-shift;
-            margin-bottom: $top-shift;
-        }
-
-        #profile-name {
-            margin-top: 0px;
-            margin-bottom: 5px;
-        }
-
-        #profile-job {
-            font-size: 25px;
-            margin-bottom: 20px;
         }
 
         #profile-picture {
-            height: 200px;
-            width: 200px;
             border-radius: 50%;
-            border: 5px #FFF solid;
         }
     
         #profile-title-message {
-            font-size: 4.0em;               
-            margin: 0;
             color: $my-slate-color;
-            height: 1.5em;
             overflow: hidden;
             flex: 1 0 auto;
     
@@ -86,7 +65,7 @@ body {
     }
 
     #recent-highlights {
-        .card {
+        .card .carousel-item{
             background-color: $my-dark-color;
             color: $my-white-color;
         }
@@ -99,16 +78,6 @@ body {
 
         a:hover {
             color: $my-cyan-color-darker;
-        }
-    }
-
-    #education {
-        
-        #education-picture {
-            background: url("/img/education-background.jpg");
-            background-size: cover;
-            background-position: center;
-            height: 300px;
         }
     }
 
@@ -153,6 +122,118 @@ body {
 
         a:hover {
             color: $my-slate-color;
+        }
+    }
+
+    @media only screen and (min-width: 320px) {
+        #profile-background {
+            height: 300px;
+        }
+    }
+
+     @media only screen and (min-width: 481px) {
+        #profile-background {
+            height: 400px;
+        }
+
+        #profile-header {
+            $picture-offset: -150px;
+
+            #profile-description-group {
+                top: $picture-offset;
+                margin-bottom: $picture-offset;
+            }
+    
+            #profile-name {
+                margin-top: 0px;
+                margin-bottom: 5px;
+            }
+    
+            #profile-job {
+                font-size: 25px;
+                margin-bottom: 20px;
+            }
+    
+            #profile-picture {
+                border: 5px #FFF solid;
+                height: 200px;
+                width: 200px;
+            }
+        
+            #profile-title-message {
+                font-size: 2.2em;               
+                margin: 0;
+                height: 1.5em;
+            }
+        }
+
+        #recent-highlights {
+            .card {
+                height: 450px;
+            }
+        }
+    }
+
+    @media only screen and (min-width: 768px) {
+        #profile-background {
+            height: 400px;
+        }
+
+        #profile-header {
+            $picture-offset: -150px;
+
+            #profile-description-group {
+                top: $picture-offset;
+                margin-bottom: $picture-offset;
+            }
+    
+            #profile-name {
+                margin-top: 0px;
+                margin-bottom: 5px;
+            }
+    
+            #profile-job {
+                font-size: 25px;
+                margin-bottom: 20px;
+            }
+    
+            #profile-picture {
+                border: 5px #FFF solid;
+                height: 200px;
+                width: 200px;
+            }
+        
+            #profile-title-message {
+                font-size: 2.2em;               
+                margin: 0;
+                height: 1.5em;
+            }
+        }
+
+        #recent-highlights {
+            .card {
+                height: 450px;
+            }
+        }
+    }
+
+    @media only screen and (min-width: 992px) {
+        #recent-highlights {
+            .card {
+                height: 200px;
+            }
+        }
+    }
+
+    @media only screen and (min-width: 1000px) {
+        #profile-background {
+            height: 450px;
+        }
+    }
+    
+    @media only screen and (min-width: 1281px) {
+        #profile-background {
+            height: 500px;
         }
     }
 }

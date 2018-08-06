@@ -38,12 +38,15 @@
             <div class="nav-wrapper">
                 <!-- Desktop -->
                 <a href="/" class="brand-logo">Aung Moe</a>
-                <ul class="right">
+                <a href="#" data-target="sidenav-menu" class="sidenav-trigger"><i class="material-icons md-24 middle">menu</i></a>
+                <ul class="right hide-on-med-and-down">
                     <li><a href="/media/resume.pdf" target="_blank">Resume</a></li>
-                    {{!-- <li><a href="#">Blog</a></li> --}}
                 </ul>
             </div>
         </nav>
+        <ul class="sidenav" id="sidenav-menu">
+            <li><a href="/media/resume.pdf" target="_blank">Resume</a></li>
+        </ul>
     </header>
     
     {{{ body }}}

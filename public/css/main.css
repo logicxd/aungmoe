@@ -6564,6 +6564,10 @@ header .nav-wrapper a {
   -webkit-transition: background-color .1s ease-in;
   transition: background-color .1s ease-in; }
 
+@media only screen and (min-width: 601px) {
+  header nav, header nav .nav-wrapper i, header nav a.sidenav-trigger, header nav a.sidenav-trigger i {
+    line-height: inherit; } }
+
 .page-footer a {
   color: #62B7E6;
   -webkit-transition: color .1s ease-in;

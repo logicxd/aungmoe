@@ -6564,6 +6564,10 @@ header .nav-wrapper a {
   -webkit-transition: background-color .1s ease-in;
   transition: background-color .1s ease-in; }
 
+@media only screen and (min-width: 601px) {
+  header nav, header nav .nav-wrapper i, header nav a.sidenav-trigger, header nav a.sidenav-trigger i {
+    line-height: inherit; } }
+
 .page-footer a {
   color: #62B7E6;
   -webkit-transition: color .1s ease-in;
@@ -6583,31 +6587,16 @@ body {
 #home-body #profile-background {
   background: url("/img/profile-background.jpg");
   background-size: cover;
-  background-position: center;
-  height: 500px; }
+  background-position: center; }
 
 #home-body #profile-header {
   text-align: center; }
   #home-body #profile-header #profile-description-group {
-    position: relative;
-    top: -150px;
-    margin-bottom: -150px; }
-  #home-body #profile-header #profile-name {
-    margin-top: 0px;
-    margin-bottom: 5px; }
-  #home-body #profile-header #profile-job {
-    font-size: 25px;
-    margin-bottom: 20px; }
+    position: relative; }
   #home-body #profile-header #profile-picture {
-    height: 200px;
-    width: 200px;
-    border-radius: 50%;
-    border: 5px #FFF solid; }
+    border-radius: 50%; }
   #home-body #profile-header #profile-title-message {
-    font-size: 4.0em;
-    margin: 0;
     color: #687D91;
-    height: 1.5em;
     overflow: hidden;
     flex: 1 0 auto; }
     #home-body #profile-header #profile-title-message .states, #home-body #profile-header #profile-title-message .occupations {
@@ -6633,7 +6622,7 @@ body {
       border-bottom: 4px solid #62B7E6;
       animation: expandUnderlineToFull 3s ease-out 1s 1 forwards; }
 
-#home-body #recent-highlights .card {
+#home-body #recent-highlights .card .carousel-item {
   background-color: #2A3D50;
   color: #FBFBFB; }
 
@@ -6644,12 +6633,6 @@ body {
 
 #home-body #recent-highlights a:hover {
   color: #1c79ad; }
-
-#home-body #education #education-picture {
-  background: url("/img/education-background.jpg");
-  background-size: cover;
-  background-position: center;
-  height: 300px; }
 
 #home-body #projects .project-row {
   height: 400px; }
@@ -6681,3 +6664,65 @@ body {
 
 #home-body #projects a:hover {
   color: #687D91; }
+
+@media only screen and (min-width: 320px) {
+  #home-body #profile-background {
+    height: 300px; } }
+
+@media only screen and (min-width: 481px) {
+  #home-body #profile-background {
+    height: 400px; }
+  #home-body #profile-header #profile-description-group {
+    top: -150px;
+    margin-bottom: -150px; }
+  #home-body #profile-header #profile-name {
+    margin-top: 0px;
+    margin-bottom: 5px; }
+  #home-body #profile-header #profile-job {
+    font-size: 25px;
+    margin-bottom: 20px; }
+  #home-body #profile-header #profile-picture {
+    border: 5px #FFF solid;
+    height: 200px;
+    width: 200px; }
+  #home-body #profile-header #profile-title-message {
+    font-size: 2.2em;
+    margin: 0;
+    height: 1.5em; }
+  #home-body #recent-highlights .card {
+    height: 450px; } }
+
+@media only screen and (min-width: 768px) {
+  #home-body #profile-background {
+    height: 400px; }
+  #home-body #profile-header #profile-description-group {
+    top: -150px;
+    margin-bottom: -150px; }
+  #home-body #profile-header #profile-name {
+    margin-top: 0px;
+    margin-bottom: 5px; }
+  #home-body #profile-header #profile-job {
+    font-size: 25px;
+    margin-bottom: 20px; }
+  #home-body #profile-header #profile-picture {
+    border: 5px #FFF solid;
+    height: 200px;
+    width: 200px; }
+  #home-body #profile-header #profile-title-message {
+    font-size: 2.2em;
+    margin: 0;
+    height: 1.5em; }
+  #home-body #recent-highlights .card {
+    height: 450px; } }
+
+@media only screen and (min-width: 992px) {
+  #home-body #recent-highlights .card {
+    height: 200px; } }
+
+@media only screen and (min-width: 1000px) {
+  #home-body #profile-background {
+    height: 450px; } }
+
+@media only screen and (min-width: 1281px) {
+  #home-body #profile-background {
+    height: 500px; } }

@@ -45,6 +45,12 @@ header {
             transition: background-color .1s ease-in; 
         }
     }
+
+    @media only screen and (min-width: 601px) {
+        nav, nav .nav-wrapper i, nav a.sidenav-trigger, nav a.sidenav-trigger i {
+            line-height: inherit;
+        }
+    }
 }
 
 .page-footer {
@@ -62,3 +68,4 @@ header {
         font-size: 0.8em;
     }
 }
+
