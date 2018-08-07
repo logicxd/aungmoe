@@ -82,7 +82,7 @@ body {
     }
 
     #projects {
-        $project-row-height: 400px;
+        $project-row-height: 250px;
 
         .project-row {
             @extend .row;
@@ -95,7 +95,7 @@ body {
 
         .projects-image {
             max-width: 100%;
-            height: $project-row-height;
+            max-height: $project-row-height;
             overflow: hidden;
         }
 
