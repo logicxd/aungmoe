@@ -6177,7 +6177,7 @@ input[type=range].focused:focus:not(.active)::-ms-thumb {
   .tap-target-wrapper.open .tap-target-wave::after {
     visibility: visible;
     animation: pulse-animation 1s cubic-bezier(0.24, 0, 0.38, 1) infinite;
-    transition: opacity .3s, transform .3s, visibility 0s 1s; }
+    transition: opacity .3s, transform .3s, visibility 0s 1s; }
 
 .tap-target {
   position: absolute;
@@ -6212,7 +6212,7 @@ input[type=range].focused:focus:not(.active)::-ms-thumb {
     transition: transform .3s; }
   .tap-target-wave::after {
     visibility: hidden;
-    transition: opacity .3s, transform .3s, visibility 0s;
+    transition: opacity .3s, transform .3s, visibility 0s;
     z-index: -1; }
 
 .tap-target-origin {
@@ -6622,7 +6622,7 @@ body {
       border-bottom: 4px solid #62B7E6;
       animation: expandUnderlineToFull 3s ease-out 1s 1 forwards; }
 
-#home-body #recent-highlights .card .carousel-item {
+#home-body #recent-highlights .card {
   background-color: #2A3D50;
   color: #FBFBFB; }
 
@@ -6717,7 +6717,7 @@ body {
 
 @media only screen and (min-width: 992px) {
   #home-body #recent-highlights .card {
-    height: 200px; } }
+    height: 450px; } }
 
 @media only screen and (min-width: 1000px) {
   #home-body #profile-background {

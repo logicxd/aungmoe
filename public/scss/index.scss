@@ -65,7 +65,7 @@ body {
     }
 
     #recent-highlights {
-        .card .carousel-item{
+        .card {
             background-color: $my-dark-color;
             color: $my-white-color;
         }
@@ -220,7 +220,7 @@ body {
     @media only screen and (min-width: 992px) {
         #recent-highlights {
             .card {
-                height: 200px;
+                height: 450px;
             }
         }
     }
