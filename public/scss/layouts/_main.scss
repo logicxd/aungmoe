@@ -46,9 +46,14 @@ header {
         }
     }
 
-    @media only screen and (min-width: 601px) {
-        nav, nav .nav-wrapper i, nav a.sidenav-trigger, nav a.sidenav-trigger i {
-            line-height: inherit;
+    @media only screen and (min-width: 601px) and (max-width: 991px) {
+        // nav, nav .nav-wrapper i, nav a.sidenav-trigger, nav a.sidenav-trigger i {
+        //     line-height: inherit;
+        // }
+        .hamburger-menu {
+            position: relative;
+            top: -13px;
+            max-height: 55px;
         }
     }
 }
