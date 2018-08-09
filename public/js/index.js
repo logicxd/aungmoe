@@ -18,6 +18,11 @@ var animationEnd = (function (el) {
 $(document).ready(function() {
     $('#states-' + idNumber).css('display', 'inline-block');
     $('#occupations-' + idNumber).css('display', 'inline-block');
+
+    $('.carousel.carousel-slider').carousel({
+        fullWidth: false,
+        indicators: true
+      });
 });
 
 

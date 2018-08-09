@@ -23,6 +23,16 @@ body {
         #profile-picture {
             border-radius: 50%;
         }
+
+        #profile-name {
+            margin-top: 0px;
+            margin-bottom: 5px;
+        }
+
+        #profile-job {
+            font-size: 25px;
+            margin-bottom: 20px;
+        }
     
         #profile-title-message {
             color: $my-slate-color;
@@ -68,6 +78,7 @@ body {
         .card {
             background-color: $my-dark-color;
             color: $my-white-color;
+            height: 450px;
         }
 
         a {
@@ -78,6 +89,37 @@ body {
 
         a:hover {
             color: $my-cyan-color-darker;
+        }
+
+        .carousel {
+            display: none;
+
+            .carousel-item {
+                background-color: $my-dark-color;
+                color: $my-white-color;
+                padding: 0px 15px;
+            }
+
+            .carousel-img-container {
+                height: 100%;
+            }
+
+            .carousel-img {
+                max-width: 100%;
+                max-height: 100%;
+            }
+
+            .carousel-description-container {
+                height: 100%;
+                position: relative;
+            }
+
+            .carousel-description-button-container {
+                position: absolute;
+                bottom: 0;
+                left: 0;
+                padding: 10px;
+            }
         }
     }
 
@@ -99,17 +141,6 @@ body {
             overflow: hidden;
         }
 
-        .projects-description-container {
-            position: relative;
-        }
-
-        .projects-description-button-container {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            padding: 10px;
-        }
-
         .projects-description-button {
             color: $my-white-color;
         }
@@ -125,17 +156,63 @@ body {
         }
     }
 
+    .carousel  {
+        .carousel-row {
+            height: 250px;
+        }
+    }
+
     @media only screen and (min-width: 320px) {
         #profile-background {
             height: 300px;
         }
+
+        #profile-header {
+            $picture-offset: -75px;
+
+            #profile-description-group {
+                top: $picture-offset;
+                margin-bottom: $picture-offset;
+            }
+    
+            #profile-picture {
+                border: 3px #FFF solid;
+                height: 125px;
+                width: 125x;
+            }
+        
+            #profile-title-message {
+                font-size: 1.6em;               
+                margin: 0;
+                height: 2.6em;
+            }
+        }
     }
 
-     @media only screen and (min-width: 481px) {
-        #profile-background {
-            height: 400px;
-        }
+    @media only screen and (min-width: 420px) {
+        #profile-header {
+            $picture-offset: -100px;
 
+            #profile-description-group {
+                top: $picture-offset;
+                margin-bottom: $picture-offset;
+            }
+    
+            #profile-picture {
+                border: 3px #FFF solid;
+                height: 150px;
+                width: 150px;
+            }
+        
+            #profile-title-message {
+                font-size: 1.8em;               
+                margin: 0;
+                height: 2.6em;
+            }
+        }
+    }
+
+     @media only screen and (min-width: 600px) {
         #profile-header {
             $picture-offset: -150px;
 
@@ -144,83 +221,47 @@ body {
                 margin-bottom: $picture-offset;
             }
     
-            #profile-name {
-                margin-top: 0px;
-                margin-bottom: 5px;
-            }
-    
-            #profile-job {
-                font-size: 25px;
-                margin-bottom: 20px;
-            }
-    
             #profile-picture {
                 border: 5px #FFF solid;
                 height: 200px;
                 width: 200px;
             }
-        
-            #profile-title-message {
-                font-size: 2.2em;               
-                margin: 0;
-                height: 1.5em;
+        }
+
+        #projects {
+            .projects-description-container {
+                position: relative;
+            }
+    
+            .projects-description-button-container {
+                position: absolute;
+                bottom: 0;
+                left: 0;
+                padding: 10px;
             }
         }
 
-        #recent-highlights {
-            .card {
-                height: 450px;
+        #education {
+            .education-year {
+                font-size: 1.4em;
             }
+        }
+
+        .show-on-small {
+            display: none;
         }
     }
 
-    @media only screen and (min-width: 768px) {
+    @media only screen and (min-width: 708px) {
         #profile-background {
             height: 400px;
         }
 
         #profile-header {
-            $picture-offset: -150px;
-
-            #profile-description-group {
-                top: $picture-offset;
-                margin-bottom: $picture-offset;
-            }
-    
-            #profile-name {
-                margin-top: 0px;
-                margin-bottom: 5px;
-            }
-    
-            #profile-job {
-                font-size: 25px;
-                margin-bottom: 20px;
-            }
-    
-            #profile-picture {
-                border: 5px #FFF solid;
-                height: 200px;
-                width: 200px;
-            }
-        
             #profile-title-message {
                 font-size: 2.2em;               
                 margin: 0;
                 height: 1.5em;
-            }
-        }
-
-        #recent-highlights {
-            .card {
-                height: 450px;
-            }
-        }
-    }
-
-    @media only screen and (min-width: 992px) {
-        #recent-highlights {
-            .card {
-                height: 450px;
             }
         }
     }

@@ -6177,7 +6177,7 @@ input[type=range].focused:focus:not(.active)::-ms-thumb {
   .tap-target-wrapper.open .tap-target-wave::after {
     visibility: visible;
     animation: pulse-animation 1s cubic-bezier(0.24, 0, 0.38, 1) infinite;
-    transition: opacity .3s, transform .3s, visibility 0s 1s; }
+    transition: opacity .3s, transform .3s, visibility 0s 1s; }
 
 .tap-target {
   position: absolute;
@@ -6212,7 +6212,7 @@ input[type=range].focused:focus:not(.active)::-ms-thumb {
     transition: transform .3s; }
   .tap-target-wave::after {
     visibility: hidden;
-    transition: opacity .3s, transform .3s, visibility 0s;
+    transition: opacity .3s, transform .3s, visibility 0s;
     z-index: -1; }
 
 .tap-target-origin {
@@ -6595,6 +6595,12 @@ body {
     position: relative; }
   #home-body #profile-header #profile-picture {
     border-radius: 50%; }
+  #home-body #profile-header #profile-name {
+    margin-top: 0px;
+    margin-bottom: 5px; }
+  #home-body #profile-header #profile-job {
+    font-size: 25px;
+    margin-bottom: 20px; }
   #home-body #profile-header #profile-title-message {
     color: #687D91;
     overflow: hidden;
@@ -6624,7 +6630,8 @@ body {
 
 #home-body #recent-highlights .card {
   background-color: #2A3D50;
-  color: #FBFBFB; }
+  color: #FBFBFB;
+  height: 450px; }
 
 #home-body #recent-highlights a {
   color: #62B7E6;
@@ -6633,6 +6640,26 @@ body {
 
 #home-body #recent-highlights a:hover {
   color: #1c79ad; }
+
+#home-body #recent-highlights .carousel {
+  display: none; }
+  #home-body #recent-highlights .carousel .carousel-item {
+    background-color: #2A3D50;
+    color: #FBFBFB;
+    padding: 0px 15px; }
+  #home-body #recent-highlights .carousel .carousel-img-container {
+    height: 100%; }
+  #home-body #recent-highlights .carousel .carousel-img {
+    max-width: 100%;
+    max-height: 100%; }
+  #home-body #recent-highlights .carousel .carousel-description-container {
+    height: 100%;
+    position: relative; }
+  #home-body #recent-highlights .carousel .carousel-description-button-container {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    padding: 10px; }
 
 #home-body #projects .project-row {
   height: 250px; }
@@ -6645,15 +6672,6 @@ body {
   max-height: 250px;
   overflow: hidden; }
 
-#home-body #projects .projects-description-container {
-  position: relative; }
-
-#home-body #projects .projects-description-button-container {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  padding: 10px; }
-
 #home-body #projects .projects-description-button {
   color: #FBFBFB; }
 
@@ -6665,59 +6683,64 @@ body {
 #home-body #projects a:hover {
   color: #687D91; }
 
+#home-body .carousel .carousel-row {
+  height: 250px; }
+
 @media only screen and (min-width: 320px) {
   #home-body #profile-background {
-    height: 300px; } }
+    height: 300px; }
+  #home-body #profile-header #profile-description-group {
+    top: -75px;
+    margin-bottom: -75px; }
+  #home-body #profile-header #profile-picture {
+    border: 3px #FFF solid;
+    height: 125px;
+    width: 125x; }
+  #home-body #profile-header #profile-title-message {
+    font-size: 1.6em;
+    margin: 0;
+    height: 2.6em; } }
 
-@media only screen and (min-width: 481px) {
-  #home-body #profile-background {
-    height: 400px; }
+@media only screen and (min-width: 420px) {
+  #home-body #profile-header #profile-description-group {
+    top: -100px;
+    margin-bottom: -100px; }
+  #home-body #profile-header #profile-picture {
+    border: 3px #FFF solid;
+    height: 150px;
+    width: 150px; }
+  #home-body #profile-header #profile-title-message {
+    font-size: 1.8em;
+    margin: 0;
+    height: 2.6em; } }
+
+@media only screen and (min-width: 600px) {
   #home-body #profile-header #profile-description-group {
     top: -150px;
     margin-bottom: -150px; }
-  #home-body #profile-header #profile-name {
-    margin-top: 0px;
-    margin-bottom: 5px; }
-  #home-body #profile-header #profile-job {
-    font-size: 25px;
-    margin-bottom: 20px; }
   #home-body #profile-header #profile-picture {
     border: 5px #FFF solid;
     height: 200px;
     width: 200px; }
-  #home-body #profile-header #profile-title-message {
-    font-size: 2.2em;
-    margin: 0;
-    height: 1.5em; }
-  #home-body #recent-highlights .card {
-    height: 450px; } }
+  #home-body #projects .projects-description-container {
+    position: relative; }
+  #home-body #projects .projects-description-button-container {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    padding: 10px; }
+  #home-body #education .education-year {
+    font-size: 1.4em; }
+  #home-body .show-on-small {
+    display: none; } }
 
-@media only screen and (min-width: 768px) {
+@media only screen and (min-width: 708px) {
   #home-body #profile-background {
     height: 400px; }
-  #home-body #profile-header #profile-description-group {
-    top: -150px;
-    margin-bottom: -150px; }
-  #home-body #profile-header #profile-name {
-    margin-top: 0px;
-    margin-bottom: 5px; }
-  #home-body #profile-header #profile-job {
-    font-size: 25px;
-    margin-bottom: 20px; }
-  #home-body #profile-header #profile-picture {
-    border: 5px #FFF solid;
-    height: 200px;
-    width: 200px; }
   #home-body #profile-header #profile-title-message {
     font-size: 2.2em;
     margin: 0;
-    height: 1.5em; }
-  #home-body #recent-highlights .card {
-    height: 450px; } }
-
-@media only screen and (min-width: 992px) {
-  #home-body #recent-highlights .card {
-    height: 450px; } }
+    height: 1.5em; } }
 
 @media only screen and (min-width: 1000px) {
   #home-body #profile-background {
