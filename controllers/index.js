@@ -12,7 +12,6 @@ router.get('/', function (req, res) {
             { state: "Contributes to", occupation: "open source projects" },
             { state: "Partook in", occupation: "research studies at UCI" },
             { state: "Graduated with", occupation: "honors in Computer Science" },
-            // { state: "Graduated with", occupation: "honors in Computer Science" },
         ]
     });
 });
