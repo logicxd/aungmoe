@@ -20,7 +20,7 @@ router.get('/', function (req, res) {
                     title: "Wumpus World AI", 
                     skills: [
                         {
-                            image: "img/skills/java.svg",
+                            image: "img/index/skills/java.svg",
                             name: "Java"
                         }
                     ],
@@ -34,7 +34,7 @@ router.get('/', function (req, res) {
                     title: "QuartoAI", 
                     skills: [
                         {
-                            image: "img/skills/objective-c.svg",
+                            image: "img/index/skills/objective-c.svg",
                             name: "Objective-C"
                         }
                     ],
@@ -48,11 +48,11 @@ router.get('/', function (req, res) {
                     title: "Church Web Application", 
                     skills: [
                         {
-                            image: "img/skills/javascript.svg",
+                            image: "img/index/skills/javascript.svg",
                             name: "JavaScript"
                         },
                         {
-                            image: "img/skills/nodejs.png",
+                            image: "img/index/skills/nodejs.png",
                             name: "NodeJS"
                         }
                     ],
