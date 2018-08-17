@@ -9,7 +9,7 @@
                 <div id="profile-job" style="font-size: 25px;">Software Engineer</div>
                 <div class="row-m-b-0 center">
                     <h1 id="profile-title-message">
-                        {{#each occupations}}
+                        {{#each data.occupations}}
                         <div id="states-{{@index}}" class="states" data-value="{{this.state}}">
                             {{this.state}}
                         </div>
@@ -187,80 +187,36 @@
 
         <div id="projects">
             <h3>Projects</h3>
-
-            <div class="project-row">
+            {{#each data.projects}}
+             <div class="project-row">
                 <div class="col s12 m6">
-                    <img class="materialboxed projects-image" src="https://user-images.githubusercontent.com/12219300/43773157-a362492e-99f9-11e8-8836-15771b6dfd99.gif">
+                    <img class="materialboxed projects-image" src="{{this.image}}">
                 </div>
                 <div class="col s12 m6 projects-description-container">
-                    <h5>Wumpus World AI</h5>
+                    <h5>{{this.title}}</h5>
+                    {{#each this.skills}}
                     <div class="chip">
-                        <img src="img/skills/java.svg" alt="Skill Icon"> Java
+                        <img src="{{this.image}}" alt="Skill Icon"> {{this.name}}
                     </div>
+                    {{/each}}
                     <p>
-                        <b>2nd highest scoring AI bot</b> for a class tournament that aims to find the gold and escape the Wumpus
-                        World with the best possible score.
+                        {{{this.description}}}
                     </p>
-
                     <div class="projects-description-button-container">
-                        <a href="https://github.com/logicxd/Wumpus-World-AI" target="_blank" class="waves-effect waves-light btn projects-description-button">
+                        {{#if this.github }}
+                        <a href="{{this.github}}" target="_blank" class="waves-effect waves-light btn projects-description-button">
                             <i class="fab fa-github"></i> GitHub</i>
                         </a>
+                        {{/if}}
+                        {{#if this.website }}
+                         <a href="{{this.website.link}}" target="_blank" class="waves-effect waves-light btn projects-description-button">
+                            <i class="fas fa-link"></i> {{this.website.name}}</i>
+                        </a>
+                        {{/if}}
                     </div>
                 </div>
             </div>
-
-            <div class="project-row">
-                <div class="col s12 m6">
-                    <img class="materialboxed projects-image" src="https://cloud.githubusercontent.com/assets/12219300/19020428/63fcaca2-885d-11e6-99db-660d4264d120.gif">
-                </div>
-                <div class="col s12 m6 projects-description-container">
-                    <h5>QuartoAI</h5>
-                    <div class="chip">
-                        <img src="img/skills/objective-c.svg" alt="Skill Icon"> Objective-C
-                    </div>
-                    <p>
-                        A Quarto board game mimic that you can play against your friend or play against
-                        <b>an advanced bot that will never lose!</b>
-                    </p>
-                    <div class="projects-description-button-container">
-                        <a href="https://github.com/logicxd/QuartoAI" target="_blank" class="waves-effect waves-light btn projects-description-button">
-                            <i class="fab fa-github"></i> GitHub</i>
-                        </a>
-                    </div>
-                </div>
-
-            </div>
-
-            <div class="project-row">
-                <div class="col s12 m6">
-                    <img class="materialboxed projects-image" src="https://user-images.githubusercontent.com/12219300/43773844-eed81c38-99fb-11e8-8e17-0e1e47adf6d3.gif">
-                </div>
-                <div class="col s12 m6 projects-description-container">
-                    <h5>Church Web Application</h5>
-                    <div class="row">
-                        <div class="chip">
-                            <img src="img/skills/javascript.svg" alt="Skill Icon"> JavaScript
-                        </div>
-                        <div class="chip">
-                            <img src="img/skills/nodejs.png" alt="Skill Icon"> NodeJS
-                        </div>
-                    </div>
-                    <p>
-                        Practiced web development while building a sample church website that may be used in a church that I go to.
-                    </p>
-                    <div class="projects-description-button-container">
-                        <a href="https://github.com/logicxd/Church-WebApp-Template" target="_blank" class="waves-effect waves-light btn projects-description-button">
-                            <i class="fab fa-github"></i> GitHub</i>
-                        </a>
-                        <a href="https://aungmoe-church.herokuapp.com/" target="_blank" class="waves-effect waves-light btn projects-description-button">
-                            <i class="fas fa-link"></i> Demo</i>
-                        </a>
-                    </div>
-                </div>
-
-            </div>
+            {{/each}}
         </div>
-
     </div>
 </main>
