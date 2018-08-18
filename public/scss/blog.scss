@@ -1,0 +1,22 @@
+@import './layouts/main.scss';
+
+.blog-list {
+
+    li {
+        margin-bottom: 30px;
+    }
+
+    .blog-date {
+        color: $my-slate-color;
+        font-size: 1.1em;
+    }
+
+    .blog-link {
+        color: $my-dark-color;
+    }
+
+    .blog-link:hover {
+        text-decoration: underline;
+    }
+}
+

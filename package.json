@@ -25,8 +25,10 @@
     "express": "^4.16.3",
     "express-handlebars": "^3.0.0",
     "forever-monitor": "^1.7.1",
+    "fs-extra": "^7.0.0",
+    "marked": "^0.5.0",
     "morgan": "^1.9.0",
     "node-sass": "^4.9.2",
-    "npm": "^6.3.0"
+    "npm": "^6.4.0"
   }
 }

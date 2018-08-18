@@ -1,3 +1,4 @@
+"use strict";
 const PORT = process.env.PORT || 8081;
 
 var express = require('express');
@@ -25,11 +26,13 @@ app.set('view engine', 'handlebars');
 
 // Create controllers
 var indexController = require('./controllers/index_controller');
+var blogController = require('./controllers/blog_controller');
 
 // Connect controllers and other services
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(logger(':method :url :status :res[content-length] - :response-time ms'));
 app.use('/', indexController);
+app.use('/blog', blogController);
 app.use('/credits', function (req, res) {
     res.render('credit', { 
         title: 'Credits - Aung Moe',
@@ -74,7 +77,6 @@ global.js = {
     materialize: 'js/materialize.min.js',
     header: 'js/_header.js',
     footer: 'js/_footer.js',
-
 }
 
 module.exports = app;
