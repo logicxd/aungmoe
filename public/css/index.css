@@ -6584,6 +6584,11 @@ header .nav-wrapper a {
 .page-footer .footer-copyright {
   font-size: 0.8em; }
 
+body {
+  display: flex;
+  min-height: 100vh;
+  flex-direction: column; }
+
 #home-body #profile-background {
   background: url("/img/index/profile-background.jpg");
   background-size: cover;
