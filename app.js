@@ -24,17 +24,17 @@ app.engine('handlebars', hbs.engine);
 app.set('view engine', 'handlebars');
 
 // Create controllers
-var index = require('./controllers/index');
+var indexController = require('./controllers/index_controller');
 
 // Connect controllers and other services
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(logger(':method :url :status :res[content-length] - :response-time ms'));
-app.use('/', index);
+app.use('/', indexController);
 app.use('/credits', function (req, res) {
     res.render('credit', { 
         title: 'Credits - Aung Moe',
         description: 'Copyright informations and citations used in the production of this website.',
-        css: [global.css.material_icons, 'css/main.css', global.css.animate_css, global.css.fontawesome],
+        css: [global.css.material_icons, 'css/default.css', global.css.animate_css, global.css.fontawesome],
         js: [global.js.jquery, global.js.materialize, global.js.header, global.js.footer]
     });
 });
@@ -58,7 +58,7 @@ app.use(function(err, req, res, next) {
     res.render('error', { 
         title: '404 - Aung Moe',
         description: 'Page not found!',
-        css: [global.css.material_icons, 'css/main.css', global.css.animate_css, global.css.fontawesome ],
+        css: [global.css.material_icons, 'css/default.css', global.css.animate_css, global.css.fontawesome ],
         js: [global.js.jquery, global.js.materialize, global.js.header, global.js.footer]
     });
 });
