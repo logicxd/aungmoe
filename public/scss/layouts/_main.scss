@@ -38,7 +38,7 @@ header {
     }
     
     .nav-wrapper {
-        @extend .container-sm;
+        @extend .container;
 
         a {
             -webkit-transition: background-color .1s ease-in;   

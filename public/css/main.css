@@ -6553,7 +6553,7 @@ input[type=range].focused:focus:not(.active)::-ms-thumb {
 .container-med {
   width: 80%; }
 
-.container-sm, header .nav-wrapper {
+.container-sm {
   width: 95%; }
 
 header nav {
