@@ -9,14 +9,14 @@ var md = require('markdown-it')().use(mdMeta);
 
 var pagesDir = './public/pages';
 var pages = {};
+var pageUrls = [];
+var sortedPages = [];
 
 // Check if json has all the properties in the ROOT level.
 function hasProperties(json, properties) {
-    var hasAll = true;
-    properties.forEach(property => {
-        hasAll &= json.hasOwnProperty(property);    
+    return properties.every(property => {
+        return json.hasOwnProperty(property);
     });
-    return hasAll;
 }
 
 // Parse markdown pages.
@@ -28,25 +28,33 @@ try {
         var metaData = md.meta;
         metaData.date = moment(metaData.date);
 
-        console.log(file);
-
         if (!hasProperties(metaData, ['category', 'date', 'title', 'filename'])) {
             console.log(`Markdown page missing 1 or more YAML properties. File: ${filePath}`);
             continue;
         }
 
         var pageInfo = {
+            category: metaData.category,
+            date: metaData.date,
             dateString: metaData.date.format('MMM DD, YYYY'),
-            url: `${metaData.category}/${metaData.date.format('YYYY/MM/DD')}/${metaData.filename}`,
+            title: metaData.title,
+            url: `${metaData.category}/${metaData.date.format('YYYY/MM/DD')}/${metaData.filename}`.toLowerCase(),
             html: html
         };
 
         if (pages[pageInfo.url] == null) {
             pages[pageInfo.url] = pageInfo;
+            pageUrls.push(pageInfo.url);
         } else {
             throw 'Duplicate pages found';
         }
     }
+
+    // Order from most recent to oldest.
+    pageUrls.sort((a,b) => b.localeCompare(a));
+    pageUrls.forEach(x => {
+        sortedPages.push(pages[x]);
+    });
 }
 catch (err) {
     console.log('Error parsing markdown pages: ' + err);
@@ -57,18 +65,27 @@ router.get('/', function (req, res) {
     res.render('blogs', {
         title: 'Blogs - Aung Moe',
         description: 'Aung\'s personal website',
-        css: [global.css.material_icons, 'css/blogs.css', global.css.animate_css, global.css.fontawesome],
-        js: [global.js.jquery, global.js.materialize, global.js.header, 'js/index.js', global.js.footer],
+        css: [global.css.material_icons, '/css/blogs.css', global.css.animate_css, global.css.fontawesome],
+        js: [global.js.jquery, global.js.materialize, global.js.header, '/js/index.js', global.js.footer],
+        pages: sortedPages
     });
 });
 
-
-router.get('/:id*', function (req, res) {
-    console.log(`Url: /blog/${req.params.id}`);
-    var rawMd = fs.readFileSync(path.join(pagesDir, file), 'utf8');
-    const renderedDoc = md.render(rawMd);
-    // console.log(md.meta);
-    res.send(renderedDoc);
+router.get('/:category/:year/:month/:day/:title', function (req, res) {
+    var url = `${req.params['category']}/${req.params['year']}/${req.params['month']}/${req.params['day']}/${req.params['title']}`;
+    if (url != null && pages[url] != null) {
+        var page = pages[url];
+        console.log(global.js.header);
+        res.render('blogtemplate', {
+            title: `${page.title} - Aung Moe`,
+            description: 'Aung\'s personal website',
+            css: [global.css.material_icons, '/css/blogtemplate.css', global.css.animate_css, global.css.fontawesome],
+            js: [global.js.jquery, global.js.materialize, global.js.header, '/js/index.js', global.js.footer],
+            page: page 
+        });
+    } else {
+        res.send('error loading page');
+    }
 });
 
 module.exports = router;

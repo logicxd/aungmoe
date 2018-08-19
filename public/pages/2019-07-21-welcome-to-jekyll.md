@@ -1,7 +1,7 @@
 ---
 title:  "Welcome to Jekyll!"
 date:   2018-07-21
-category: javascript
+category: JavaScript
 filename: welcome-to-jekyll
 ---
 
