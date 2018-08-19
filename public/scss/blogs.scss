@@ -1,21 +1,21 @@
 @import './layouts/main.scss';
 
-.blog-list {
+.blogs-list {
 
     li {
         margin-bottom: 30px;
     }
 
-    .blog-date {
+    .blogs-date {
         color: $my-slate-color;
         font-size: 1.1em;
     }
 
-    .blog-link {
+    .blogs-link {
         color: $my-dark-color;
     }
 
-    .blog-link:hover {
+    .blogs-link:hover {
         text-decoration: underline;
     }
 }

@@ -6584,15 +6584,15 @@ header .nav-wrapper a {
 .page-footer .footer-copyright {
   font-size: 0.8em; }
 
-.blog-list li {
+.blogs-list li {
   margin-bottom: 30px; }
 
-.blog-list .blog-date {
+.blogs-list .blogs-date {
   color: #687D91;
   font-size: 1.1em; }
 
-.blog-list .blog-link {
+.blogs-list .blogs-link {
   color: #2A3D50; }
 
-.blog-list .blog-link:hover {
+.blogs-list .blogs-link:hover {
   text-decoration: underline; }

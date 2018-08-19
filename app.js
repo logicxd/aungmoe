@@ -26,13 +26,13 @@ app.set('view engine', 'handlebars');
 
 // Create controllers
 var indexController = require('./controllers/index_controller');
-var blogController = require('./controllers/blog_controller');
+var blogsController = require('./controllers/blogs_controller');
 
 // Connect controllers and other services
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(logger(':method :url :status :res[content-length] - :response-time ms'));
 app.use('/', indexController);
-app.use('/blog', blogController);
+app.use('/blogs', blogsController);
 app.use('/credits', function (req, res) {
     res.render('credit', { 
         title: 'Credits - Aung Moe',

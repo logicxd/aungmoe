@@ -1,6 +1,6 @@
 ---
 title:  "Welcome to Jekyll!"
-date:   2018-07-20
+date:   2018-07-22
 category: javascript
 filename: welcome-to-jekyll
 ---
