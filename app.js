@@ -31,6 +31,7 @@ var blogsController = require('./controllers/blogs_controller');
 // Connect controllers and other services
 // app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.static(__dirname + "/public"));
+app.use('/scripts', express.static(__dirname + "/node_modules/highlight.js/lib/"));
 app.use(logger(':method :url :status :res[content-length] - :response-time ms'));
 app.use('/', indexController);
 app.use('/blogs', blogsController);
@@ -71,13 +72,16 @@ app.use(function(err, req, res, next) {
 global.css = {
     material_icons: 'https://fonts.googleapis.com/icon?family=Material+Icons',
     animate_css: 'https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.5.2/animate.min.css',
-    fontawesome: 'https://use.fontawesome.com/releases/v5.2.0/css/all.css'
+    fontawesome: 'https://use.fontawesome.com/releases/v5.2.0/css/all.css',
+    highlightCDN: 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.9.0/styles/default.min.css'
 }
 global.js = {
     jquery: 'https://code.jquery.com/jquery-3.2.1.min.js',
     materialize: '/js/materialize.min.js',
     header: '/js/_header.js',
     footer: '/js/_footer.js',
+    highlight: '/scripts/highlight.js',
+    highlightCDN: 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.4.0/languages/go.min.js'
 }
 
 module.exports = app;

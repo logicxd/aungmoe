@@ -1,3 +1,4 @@
+@import url(/css/highlight/atom-one-dark.css);
 .materialize-red {
   background-color: #e51c23 !important; }
 
@@ -2587,17 +2588,17 @@ table span.badge {
   text-rendering: optimizeLegibility;
   font-feature-settings: 'liga'; }
 
-.container, .container-med, .container-sm, header .nav-wrapper {
+.container, header .nav-wrapper {
   margin: 0 auto;
   max-width: 1280px;
   width: 90%; }
 
 @media only screen and (min-width: 601px) {
-  .container, .container-med, .container-sm, header .nav-wrapper {
+  .container, header .nav-wrapper {
     width: 85%; } }
 
 @media only screen and (min-width: 993px) {
-  .container, .container-med, .container-sm, header .nav-wrapper {
+  .container, header .nav-wrapper {
     width: 70%; } }
 
 .col .row, .col .row-m-b-0 {
@@ -6550,12 +6551,6 @@ input[type=range].focused:focus:not(.active)::-ms-thumb {
 .row-m-b-0 {
   margin-bottom: 0em; }
 
-.container-med {
-  width: 80%; }
-
-.container-sm {
-  width: 95%; }
-
 body {
   overflow-y: overlay; }
 
@@ -6583,3 +6578,42 @@ header .nav-wrapper a {
 
 .page-footer .footer-copyright {
   font-size: 0.8em; }
+
+.container-blog {
+  margin: 0 auto;
+  max-width: 900px;
+  width: 90%; }
+  .container-blog .blog-date {
+    color: #687D91;
+    font-size: 1.4em; }
+  .container-blog pre code {
+    color: #FBFBFB; }
+  .container-blog pre, .container-blog .hljs {
+    padding: 9.5px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background-color: #2A3D50; }
+    .container-blog pre code, .container-blog .hljs code {
+      font-size: 85%; }
+  .container-blog p code, .container-blog li code {
+    padding: 1px 5px;
+    font-size: 90%;
+    color: #c7254e;
+    background-color: #f9f2f4;
+    border-radius: 4px;
+    color: #FBFBFB;
+    background-color: #2A3D50; }
+  .container-blog a {
+    color: #2398d9; }
+  .container-blog a:hover {
+    text-decoration: underline; }
+  @media only screen and (min-width: 601px) {
+    .container-blog .container-blog {
+      width: 85%; }
+    .container-blog .blog-content {
+      font-size: 18px; } }
+  @media only screen and (min-width: 993px) {
+    .container-blog .container-blog {
+      width: 70%; }
+    .container-blog .blog-content {
+      font-size: 21px; } }

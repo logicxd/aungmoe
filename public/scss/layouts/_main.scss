@@ -21,16 +21,6 @@
     margin-bottom: 0em;
 }
 
-.container-med {
-    @extend .container;
-    width: 80%;
-}
-
-.container-sm {
-    @extend .container;
-    width: 95%;
-}
-
 body {
     overflow-y: overlay;
 }
