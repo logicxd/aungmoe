@@ -2587,17 +2587,17 @@ table span.badge {
   text-rendering: optimizeLegibility;
   font-feature-settings: 'liga'; }
 
-.container, .container-med, .container-sm, header .nav-wrapper {
+.container, header .nav-wrapper {
   margin: 0 auto;
   max-width: 1280px;
   width: 90%; }
 
 @media only screen and (min-width: 601px) {
-  .container, .container-med, .container-sm, header .nav-wrapper {
+  .container, header .nav-wrapper {
     width: 85%; } }
 
 @media only screen and (min-width: 993px) {
-  .container, .container-med, .container-sm, header .nav-wrapper {
+  .container, header .nav-wrapper {
     width: 70%; } }
 
 .col .row, .col .row-m-b-0 {
@@ -6549,12 +6549,6 @@ input[type=range].focused:focus:not(.active)::-ms-thumb {
 
 .row-m-b-0 {
   margin-bottom: 0em; }
-
-.container-med {
-  width: 80%; }
-
-.container-sm {
-  width: 95%; }
 
 body {
   overflow-y: overlay; }

@@ -1,0 +1,80 @@
+@import './layouts/main.scss';
+@import '/css/highlight/atom-one-dark.css';
+// @import '/css/highlight/github.css';
+// @import '/css/highlight/monokai-sublime.css';
+// @import '/css/highlight/vs2015.css';
+// @import '/css/highlight/solarized-light.css';
+
+.container-blog {
+    margin: 0 auto;
+    max-width: 900px;
+    width: 90%; 
+    
+    .blog-date {
+        color: $my-slate-color;
+        font-size: 1.4em;
+    }
+    
+    //// Syntax highlighting ////
+    pre code {
+        color: $my-white-color; 
+    }
+    pre, .hljs{
+        padding: 9.5px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        background-color: $my-dark-color;
+    
+        code {
+            font-size: 85%;
+        }
+    }
+    p code, li code {
+        // Taken from https://markdown-it.github.io/
+        padding: 1px 5px;
+        font-size: 90%;
+        color: #c7254e;
+        background-color: #f9f2f4;
+        border-radius: 4px;
+    
+        color: $my-white-color;
+        background-color: $my-dark-color;
+    }
+    
+    //// Anchor links ////
+    a {
+        color: $my-cyan-color-dark;
+        // -webkit-transition: color .1s ease-in;   
+        // transition: color .1s ease-in;    
+    }
+    
+    a:hover {
+        text-decoration: underline;
+        // color: $my-cyan-color-darker;
+    }
+    
+    //// Unordered lists ////
+    ul {
+        @extend .browser-default; 
+    }
+    
+    @media only screen and (min-width: 601px) {
+        .container-blog {
+            width: 85%; 
+        }
+    
+        .blog-content {
+            font-size: 18px;
+        }
+    }
+        
+    @media only screen and (min-width: 993px) {
+        .container-blog {
+            width: 70%; 
+        } 
+    
+        .blog-content {
+            font-size: 21px;
+        }
+    }    
+}

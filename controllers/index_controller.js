@@ -1,3 +1,4 @@
+"use strict";
 var express = require('express');
 var router = express.Router();
 
@@ -5,8 +6,8 @@ router.get('/', function (req, res) {
     res.render('index', { 
         title: 'Aung Moe',
         description: 'Aung\'s personal website',
-        css: [global.css.material_icons, 'css/index.css', global.css.animate_css, global.css.fontawesome],
-        js: [global.js.jquery, global.js.materialize, global.js.header, 'js/index.js', global.js.footer],
+        css: [global.css.material_icons, '/css/index.css', global.css.animate_css, global.css.fontawesome],
+        js: [global.js.jquery, global.js.materialize, global.js.header, '/js/index.js', global.js.footer],
         data: {
             occupations: [
                 { state: "Experienced in", occupation: "full-stack development" },
