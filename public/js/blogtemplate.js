@@ -1,3 +1,4 @@
+// Setup disqus
 (function() {  // REQUIRED CONFIGURATION VARIABLE: EDIT THE SHORTNAME BELOW
     var d = document, s = d.createElement('script');
     
