@@ -43,12 +43,13 @@ try {
         var metaData = md.meta;
         metaData.date = moment.utc(metaData.date);
         
-        if (!hasProperties(metaData, ['category', 'date', 'title', 'urlName'])) {
+        if (!hasProperties(metaData, ['category', 'date', 'title', 'urlName', 'uniqueid'])) {
             console.log(`Markdown page missing 1 or more YAML properties. File: ${filePath}`);
             continue;
         }
 
         var pageInfo = {
+            id: metaData.uniqueid,
             category: metaData.category,
             date: metaData.date,
             dateString: metaData.date.format('MMM DD, YYYY'),
@@ -96,7 +97,8 @@ router.get('/:category/:year/:month/:day/:title', function (req, res, next) {
             description: 'Aung\'s personal website',
             css: [global.css.material_icons, '/css/blogtemplate.css', global.css.animate_css, global.css.fontawesome],
             js: [global.js.jquery, global.js.materialize, global.js.header, global.js.highlight, '/js/blogtemplate.js', global.js.footer],
-            page: page
+            page: page,
+            domainUrl: global.configs.domainUrl
         });
     } else {
         var err = new Error('Not Found');

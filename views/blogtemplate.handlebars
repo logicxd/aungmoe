@@ -1,9 +1,17 @@
 <main>
     <div class="container-blog">
-        <h3>{{page.title}}</h3>
+        <h1 class="m-b-0">{{page.title}}</h1>
         <div class="blog-date">{{page.dateString}}</div>
         <div class="blog-content flow-text">
             {{{page.html}}}
-        </div> 
+        </div>
+        <div id="disqus_thread"></div>
     </div>
 </main>
+<script>
+    var disqus_config = function () {
+        this.page.identifier = '{{{page.id}}}';
+        this.page.url = $'{{{domainUrl}}}/blogs/{{{page.url}}}';  
+        this.page.title = '{{{page.title}}}';
+    };
+</script>

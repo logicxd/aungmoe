@@ -83,5 +83,9 @@ global.js = {
     highlight: '/scripts/highlight.js',
     highlightCDN: 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.4.0/languages/go.min.js'
 }
+global.configs = {
+    domainUrl: 'http://www.aungmoe.net',
+    websiteTitle: 'Aung Moe',
+}
 
 module.exports = app;
