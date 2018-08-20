@@ -43,13 +43,12 @@ try {
         var metaData = md.meta;
         metaData.date = moment.utc(metaData.date);
         
-        if (!hasProperties(metaData, ['category', 'date', 'title', 'urlName', 'uniqueid'])) {
+        if (!hasProperties(metaData, ['category', 'date', 'title', 'urlName'])) {
             console.log(`Markdown page missing 1 or more YAML properties. File: ${filePath}`);
             continue;
         }
 
         var pageInfo = {
-            id: metaData.uniqueid,
             category: metaData.category,
             date: metaData.date,
             dateString: metaData.date.format('MMM DD, YYYY'),

@@ -3,7 +3,6 @@ title:  "Markdown-it Demo"
 date:   2018-08-20
 category: Markdown
 urlName: markdown-it-demo
-uniqueid: 1
 ---
 ---
 __Advertisement :)__
