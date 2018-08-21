@@ -90,12 +90,11 @@ router.get('/:category/:year/:month/:day/:title', function (req, res, next) {
     var url = `${req.params['category']}/${req.params['year']}/${req.params['month']}/${req.params['day']}/${req.params['title']}`;
     if (url != null && pages[url] != null) {
         var page = pages[url];
-        console.log(global.js.header);
         res.render('blogtemplate', {
             title: `${page.title} - Aung Moe`,
             description: 'Aung\'s personal website',
             css: [global.css.material_icons, '/css/blogtemplate.css', global.css.animate_css, global.css.fontawesome],
-            js: [global.js.jquery, global.js.materialize, global.js.header, global.js.highlight, '/js/blogtemplate.js', global.js.footer],
+            js: [global.js.jquery, global.js.materialize, global.js.header, '/js/blogtemplate.js', global.js.footer],
             page: page
         });
     } else {

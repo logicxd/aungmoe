@@ -9,6 +9,8 @@
     margin: 0 auto;
     max-width: 900px;
     width: 90%; 
+    // word-break: break-all;
+    word-wrap: break-word;
     
     .blog-date {
         color: $my-slate-color;
@@ -58,6 +60,14 @@
         @extend .browser-default; 
     }
     
+    img {
+        @extend .responsive-img;
+    }
+
+    // h1, h2, h3, h4, h5, h6 {
+        
+    // }
+
     @media only screen and (min-width: 601px) {
         .container-blog {
             width: 85%; 
