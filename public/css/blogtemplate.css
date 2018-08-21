@@ -6551,6 +6551,26 @@ input[type=range].focused:focus:not(.active)::-ms-thumb {
 .row-m-b-0 {
   margin-bottom: 0em; }
 
+header .slideOutUp {
+  -webkit-animation: slideOutUp 0.4s;
+  /* Safari 4+ */
+  -moz-animation: slideOutUp 0.4s;
+  /* Fx 5+ */
+  -o-animation: slideOutUp 0.4s;
+  /* Opera 12+ */
+  animation: slideOutUp 0.4s;
+  /* IE 10+, Fx 29+ */ }
+
+header .slideInDown {
+  -webkit-animation: slideInDown 0.4s;
+  /* Safari 4+ */
+  -moz-animation: slideInDown 0.4s;
+  /* Fx 5+ */
+  -o-animation: slideInDown 0.4s;
+  /* Opera 12+ */
+  animation: slideInDown 0.4s;
+  /* IE 10+, Fx 29+ */ }
+
 header nav {
   background-color: #FBFBFB;
   box-shadow: 0 1px 1px 0 rgba(0, 0, 0, 0.14), 0 2px 1px -2px rgba(0, 0, 0, 0.12), 0 1px 3px 0 rgba(0, 0, 0, 0.2); }

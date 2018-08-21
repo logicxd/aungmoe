@@ -26,6 +26,18 @@
 // }
 
 header {
+    .slideOutUp {
+        -webkit-animation: slideOutUp 0.4s; /* Safari 4+ */
+        -moz-animation:    slideOutUp 0.4s; /* Fx 5+ */
+        -o-animation:      slideOutUp 0.4s; /* Opera 12+ */
+        animation:         slideOutUp 0.4s; /* IE 10+, Fx 29+ */
+    }
+    .slideInDown {
+        -webkit-animation: slideInDown 0.4s; /* Safari 4+ */
+        -moz-animation:    slideInDown 0.4s; /* Fx 5+ */
+        -o-animation:      slideInDown 0.4s; /* Opera 12+ */
+        animation:         slideInDown 0.4s; /* IE 10+, Fx 29+ */
+    }
 
     nav {
         background-color: $my-white-color;
