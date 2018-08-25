@@ -34,6 +34,12 @@ function hasProperties(json, properties) {
     });
 }
 
+function timeToRead(text) {
+    var wordCount = text.split(' ').length;
+    var wordsPerMinute = 200;
+    return Math.ceil(wordCount / wordsPerMinute);
+}
+
 // Parse markdown pages.
 try {
     for (var file of fs.readdirSync(pagesDir)) {
@@ -54,7 +60,8 @@ try {
             dateString: metaData.date.format('MMM DD, YYYY'),
             title: metaData.title,
             url: `${metaData.category}/${metaData.date.format('YYYY/MM/DD')}/${metaData.urlName}`.toLowerCase(),
-            html: html
+            html: html,
+            timeToRead: timeToRead(rawMd)
         };
 
         if (pages[pageInfo.url] == null) {
