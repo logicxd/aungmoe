@@ -6178,7 +6178,7 @@ input[type=range].focused:focus:not(.active)::-ms-thumb {
   .tap-target-wrapper.open .tap-target-wave::after {
     visibility: visible;
     animation: pulse-animation 1s cubic-bezier(0.24, 0, 0.38, 1) infinite;
-    transition: opacity .3s, transform .3s, visibility 0s 1s; }
+    transition: opacity .3s, transform .3s, visibility 0s 1s; }
 
 .tap-target {
   position: absolute;
@@ -6213,7 +6213,7 @@ input[type=range].focused:focus:not(.active)::-ms-thumb {
     transition: transform .3s; }
   .tap-target-wave::after {
     visibility: hidden;
-    transition: opacity .3s, transform .3s, visibility 0s;
+    transition: opacity .3s, transform .3s, visibility 0s;
     z-index: -1; }
 
 .tap-target-origin {
@@ -6587,20 +6587,17 @@ header .nav-wrapper a {
   .container-blog .blog-date {
     color: #687D91;
     font-size: 1.4em; }
-  .container-blog pre code {
-    color: #FBFBFB; }
-  .container-blog pre, .container-blog .hljs {
+  .container-blog .hljs {
+    color: #FBFBFB;
     padding: 9.5px;
     border: 1px solid #ccc;
     border-radius: 4px;
     background-color: #2A3D50; }
-    .container-blog pre code, .container-blog .hljs code {
+    .container-blog .hljs code {
       font-size: 85%; }
   .container-blog p code, .container-blog li code {
     padding: 1px 5px;
     font-size: 90%;
-    color: #c7254e;
-    background-color: #f9f2f4;
     border-radius: 4px;
     color: #FBFBFB;
     background-color: #2A3D50; }
