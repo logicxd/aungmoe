@@ -7,3 +7,7 @@
     s.setAttribute('data-timestamp', +new Date());
     (d.head || d.body).appendChild(s);
 })();
+
+$(document).ready(function () {
+    $('.tooltipped').tooltip();
+});

@@ -6,6 +6,7 @@ var path = require('path');
 var moment = require('moment');
 var hljs = require('highlight.js');
 var mdMeta = require('markdown-it-meta');
+var emoji = require('markdown-it-emoji');
 var md = require('markdown-it')({
     html: true,
     linkify: true,
@@ -20,7 +21,7 @@ var md = require('markdown-it')({
         }
         return '<pre class="hljs"><code>' + md.utils.escapeHtml(str) + '</code></pre>';
     }
-}).use(mdMeta);
+}).use(mdMeta).use(emoji);
 
 var pagesDir = './public/pages';
 var pages = {};
@@ -48,8 +49,9 @@ try {
         var html = md.render(rawMd);
         var metaData = md.meta;
         metaData.date = moment.utc(metaData.date);
+        metaData.updatedDate = moment.utc(metaData.updatedDate);
         
-        if (!hasProperties(metaData, ['category', 'date', 'title', 'urlName'])) {
+        if (!hasProperties(metaData, ['category', 'date', 'updatedDate', 'title', 'urlName'])) {
             console.log(`Markdown page missing 1 or more YAML properties. File: ${filePath}`);
             continue;
         }
@@ -58,6 +60,7 @@ try {
             category: metaData.category,
             date: metaData.date,
             dateString: metaData.date.format('MMM DD, YYYY'),
+            updatedDateString: metaData.updatedDate.format('MMM DD, YYYY'),
             title: metaData.title,
             url: `${metaData.category}/${metaData.date.format('YYYY/MM/DD')}/${metaData.urlName}`.toLowerCase(),
             html: html,

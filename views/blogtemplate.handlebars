@@ -1,7 +1,9 @@
 <main>
     <div class="container-blog">
         <h1 id="header" class="m-b-0 scrollspy">{{page.title}}</h1>
-        <div class="blog-date">{{page.dateString}} - {{page.timeToRead}} min read</div>
+        <div class="blog-date">
+            <span class="tooltipped" data-position="bottom" data-tooltip="Updated {{page.updatedDateString}}">{{page.dateString}} </span>
+            - {{page.timeToRead}} min read</div>
         <div class="blog-content flow-text">
             {{{page.html}}}
         </div>
