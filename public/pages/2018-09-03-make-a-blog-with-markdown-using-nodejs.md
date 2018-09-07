@@ -20,7 +20,7 @@ We'll assume that you have:
 
 Here is the list of general tools that we'll use that you may want to add to the top of your NodeJS file:
 ``` js
-// ./index.js
+// ~/index.js
 
 var express = require('express');
 var app = express();
@@ -50,7 +50,7 @@ npm install markdown-it
 
 Then you can add this code snippet to your NodeJS file to render the Markdown file:
 ``` js
-// ./index.js
+// ~/index.js
 
 var md = require('markdown-it')({
     html: true,
@@ -71,7 +71,7 @@ We can store data such as the title and date.
 In order to add meta data to our Markdown, we can use something called [YAML](http://yaml.org). 
 By using YAML, our Markdowns can add metadata at the very top like so:
 ``` markdown
-<!-- ./public/example.md -->
+<!-- ~/public/example.md -->
 
 ---
 title: "Make a Blog with Markdown using NodeJS"
@@ -91,7 +91,7 @@ npm install markdown-it-meta
 
 Now you can modify your javascript to look something like this:
 ``` javascript
-// ./index.js
+// ~/index.js
 
 var mdMeta = require('markdown-it-meta');
 var md = require('markdown-it')({
@@ -118,7 +118,7 @@ npm install highlight.js
 
 Updating your javascript again to look something like this:
 ``` javascript
-// ./index.js
+// ~/index.js
 
 var mdMeta = require('markdown-it-meta');
 var hljs = require('highlight.js');
@@ -154,7 +154,7 @@ If you want to use an existing syntax highlighting, you can download from [Highl
 [Here](https://github.com/logicxd/blog-nodejs) is an example NodeJS project for this blog. The major files are also posted below. 
 
 ``` javascript
-// ./index.js
+// ~/index.js
 
 const PORT = process.env.PORT || 8082;
 
@@ -210,7 +210,7 @@ module.exports = app;
 ```
 
 ``` html
-<!-- ./views/blog.ejs -->
+<!-- ~/views/blog.ejs -->
 
 <!DOCTYPE html> 
 <html>
