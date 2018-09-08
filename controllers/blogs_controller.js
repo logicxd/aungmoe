@@ -25,7 +25,6 @@ var md = require('markdown-it')({
 
 var pagesDir = './public/pages';
 var pages = {};
-var pageUrls = [];
 var sortedPages = [];
 
 // Check if json has all the properties in the ROOT level.
@@ -69,17 +68,14 @@ try {
 
         if (pages[pageInfo.url] == null) {
             pages[pageInfo.url] = pageInfo;
-            pageUrls.push(pageInfo.url);
+            sortedPages.push(pageInfo);
         } else {
             throw 'Duplicate pages found';
         }
     }
 
     // Order from most recent to oldest.
-    pageUrls.sort((a, b) => b.localeCompare(a));
-    pageUrls.forEach(x => {
-        sortedPages.push(pages[x]);
-    });
+    sortedPages.sort((a, b) => a.date.isBefore(b.date));
 }
 catch (err) {
     console.log('Error parsing markdown pages: ' + err);
