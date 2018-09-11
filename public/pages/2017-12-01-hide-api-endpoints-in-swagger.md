@@ -1,7 +1,7 @@
 ---
 title:  "Hide Swagger API Endpoints for ASP.NET Core"
 date:   2017-12-01
-updatedDate: 2018-09-10
+updatedDate: 2018-09-11
 category: AspNetCore
 urlName: hide-swagger-api-endpoints-for-aspnet-core
 ---
@@ -86,8 +86,8 @@ public class SwaggerAuthorizationFilter : IDocumentFilter
 ```
 
 Basically what it does is that it first checks to see if the entered password matches. 
-Then it iterates through all the visible endpoints found for Swagger and then it deletes them from the path so that they don't show up. 
-And then it also deletes all the models as there was a way for the frontend to see model information.
+Then, it iterates through all the visible endpoints found for Swagger and deletes them from the path so that it does not appear.
+Lastly, it removes all the models from showing up which contains structure information.
 This is particularly useful when you don't want others to know how your model looked like to hide any kind of information from leaking.
 
 Then add these inside your `Startup.cs` inside `ConfigureServices` method:
@@ -194,7 +194,7 @@ public class SwaggerAuthorizationFilter : IDocumentFilter
 ```
 
 The idea is not too different from before except that now it'll check for the authorized user's ID to decide whether or not to show the endpoints.
-This hide everything except the login endpoint for the end users so that they can grab the authentication token to login. 
+This hides everything except the login endpoint for the end users so that they can grab the authentication token to login. 
 
 Your `Startup.cs` in the `ConfigureServices` method will now contain this instead:
 ``` csharp
@@ -212,5 +212,5 @@ services.AddSwaggerGen(c =>
 });
 ```
 
-And that's it! This should allow you to enable certain accounts (differentiated by user id's) to be able to see the full swagger API documentations. 
+And that's it! This should allow you to enable certain accounts to be able to see the full swagger API documentations. 
 
