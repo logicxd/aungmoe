@@ -6586,7 +6586,16 @@ header .nav-wrapper a {
   font-size: 1.1em; }
 
 .blogs-list .blogs-link {
-  color: #2A3D50; }
+  color: #2A3D50;
+  font-size: 1.4rem; }
 
 .blogs-list .blogs-link:hover {
   text-decoration: underline; }
+
+@media only screen and (min-width: 601px) {
+  .blogs-list .blogs-link {
+    font-size: 1.7rem; } }
+
+@media only screen and (min-width: 993px) {
+  .blogs-list .blogs-link {
+    font-size: 2.28rem; } }
