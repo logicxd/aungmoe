@@ -6178,7 +6178,7 @@ input[type=range].focused:focus:not(.active)::-ms-thumb {
   .tap-target-wrapper.open .tap-target-wave::after {
     visibility: visible;
     animation: pulse-animation 1s cubic-bezier(0.24, 0, 0.38, 1) infinite;
-    transition: opacity .3s, transform .3s, visibility 0s 1s; }
+    transition: opacity .3s, transform .3s, visibility 0s 1s; }
 
 .tap-target {
   position: absolute;
@@ -6213,7 +6213,7 @@ input[type=range].focused:focus:not(.active)::-ms-thumb {
     transition: transform .3s; }
   .tap-target-wave::after {
     visibility: hidden;
-    transition: opacity .3s, transform .3s, visibility 0s;
+    transition: opacity .3s, transform .3s, visibility 0s;
     z-index: -1; }
 
 .tap-target-origin {
@@ -6586,7 +6586,7 @@ header .nav-wrapper a {
   word-wrap: break-word; }
   .container-blog .blog-date {
     color: #687D91;
-    font-size: 1.4em; }
+    font-size: 1.2em; }
   .container-blog ul {
     padding-left: 40px; }
     .container-blog ul li {
@@ -6613,13 +6613,33 @@ header .nav-wrapper a {
     color: #2398d9; }
   .container-blog a:hover {
     text-decoration: underline; }
+  .container-blog #header {
+    font-size: 2.2rem; }
+  .container-blog .blog-content h3 {
+    font-size: 1.2rem;
+    font-weight: bold; }
+  .container-blog .blog-content h5 {
+    font-size: 1.15rem;
+    font-weight: bold; }
   @media only screen and (min-width: 601px) {
     .container-blog .container-blog {
       width: 85%; }
     .container-blog .blog-content {
-      font-size: 18px; } }
+      font-size: 18px; }
+    .container-blog #header {
+      font-size: 3.0rem; }
+    .container-blog .blog-date {
+      font-size: 1.4rem; }
+    .container-blog .blog-content h3 {
+      font-size: 2.92rem;
+      font-weight: initial; }
+    .container-blog .blog-content h5 {
+      font-size: 1.64rem;
+      font-weight: initial; } }
   @media only screen and (min-width: 993px) {
     .container-blog .container-blog {
       width: 70%; }
     .container-blog .blog-content {
-      font-size: 21px; } }
+      font-size: 21px; }
+    .container-blog #header {
+      font-size: 4.2rem; } }

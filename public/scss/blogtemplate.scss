@@ -13,11 +13,11 @@
     
     .blog-date {
         color: $my-slate-color;
-        font-size: 1.4em;
+        font-size: 1.2em;
     }
 
-     //// lists syntax ////
-     ul {
+    //// lists syntax ////
+    ul {
         // @extend .browser-default;
         padding-left: 40px;
         li {
@@ -68,6 +68,21 @@
         @extend .responsive-img;
     }
 
+    #header {
+        font-size: 2.2rem;
+    }
+
+    .blog-content {
+        h3 {
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+        h5 {
+            font-size: 1.15rem;
+            font-weight: bold;
+        }
+    }
+
     @media only screen and (min-width: 601px) {
         .container-blog {
             width: 85%; 
@@ -75,6 +90,25 @@
     
         .blog-content {
             font-size: 18px;
+        }
+
+        #header {
+            font-size: 3.0rem;
+        }
+
+        .blog-date {
+            font-size: 1.4rem;
+        }
+
+        .blog-content {
+            h3 {
+                font-size: 2.92rem;
+                font-weight: initial;
+            }
+            h5 {
+                font-size: 1.64rem;
+                font-weight: initial;
+            }
         }
     }
         
@@ -85,6 +119,10 @@
     
         .blog-content {
             font-size: 21px;
+        }
+
+        #header {
+            font-size: 4.2rem;
         }
     }    
 }
