@@ -26,123 +26,72 @@
             <h4>Recent Highlights</h4>
             <div class="row">
                 <!-- PC View -->
+                {{#each data.highlights}}
                 <div class="col s12 m12 l4 hide-on-med-and-down">
                     <h5>
-                        <i class="material-icons">calendar_today</i> July 21, 2018
+                        <i class="material-icons">calendar_today</i> {{this.date}}
                     </h5>
                     <div class="card hoverable large">
-                        <div class="card-content">
-                            <span class="card-title">New Personal Website</span>
-                            <p>
-                                This is my new personal website! I've been wanting to create a new personal website for a while and finally got to it. I
-                                think it's an improvement from my
-                                <a href="https://logicxd.github.io/codemoe/">old one</a>. The tools used to create this are ExpressJS, Materialize, Material Icons, and
-                                Handlebar.
-                            </p>
-                        </div>
-                    </div>
-                </div>
-                <div class="col s12 m12 l4 hide-on-med-and-down">
-                    <h5>
-                        <i class="material-icons">calendar_today</i> June 16, 2018
-                    </h5>
-                    <div class="card hoverable large">
+                        {{#if this.image}}
                         <div class="card-image">
-                            <a href="https://photos.app.goo.gl/z9ctjcqYPz4tj2LD6" target="_blank">
-                                <img src="https://lh3.googleusercontent.com/Gz1oGOjhdVmfVJPyZDrdeIjVmxMYUabBDGBjw2jCJUu9ONFSZoeFLfSrbvql2cJEt0XFYldvnvzPCPs7Mj1OZ-lf2epZerYkrwtJq8BfLHo0FnFgEZDyW1zWTOh3WtVlGch2TAhdkf1_gjAw829vV-bVNlFUDo42B7iZIqGHLeDXWEBHxIMbtmSBDgG0CHUftU5El4mg9zf8G4cRztj7HK5ScuKtykwdk2wyoXqAj1xk8nGsOacuivpMl1ewiXU10u7UatDbZtaJRxoAzR7G7_n34mFfgrElewXaRx2OATTKjHfy6ZIIgQfINf8Vsxxf3mwleRXNkUsGTm-nJSjFzJdmOOItbUaE0-PgHq52ko2oOMNMevBUeiqua0owqQAiFQPdy9awKz8rPquLP6GK05XAYFU4s2UKsEOkDP3lzCx8Cv4gQmbGKZXab2JunQIfE-j_rmZ5GE6ulDcvNeCBLc1OGOiGwSux3KMBQxy5bRhtuVNfdzyK2Qt9eueWPp9q_AMu48zztW4Br1HgnQgFAsXHhZZsj0dmgOFu2X5qXPfG6AIqVhjn5KsrHQkxVQgHLHFJsCkc2ktub5VtftrUQXi37hiulQu31V8r3eXkRBVXJtaAR9TIMBXV__5-6ui1INke_IvZWit_Qjz78dNB9ykbj50DwsXV=w1679-h925-no">
+                            <a href="{{this.image.href}}" target="_blank">
+                                <img src="{{this.image.src}}">
                             </a>
                         </div>
+                        {{/if}}
                         <div class="card-content">
-                            <span class="card-title">Graduated!</span>
+                            <span class="card-title">{{this.title}}</span>
                             <p>
-                                Earned my B.S. in Computer Science from University of California Irvine!
+                                {{{this.description}}}
                             </p>
                         </div>
-                        <div class="card-action">
-                            <a href="https://photos.app.goo.gl/z9ctjcqYPz4tj2LD6" target="_blank">Pictures</a>
+                        {{#if this.action}}
+                         <div class="card-action">
+                            <a href="{{this.action.link}}" target="_blank">{{this.action.name}}</a>
                         </div>
+                        {{/if}}
                     </div>
                 </div>
-                <div class="col s12 m12 l4 hide-on-med-and-down">
-                    <h5>
-                        <i class="material-icons">calendar_today</i> Dec. 20, 2017
-                    </h5>
-                    <div class="card hoverable large">
-                        <div class="card-image">
-                            <a href="https://github.com/logicxd/Wumpus-World-AI" target="_blank">
-                                <img src="https://wumpusproject.files.wordpress.com/2012/11/img12.gif">
-                            </a>
-                        </div>
-                        <div class="card-content">
-                            <span class="card-title">AI Class Tournament</span>
-                            <p>
-                                Placed 2nd in a class tournmant in making an AI bot.
-                            </p>
-                        </div>
-                        <div class="card-action">
-                            <a href="https://github.com/logicxd/Wumpus-World-AI" target="_blank">GitHub</a>
-                        </div>
-                    </div>
-                </div>
-
+                {{/each}}
                 <!-- Mobile View -->
                 <div class="carousel carousel-slider show-on-medium-and-down">
+                    {{#each data.highlights}}
                     <div class="carousel-item" href="#one!">
                         <div>
-                            <h2 class="m-b-0">New Personal Website</h2>
-                            <p class="m-t-0">July 21, 2018</p>
+                            <h2 class="m-b-0">{{this.title}}</h2>
+                            <p class="m-t-0">{{this.date}}</p>
                         </div>
                         <div class="row carousel-row">
+                            {{#if this.image}}
+                            <div class="col s6 carousel-img-container">
+                                <img class="materialboxed carousel-img" src="{{this.image.src}}">
+                            </div>
+                            <div class="col s6 carousel-description-container">
+                                {{{this.description}}}
+                                {{#if this.action}}
+                                <div class="carousel-description-button-container">
+                                    <a href="{{this.action.link}}" target="_blank">
+                                        {{this.action.name}}
+                                    </a>
+                                </div>
+                            {{/if}}
+                            </div>
+                            {{else}}
                             <div class="col carousel-description-container">
-                                This is my new personal website! I've been wanting to create a new personal website for a while and finally got to it. I
-                                think it's an improvement from my
-                                <a href="https://logicxd.github.io/codemoe/">old one</a>. The tools used to create this are ExpressJS, Materialize, Material Icons, and
-                                Handlebar.
-                            </div>
-                        </div>
-                    </div>
-                    <div class="carousel-item" href="#one!">
-                        <div>
-                            <h2 class="m-b-0">Graduated</h2>
-                            <p class="m-t-0">June 16, 2018</p>
-                        </div>
-                        <div class="row carousel-row">
-                            <div class="col s6 carousel-img-container">
-                                <img class="materialboxed carousel-img" src="https://lh3.googleusercontent.com/Gz1oGOjhdVmfVJPyZDrdeIjVmxMYUabBDGBjw2jCJUu9ONFSZoeFLfSrbvql2cJEt0XFYldvnvzPCPs7Mj1OZ-lf2epZerYkrwtJq8BfLHo0FnFgEZDyW1zWTOh3WtVlGch2TAhdkf1_gjAw829vV-bVNlFUDo42B7iZIqGHLeDXWEBHxIMbtmSBDgG0CHUftU5El4mg9zf8G4cRztj7HK5ScuKtykwdk2wyoXqAj1xk8nGsOacuivpMl1ewiXU10u7UatDbZtaJRxoAzR7G7_n34mFfgrElewXaRx2OATTKjHfy6ZIIgQfINf8Vsxxf3mwleRXNkUsGTm-nJSjFzJdmOOItbUaE0-PgHq52ko2oOMNMevBUeiqua0owqQAiFQPdy9awKz8rPquLP6GK05XAYFU4s2UKsEOkDP3lzCx8Cv4gQmbGKZXab2JunQIfE-j_rmZ5GE6ulDcvNeCBLc1OGOiGwSux3KMBQxy5bRhtuVNfdzyK2Qt9eueWPp9q_AMu48zztW4Br1HgnQgFAsXHhZZsj0dmgOFu2X5qXPfG6AIqVhjn5KsrHQkxVQgHLHFJsCkc2ktub5VtftrUQXi37hiulQu31V8r3eXkRBVXJtaAR9TIMBXV__5-6ui1INke_IvZWit_Qjz78dNB9ykbj50DwsXV=w1679-h925-no">
-                            </div>
-                            <div class="col s6 carousel-description-container">
-                                Earned my B.S. in Computer Science from University of California Irvine!
-
+                                {{{this.description}}}
+                                {{#if this.action}}
                                 <div class="carousel-description-button-container">
-                                    <a href="https://photos.app.goo.gl/z9ctjcqYPz4tj2LD6" target="_blank">
-                                        PICTURES
+                                    <a href="{{this.action.link}}" target="_blank">
+                                        {{this.action.name}}
                                     </a>
                                 </div>
+                            {{/if}}
                             </div>
+                            {{/if}}
                         </div>
                     </div>
-                    <div class="carousel-item" href="#one!">
-                        <div>
-                            <h2 class="m-b-0">AI Class Tournament</h2>
-                            <p class="m-t-0">Dec. 20, 2017</p>
-                        </div>
-                        <div class="row carousel-row">
-                            <div class="col s6 carousel-img-container">
-                                <img class="materialboxed carousel-img" src="https://user-images.githubusercontent.com/12219300/43773157-a362492e-99f9-11e8-8836-15771b6dfd99.gif">
-                            </div>
-                            <div class="col s6 carousel-description-container">
-                                Placed 2nd in a class tournmant in making an AI bot.
-
-                                <div class="carousel-description-button-container">
-                                    <a href="https://github.com/logicxd/Wumpus-World-AI" target="_blank">
-                                        GITHUB
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                    {{/each}}
                 </div>
-
             </div>
         </div>
         <div class="divider"></div>
@@ -202,12 +151,12 @@
                         {{{this.description}}}
                     </p>
                     <div class="projects-description-button-container">
-                        {{#if this.github }}
+                        {{#if this.github}}
                         <a href="{{this.github}}" target="_blank" class="waves-effect waves-light btn projects-description-button">
                             <i class="fab fa-github"></i> GitHub</i>
                         </a>
                         {{/if}}
-                        {{#if this.website }}
+                        {{#if this.website}}
                          <a href="{{this.website.link}}" target="_blank" class="waves-effect waves-light btn projects-description-button">
                             <i class="fas fa-link"></i> {{this.website.name}}</i>
                         </a>

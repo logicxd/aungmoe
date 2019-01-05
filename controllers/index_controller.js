@@ -15,6 +15,41 @@ router.get('/', function (req, res) {
                 { state: "Partook in", occupation: "research studies at UCI" },
                 { state: "Graduated with", occupation: "honors in Computer Science" },
             ],
+            highlights: [
+                {
+                    date: "July 21, 2018",
+                    title: "New Personal Website",
+                    description: `This is my new personal website! I've been wanting to create a new personal website for a while 
+                    and finally got to it. I think it's an improvement from my <a href="https://logicxd.github.io/codemoe/">
+                    old one</a>. The tools used to create this are ExpressJS, Materialize, Material Icons, and Handlebar.`,
+                },
+                {
+                    date: "June 16, 2018",
+                    title: "Graduated!",
+                    description: `Earned my B.S. in Computer Science from University of California Irvine!`,
+                    image: {
+                        href: "https://photos.app.goo.gl/z9ctjcqYPz4tj2LD6",
+                        src: "https://lh3.googleusercontent.com/Gz1oGOjhdVmfVJPyZDrdeIjVmxMYUabBDGBjw2jCJUu9ONFSZoeFLfSrbvql2cJEt0XFYldvnvzPCPs7Mj1OZ-lf2epZerYkrwtJq8BfLHo0FnFgEZDyW1zWTOh3WtVlGch2TAhdkf1_gjAw829vV-bVNlFUDo42B7iZIqGHLeDXWEBHxIMbtmSBDgG0CHUftU5El4mg9zf8G4cRztj7HK5ScuKtykwdk2wyoXqAj1xk8nGsOacuivpMl1ewiXU10u7UatDbZtaJRxoAzR7G7_n34mFfgrElewXaRx2OATTKjHfy6ZIIgQfINf8Vsxxf3mwleRXNkUsGTm-nJSjFzJdmOOItbUaE0-PgHq52ko2oOMNMevBUeiqua0owqQAiFQPdy9awKz8rPquLP6GK05XAYFU4s2UKsEOkDP3lzCx8Cv4gQmbGKZXab2JunQIfE-j_rmZ5GE6ulDcvNeCBLc1OGOiGwSux3KMBQxy5bRhtuVNfdzyK2Qt9eueWPp9q_AMu48zztW4Br1HgnQgFAsXHhZZsj0dmgOFu2X5qXPfG6AIqVhjn5KsrHQkxVQgHLHFJsCkc2ktub5VtftrUQXi37hiulQu31V8r3eXkRBVXJtaAR9TIMBXV__5-6ui1INke_IvZWit_Qjz78dNB9ykbj50DwsXV=w1679-h925-no"
+                    },
+                    action: {
+                        name: "PICTURES",
+                        link: "https://photos.app.goo.gl/z9ctjcqYPz4tj2LD6"
+                    },
+                },
+                {
+                    date: "Dec. 20, 2017",
+                    title: "AI Class Tournament",
+                    description: `Placed 2nd in a class tournmant in making an AI bot.`,
+                    image: {
+                        href: "https://github.com/logicxd/Wumpus-World-AI",
+                        src: "https://wumpusproject.files.wordpress.com/2012/11/img12.gif"
+                    },
+                    action: {
+                        name: "GITHUB",
+                        link: "https://github.com/logicxd/Wumpus-World-AI"
+                    },
+                }
+            ],
             projects: [
                 { 
                     image: "https://user-images.githubusercontent.com/12219300/43773157-a362492e-99f9-11e8-8836-15771b6dfd99.gif", 

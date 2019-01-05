@@ -6,6 +6,7 @@
   "scripts": {
     "start": "node app.js",
     "start-forever": "forever start --minUptime 5000 --spinSleepTime 5000 app.js",
+    "nodemon": "nodemon app.js",
     "watch-css": "node-sass -w public/scss/ -o public/css/",
     "update-css": "node-sass public/scss/ -o public/css/"
   },
@@ -35,5 +36,8 @@
     "newrelic": "^4.8.0",
     "node-sass": "^4.9.2",
     "npm": "^6.4.0"
+  },
+  "devDependencies": {
+    "nodemon": "^1.18.9"
   }
 }
