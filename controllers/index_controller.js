@@ -17,11 +17,18 @@ router.get('/', function (req, res) {
             ],
             highlights: [
                 {
-                    date: "July 21, 2018",
-                    title: "New Personal Website",
-                    description: `This is my new personal website! I've been wanting to create a new personal website for a while 
-                    and finally got to it. I think it's an improvement from my <a href="https://logicxd.github.io/codemoe/">
-                    old one</a>. The tools used to create this are ExpressJS, Materialize, Material Icons, and Handlebar.`,
+                    date: "October 1, 2018",
+                    title: "First Full-Time Job!",
+                    description: `Excited to start working as an associate iOS Developer for <a href="https://www.veeva.com/">
+                    Veeva</a> on the CRM team!`,
+                    image: {
+                        href: "https://www.veeva.com/",
+                        src: "https://www.logolynx.com/images/logolynx/6d/6d7a4ee07338032263b8d6c8679f13ae.jpeg"
+                    },
+                    action: {
+                        name: "WEBSITE",
+                        link: "https://www.veeva.com/products/multichannel-crm/"
+                    }
                 },
                 {
                     date: "June 16, 2018",
