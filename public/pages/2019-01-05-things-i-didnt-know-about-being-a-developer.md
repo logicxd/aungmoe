@@ -35,9 +35,9 @@ Listening and understanding other people's explanations. Just coming straight
 out of college, most people I've had to work with were around my age and were
 usually from the area. At work, you'll see talented people from all over the
 world with different background and ethnicity. Which meant, they'll talk
-differently, which is fine and is actually great. I think there's a lot to learn
-from analyzing how they talk and good for the brain to work harder to understand
-something that you're not used to.
+differently, which is fine and is actually great but it'll be hard in the beginning.
+I think there's a lot to learn from analyzing how they talk and good for the brain
+to work harder to understand something that you're not used to.
 
 You're going to be practicing public speaking skills. From standup meetings to
 performing demos, you'll have to do public speaking. And as you get more and more
@@ -50,11 +50,18 @@ They work closely with the customers, getting the requirements, providing
 suggestions, and demoing. You also have to talk with other developers on top of this,
 Probably the most communicative job as an early to mid level developer.
 
-## Being Prepared Before Asking for Help
+## Be Prepared Before Asking for Help
 
 Your co-workers and seniors are usually willing to help you. They _want_ to help
-you. It's just that sometimes you may result to asking for help without trying
-your best first.
+you. It's just that sometimes it's easier to ask for help than trying your
+best first. If your question is project-specific that only the people who have
+worked in it may know, then it's no problem to ask. If it's problem solving, I try
+to follow these steps:
+
+1. Did I try solving it in at least 3 different ways?
+2. Did I take a break and then come back to it? Sometimes taking a break opens
+up your mind to a lot of questions.
+3. What questions might my seniors ask and do I have answers for them?
 
 After you figure it out without any help, ask seniors to help verify your work.
 

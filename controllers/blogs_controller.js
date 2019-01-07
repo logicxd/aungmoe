@@ -43,6 +43,10 @@ function timeToRead(text) {
 // Parse markdown pages.
 try {
     for (var file of fs.readdirSync(pagesDir)) {
+        if (file.split('.').pop() !== 'md') {
+            continue; 
+        }
+
         var filePath = path.join(pagesDir, file);
         var rawMd = fs.readFileSync(filePath, 'utf8');
         var html = md.render(rawMd);
