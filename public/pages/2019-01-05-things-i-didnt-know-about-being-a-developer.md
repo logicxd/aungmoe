@@ -59,12 +59,59 @@ worked in it may know, then it's no problem to ask. If it's problem solving, I t
 to follow these steps:
 
 1. Did I try solving it in at least 3 different ways?
-2. Did I take a break and then come back to it? Sometimes taking a break opens
-up your mind to a lot of questions.
+2. Did I take a break and then come back to it?
 3. What questions might my seniors ask and do I have answers for them?
 
-After you figure it out without any help, ask seniors to help verify your work.
+Number 1 and 3 are self explanatory. They're just there to keep you thinking about
+the problem. Number 2 because sometimes taking a break lets you see things a bit
+differently. Kind of like how you would write an essay and you come back to it and
+become amazed at how you wrote it.
 
-## Creating vs Maintaining Code
+After you figure it out without any help, ask seniors to help double check your work.
+This step is probably the most important as this will introduce you to other ways
+of problem solving that you may not have been aware of before.
 
-## Your Team is Not Just The Developers
+## Developing New Code vs Maintaining Old Code
+
+Developers at a company just starting off will do a lot of initial design process
+and producing new code. Bigger companies usually already have products that have
+been made and done so they'll be building on top of existing code to maintain them.
+
+While both skills are essential, developing new code may be more rewarding for associate
+developers. Developing new code will help with growth in the beginning but
+then it'll start to get harder to improve. On the opposite side, maintaining old
+code is harder to do in the beginning but you'll have a better knowledge after
+getting through them.
+
+Doing side projects can help you grow stronger in the weaker area. So if you're
+doing a lot of development already, you can look into open source projects to contribute
+to get you more practice. On the other hand, if you're already doing a lot of maintaining
+code, you can develop some apps on the side.
+
+## Your Team is Not Only The Developers
+
+Most of the time, you'll be learning from your development team but there are a lot
+of other things you can learn from other department as well. Seeing how testings
+are done by the QA team will help you prevent bugs. Learning how the designs are
+made will help you think about better UI/UX designs. One of the tips that I got
+was to talk to the QA that will be responsible for checking
+your work so you can catch them early and save time by having less back-and-forth
+status updates.
+
+## Continuing Your Education
+
+I wasn't going to put this section here on this blog but I am going to do it because
+of how critical this is. I knew that I would have to keep learning to keep up with
+the new tech in the field but once you're out of school and you start working, it
+seems like it's on a whole another level. It's not stressful as studying for exams,
+but the way you learn and study your materials is changed.
+
+You have to look for resources to learn from. I try to listen to podcasts, articles,
+and my friends to learn new information. Because you're not getting the material
+from your professors who are explaining it to you, it's up to you to make sure
+that you test yourself and do your things right.
+
+Know that you'll have to learn and experiment with different technology for the
+rest of your life. It sounds like it's a lot of work and tiring but it shouldn't
+feel too much like extra work if you enjoy the material. With computer science
+being so diverse, I'm sure you'll be able to find something that you'd enjoy doing.
