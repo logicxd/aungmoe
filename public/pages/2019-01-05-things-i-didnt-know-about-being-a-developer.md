@@ -1,7 +1,7 @@
 ---
 title:  "Things I Didn't Know About Being a Developer"
 date:   2019-01-05
-updatedDate: 2019-01-05
+updatedDate: 2019-01-08
 category: Career
 urlName: things-i-didnt-know-about-being-a-developer
 ---
@@ -48,7 +48,7 @@ better over time though.
 If you want to work closely with the customers, you can try Software Consultant.
 They work closely with the customers, getting the requirements, providing
 suggestions, and demoing. You also have to talk with other developers on top of this,
-Probably the most communicative job as an early to mid level developer.
+probably the most communicative job as an early to mid level developer.
 
 ## Be Prepared Before Asking for Help
 
@@ -65,11 +65,17 @@ to follow these steps:
 Number 1 and 3 are self explanatory. They're just there to keep you thinking about
 the problem. Number 2 because sometimes taking a break lets you see things a bit
 differently. Kind of like how you would write an essay and you come back to it and
-become amazed at how you wrote it.
+become amazed at how you wrote it. There's studies on it which you can find by
+searching online for "focused vs diffused thinking".
 
 After you figure it out without any help, ask seniors to help double check your work.
 This step is probably the most important as this will introduce you to other ways
 of problem solving that you may not have been aware of before.
+
+Sometimes you need to get things done fast and in these cases, it would be better
+to ask for help than to spend time trying to solve it yourself first. If there's
+a knowledgable developer free to help you that cuts down the time it would take
+you, then go for it.
 
 ## Developing New Code vs Maintaining Old Code
 
@@ -103,7 +109,7 @@ status updates.
 I wasn't going to put this section here on this blog but I am going to do it because
 of how critical this is. I knew that I would have to keep learning to keep up with
 the new tech in the field but once you're out of school and you start working, it
-seems like it's on a whole another level. It's not stressful as studying for exams,
+seems like it's on a whole nother level. It's not stressful as studying for exams,
 but the way you learn and study your materials is changed.
 
 You have to look for resources to learn from. I try to listen to podcasts, articles,
