@@ -108,7 +108,7 @@ status updates.
 I wasn't going to put this section here on this blog but I am going to do it because
 of how critical this is. I knew that I would have to keep learning to keep up with
 the new tech in the field but once you're out of school and you start working, it
-seems like it's on a whole nother level. It's not stressful as studying for exams,
+seems like it's on a whole other level. It's not stressful as studying for exams,
 but the way you learn and study your materials is changed.
 
 You have to look for resources to learn from. I try to listen to podcasts, read articles,
