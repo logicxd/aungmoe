@@ -1,7 +1,7 @@
 ---
 title:  "Things I Didn't Know About Being a Developer"
 date:   2019-01-05
-updatedDate: 2019-01-08
+updatedDate: 2019-01-21
 category: Career
 urlName: things-i-didnt-know-about-being-a-developer
 ---
@@ -10,8 +10,8 @@ I recently started my first full-time job as a software developer. There were
 some things I realized that were different than what I had first thought about
 a typical developer as well as some that never crossed my mind before. Even
 though I had worked before as a part-time, I was juggling between my academics
-and work so these things were never realized. So these are some of my experiences
-I got while working at a company with about a thousand employees.
+and work so I never never realized these things. So these are some of my experiences
+that I think will help current students and new grads.
 
 ## Get Ready to Communicate
 
@@ -29,15 +29,13 @@ would go over how the code works, how it was debugged, and what my thought
 process was. My goal is to try to say only the bare minimum that they need in
 order to understand what it is that they're looking for. Which also meant,
 learning to control my urge to pick at every minor thing that I see and knowing
-when I've said enough.
+when to stop. Let's just say it's a work in progress.
 
-Listening and understanding other people's explanations. Just coming straight
+Listening and understanding to people's explanations. Just coming straight
 out of college, most people I've had to work with were around my age and were
-usually from the area. At work, you'll see talented people from all over the
-world with different background and ethnicity. Which meant, they'll talk
-differently, which is fine and is actually great but it'll be hard in the beginning.
-I think there's a lot to learn from analyzing how they talk and good for the brain
-to work harder to understand something that you're not used to.
+usually from the area. At work, you may see talented people from all over the
+world with different background, ethnicity, and age. So working on understanding
+them and the task at hand is a very important skill to have.
 
 You're going to be practicing public speaking skills. From standup meetings to
 performing demos, you'll have to do public speaking. And as you get more and more
@@ -45,7 +43,7 @@ experienced, you'll be passing on the knowledge to others in the form of classes
 So if you're shy, like me, be ready to try to overcome your fears. It does get
 better over time though.
 
-If you want to work closely with the customers, you can try Software Consultant.
+If you want to work closely with the customers, you can try being a Software Consultant.
 They work closely with the customers, getting the requirements, providing
 suggestions, and demoing. You also have to talk with other developers on top of this,
 probably the most communicative job as an early to mid level developer.
@@ -64,9 +62,9 @@ to follow these steps:
 
 Number 1 and 3 are self explanatory. They're just there to keep you thinking about
 the problem. Number 2 because sometimes taking a break lets you see things a bit
-differently. Kind of like how you would write an essay and you come back to it and
-become amazed at how you wrote it. There's studies on it which you can find by
-searching online for "focused vs diffused thinking".
+differently. Kind of like how you would write an essay and then later come back
+to it and become amazed at how bad you wrote it. [Here's](https://www.brainscape.com/blog/2016/08/better-learning-focused-vs-diffuse-thinking/) 
+an article if you want to read more about it.
 
 After you figure it out without any help, ask seniors to help double check your work.
 This step is probably the most important as this will introduce you to other ways
@@ -83,11 +81,12 @@ Developers at a company just starting off will do a lot of initial design proces
 and producing new code. Bigger companies usually already have products that have
 been made and done so they'll be building on top of existing code to maintain them.
 
-While both skills are essential, developing new code may be more rewarding for associate
-developers. Developing new code will help with growth in the beginning but
-then it'll start to get harder to improve. On the opposite side, maintaining old
-code is harder to do in the beginning but you'll have a better knowledge after
-getting through them.
+While both skills are essential, developing new code may be more rewarding for less
+experienced developers. Developing new code will help with your growth in the
+beginning but it may get harder since you don't have much reference of good coding
+practices. On the opposite side, maintaining old code is harder to do in the
+beginning but you'll have a better knowledge after getting through them with help
+from already-written code.
 
 Doing side projects can help you grow stronger in the weaker area. So if you're
 doing a lot of development already, you can look into open source projects to contribute
@@ -112,10 +111,10 @@ the new tech in the field but once you're out of school and you start working, i
 seems like it's on a whole nother level. It's not stressful as studying for exams,
 but the way you learn and study your materials is changed.
 
-You have to look for resources to learn from. I try to listen to podcasts, articles,
-and my friends to learn new information. Because you're not getting the material
+You have to look for resources to learn from. I try to listen to podcasts, read articles,
+and talk to my friends to learn new information. Because you're not getting the material
 from your professors who are explaining it to you, it's up to you to make sure
-that you test yourself and do your things right.
+that you challenge yourself.
 
 Know that you'll have to learn and experiment with different technology for the
 rest of your life. It sounds like it's a lot of work and tiring but it shouldn't
