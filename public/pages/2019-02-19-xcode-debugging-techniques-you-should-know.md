@@ -50,7 +50,9 @@ That's all it is! But you can do more to get the most out:
 * When the breakpoint hits, set it so that the exception will print out the
 error message from running this command: `po $arg1`.
 * Set exception on 'Objective-C' only. This will ignore any C++ exceptions if
-you don't want to see them.0
+you don't want to see them.
+* Right click and move breakpoint to User to keep this breakpoint across all your
+projects!
 
 ## Return from a Method
 
