@@ -6578,6 +6578,14 @@ header .nav-wrapper a {
 .page-footer .footer-copyright {
   font-size: 0.8em; }
 
+@media only screen and (min-width: 601px) {
+  p {
+    font-size: 18px; } }
+
+@media only screen and (min-width: 993px) {
+  p {
+    font-size: 21px; } }
+
 .blogs-list li {
   margin-bottom: 30px; }
 
