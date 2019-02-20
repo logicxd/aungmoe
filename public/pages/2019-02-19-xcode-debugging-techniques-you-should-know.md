@@ -1,9 +1,9 @@
 ---
-title:  "Xcode Debugging Tips You May Not Know"
-date:   2019-02-18
-updatedDate: 2019-01-18
+title:  "Xcode Debugging Techniques You Should Know"
+date:   2019-02-19
+updatedDate: 2019-02-19
 category: Tools
-urlName: xcode-debugging-tips-you-may-not-know
+urlName: xcode-debugging-techniques-you-should-know
 ---
 
 Whether you are looking for bugs, figuring out how the code flows, or
@@ -11,9 +11,9 @@ experimenting your new feature, knowing how to use the debugger will save you a
 lot of time. I use the debugger basically every single time I run my application.
 It is also an excellent tool to use to learn how programming works. I just wish
 school taught this in my early beginner computer science classes. Instead,
-I was first introduced this when I did my first coding internship.
+I was first introduced this after two years when I did my first internship.
 
-I'll be going over some techniques that I use the most. I highly recommend
+These are some debugging techniques that I use the most. I highly recommend
 reading through [objc.io's debugging tips](https://www.objc.io/issues/19-debugging/lldb-debugging/)
 for a more inclusive reading.
 
@@ -25,6 +25,9 @@ Quick overview of the basics. You need to know this. Period.
 * Step In - go inside the method at the current line. If it's already run, finish
 executing the current line and stop before executing the next line.
 * Step Out - finish executing the current block and return to the caller.
+* Conditional Breakpoints - hit breakpoint only if it satisfies the condition.
+* Automatically Continue Breakpoints - executes the expression in the breakpoint
+and then continue automatically.
 * `po` - print out details about the variable. `po myVariable`.
 * `e`, `expr`, `expression` - execute the command. `e myVariable = @"new"`.
 
@@ -47,7 +50,7 @@ That's all it is! But you can do more to get the most out:
 * When the breakpoint hits, set it so that the exception will print out the
 error message from running this command: `po $arg1`.
 * Set exception on 'Objective-C' only. This will ignore any C++ exceptions if
-you don't want to see them.
+you don't want to see them.0
 
 ## Return from a Method
 
@@ -62,7 +65,9 @@ put a breakpoint here and return the value that you want!
 
 Examples: `thread jump --by 2`, `thread jump --line 102`
 
-I use this when I don't want 
+I use this when I want to skip something from executing. This doesn't always work
+flawlessly though as LLDB doesn't like skipping lines too much. Also, Xcode IDE
+will not know that you skipped line until you step over to the next line.
 
 ## Import UIKit
 
@@ -77,8 +82,26 @@ garbage output such as:
 
 To fix it, you may have called it by calling it as a method and also specify the
 return type by doing `po (CGRect)[self bounds]`. Well, instead of typing all that
-mess everytime you want to print something, you can just do do `e @import UIKit`
+mess every time you want to print something, you can just do do `e @import UIKit`
 and you will be allowed to do `po view.bounds` and all the other methods that comes
 with UIKit.
 
+## Update UI Changes
+
+Examples: `e (void)[CATransaction flush]`, `caflush` (with [chisel installed](https://github.com/facebook/chisel))
+
+Great for testing UI changes on the fly without having to restart after each change.
+
 ## Snapshot of a View
+
+Example: `visualize myView` (with [chisel installed](https://github.com/facebook/chisel))
+
+Wondering what the view looks like? Just run this command and it'll open a snapshot
+image of your view on Preview.app.
+
+---
+
+I don't use all of these all the time, but they are used more often than other techniques
+that you may have seen. I will update these as my preferences are changed or I learn
+something new. Let me know if I should be using something and it's missing from this
+list.
