@@ -1,17 +1,17 @@
 <main>
     <div class="container">
-        <h2>Blogs</h2>
+        <h2>Blog</h2>
         <p>
             Follow me on my journey as an inexperienced, fresh out of college, developer
             to become a well versed fullstack software developer. I enjoy exploring different 
             tech stacks and sharing my experiences as I progress in this journey.
         </p>
-        <ul class="blogs-list">
+        <ul class="blog-list">
             {{#each pages}}
             <li>
-                <span class="blogs-date">{{this.dateString}} - {{this.category}}</span>
+                <span class="blog-date">{{this.dateString}} - {{this.category}}</span>
                 <h4 class="m-t-0">
-                    <a class="blogs-link" href="blogs/{{this.url}}">
+                    <a class="blog-link" href="blog/{{this.url}}">
                         {{this.title}}
                     </a>
                 </h4>
