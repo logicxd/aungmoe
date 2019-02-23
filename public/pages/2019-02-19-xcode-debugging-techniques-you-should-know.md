@@ -1,7 +1,7 @@
 ---
 title:  "Xcode Debugging Techniques You Should Know"
 date:   2019-02-19
-updatedDate: 2019-02-19
+updatedDate: 2019-02-22
 category: Tools
 urlName: xcode-debugging-techniques-you-should-know
 ---
@@ -30,6 +30,7 @@ executing the current line and stop before executing the next line.
 and then continue automatically.
 * `po` - print out details about the variable. `po myVariable`.
 * `e`, `expr`, `expression` - execute the command. `e myVariable = @"new"`.
+* `e UIView *$view = (UIView *)0x0000` - create a variable while debugging.
 
 ## All Objective-C Exceptions Breakpoint
 
