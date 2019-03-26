@@ -34,7 +34,7 @@
     "moment": "^2.22.2",
     "morgan": "^1.9.1",
     "newrelic": "^4.8.0",
-    "node-sass": "^4.9.2",
+    "node-sass": "^4.11.0",
     "npm": "^6.4.0"
   },
   "devDependencies": {
