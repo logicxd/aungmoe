@@ -25,7 +25,7 @@ There are tons of things you can do with it. Here are a few:
 
 * [Send ETA with a button press](https://www.icloud.com/shortcuts/61b2a783fd9d4b10b8832e0ee5bd77b5)
 * [Share Location](https://www.icloud.com/shortcuts/fd6eb0568bcc45c9b6d962d206f2b3da)
-* [Download files on your phone](https://shortcutsgallery.com/shortcuts/ios-download-manager/)
+* [Download files on the iPhone](https://shortcutsgallery.com/shortcuts/ios-download-manager/)
 * Send pre-defined text message
 * And many many more
 
