@@ -8,14 +8,14 @@ urlName: programming-on-the-iphone-with-shortcuts
 
 Once in a while, on the weekends, I wake up with the urge to check out
 what new apps are on the App Store.
-the App Store. And this past weekend, I stumbled upon Shortcuts.
+And this past weekend, I stumbled upon Shortcuts.
 
 ## What is Shortcuts?
 
 Shortcuts allow you to integrate different apps and automate actions together.
 If you're familiar with [Alfred](https://www.alfredapp.com/), it is similar
 to Alfred Workflows. And how you build your actions and events is very
-similar to like the [scratch](https://scratch.mit.edu/) interface.
+similar to the [scratch](https://scratch.mit.edu/) interface.
 Shortcuts was developed by Apple and it was previously called Workflow.
 Now you know why I brought up Alfred Workflows 😃.
 
@@ -35,8 +35,7 @@ You can find a whole list of Shortcuts that other people have posted on
 ## Making Your Own
 
 <div class='center'>
-    <img src='/media/images/shortcuts_send_eta_1.jpg' alt='Shortcuts Image 1' width='300'>
-    <img src='/media/images/shortcuts_send_eta_2.jpg' alt='Shortcuts Image 2' width='300'>
+    <img src='/media/images/shortcuts_send_eta.png'>
 </div>
 
 These are pretty self explanatory if you have some
