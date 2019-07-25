@@ -64,7 +64,7 @@ app.use(function(err, req, res, next) {
     res.render('error', { 
         title: '404 - Aung Moe',
         description: 'Page not found!',
-        css: [global.css.material_icons, '/css/default.css', global.css.animate_css, global.css.fontawesome ],
+        css: [global.css.material_icons, '/css/default.css', global.css.animate_css],
         js: [global.js.jquery, global.js.materialize, global.js.header, global.js.footer]
     });
 });
@@ -73,7 +73,6 @@ app.use(function(err, req, res, next) {
 global.css = {
     material_icons: 'https://fonts.googleapis.com/icon?family=Material+Icons',
     animate_css: 'https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.5.2/animate.min.css',
-    fontawesome: 'https://use.fontawesome.com/releases/v5.2.0/css/all.css',
     highlightCDN: 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.9.0/styles/default.min.css'
 }
 global.js = {
