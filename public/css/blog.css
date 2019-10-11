@@ -6578,24 +6578,32 @@ header .nav-wrapper a {
 .page-footer .footer-copyright {
   font-size: 0.8em; }
 
-.blogs-list li {
+@media only screen and (min-width: 601px) {
+  p {
+    font-size: 18px; } }
+
+@media only screen and (min-width: 993px) {
+  p {
+    font-size: 21px; } }
+
+.blog-list li {
   margin-bottom: 30px; }
 
-.blogs-list .blogs-date {
+.blog-list .blog-date {
   color: #687D91;
   font-size: 1.1em; }
 
-.blogs-list .blogs-link {
+.blog-list .blog-link {
   color: #2A3D50;
   font-size: 1.4rem; }
 
-.blogs-list .blogs-link:hover {
+.blog-list .blog-link:hover {
   text-decoration: underline; }
 
 @media only screen and (min-width: 601px) {
-  .blogs-list .blogs-link {
+  .blog-list .blog-link {
     font-size: 1.7rem; } }
 
 @media only screen and (min-width: 993px) {
-  .blogs-list .blogs-link {
+  .blog-list .blog-link {
     font-size: 2.28rem; } }

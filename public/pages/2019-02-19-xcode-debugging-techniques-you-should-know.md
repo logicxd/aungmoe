@@ -1,7 +1,7 @@
 ---
 title:  "Xcode Debugging Techniques You Should Know"
 date:   2019-02-19
-updatedDate: 2019-02-19
+updatedDate: 2019-02-22
 category: Tools
 urlName: xcode-debugging-techniques-you-should-know
 ---
@@ -30,6 +30,7 @@ executing the current line and stop before executing the next line.
 and then continue automatically.
 * `po` - print out details about the variable. `po myVariable`.
 * `e`, `expr`, `expression` - execute the command. `e myVariable = @"new"`.
+* `e UIView *$view = (UIView *)0x0000` - create a variable while debugging.
 
 ## All Objective-C Exceptions Breakpoint
 
@@ -50,7 +51,9 @@ That's all it is! But you can do more to get the most out:
 * When the breakpoint hits, set it so that the exception will print out the
 error message from running this command: `po $arg1`.
 * Set exception on 'Objective-C' only. This will ignore any C++ exceptions if
-you don't want to see them.0
+you don't want to see them.
+* Right click and move breakpoint to User to keep this breakpoint across all your
+projects!
 
 ## Return from a Method
 

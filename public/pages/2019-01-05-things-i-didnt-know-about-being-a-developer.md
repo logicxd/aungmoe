@@ -63,7 +63,7 @@ to follow these steps:
 Number 1 and 3 are self explanatory. They're just there to keep you thinking about
 the problem. Number 2 because sometimes taking a break lets you see things a bit
 differently. Kind of like how you would write an essay and then later come back
-to it and become amazed at how bad you wrote it. [Here's](https://www.brainscape.com/blog/2016/08/better-learning-focused-vs-diffuse-thinking/) 
+to it and become amazed at how bad you wrote it. [Here's](https://www.brainscape.com/blog/2016/08/better-learning-focused-vs-diffuse-thinking/)
 an article if you want to read more about it.
 
 After you figure it out without any help, ask seniors to help double check your work.

@@ -87,10 +87,10 @@ catch (err) {
 }
 
 router.get('/', function (req, res) {
-    res.render('blogs', {
-        title: 'Blogs - Aung Moe',
+    res.render('blog', {
+        title: 'Blog - Aung Moe',
         description: 'Aung\'s personal website',
-        css: [global.css.material_icons, '/css/blogs.css', global.css.animate_css, global.css.fontawesome],
+        css: [global.css.material_icons, '/css/blog.css', global.css.animate_css, global.css.fontawesome],
         js: [global.js.jquery, global.js.materialize, global.js.header, '/js/index.js', global.js.footer],
         pages: sortedPages
     });
