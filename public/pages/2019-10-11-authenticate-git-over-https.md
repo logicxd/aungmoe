@@ -24,6 +24,7 @@ found to save my information so I don't have to type it again next time:
 * Git's Credential Storage
 * Git Credential Manager (GCM)
 * Window's Credential Manager
+* OSX Keychain
 
 **TLDR** - Jump to "Window's Credential Manager". Oh and these are all for windows. I haven't tried on a Mac yet.
 
@@ -67,3 +68,8 @@ This is the one I ended up using and it works for my case. And it was very easy.
 * Run `git clone` or `git pull` or any remote related git operation.
 * It'll ask for your username and password.
 * Then it's saved in the Credential Manager, **ENCRYPTED**.
+
+## OSX Keychain
+
+This is for Mac only. Just set `git config --global credential.helper osxkeychain`.
+No other work is needed and it works great :D
