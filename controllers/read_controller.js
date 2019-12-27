@@ -14,8 +14,8 @@ router.get('/', async function (req, res) {
 });
 
 function loadSetupPage(req, res) {
-    res.render('read-setup', {
-        title: 'Read Setup - Aung Moe',
+    res.render('read-tool', {
+        title: 'Read Tool - Aung Moe',
         description: 'Aung\'s personal website',
         css: [global.css.material_icons, '/css/read.css', global.css.animate_css, global.css.fontawesome],
         js: [global.js.jquery, global.js.materialize, global.js.header, '/js/read.js', global.js.footer]

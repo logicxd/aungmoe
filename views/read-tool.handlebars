@@ -1,16 +1,20 @@
 <main>
     <div class="container">
-        <h2>Text Extractor</h2>
+        <h2>Read Tool</h2>
+        <p>
+            This tool extracts the text content of a given URL so we can apply dark mode to read easier at night, tap to scroll, and find the next page if it exists.
+            Upcoming features are the ability to change font size, automatically scroll page based on your defined reading speed, and to automatically navigate to the next page.
+        </p>
         <div class="row">
             <div class="input-field col s12">
                 <input id="url" placeholder="URL of the website that contains the text" type="url" class="validate">
-                <label for="url">Novel/Text URL</label>
+                <label for="url">Article/Text URL</label>
                 <span class="helper-text" data-error="Please enter a valid URL"></span>
             </div>
         </div>
         <div class="row">
             <label>
-                <input id="autoload-next" type="checkbox" checked />
+                <input id="autoload-next" type="checkbox" disabled/>
                 <span>Automatically load next page</span>
             </label>
         </div>

@@ -8,9 +8,9 @@ $('#submit').click(() => {
 });
 
 $('.tap-to-scroll').click(() => {
-    var height = document.documentElement.clientHeight;
-    var scrollByHeight = height * 0.90;
-    window.scrollBy(0, scrollByHeight);
+    var clientHeight = document.documentElement.clientHeight;
+    var scrollByAmount = clientHeight * 0.90;
+    window.scrollBy(0, scrollByAmount);
 });
 
 function autoscroll() {
