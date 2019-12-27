@@ -28,6 +28,7 @@ app.set('view engine', 'handlebars');
 // Create controllers
 var indexController = require('./controllers/index_controller');
 var blogController = require('./controllers/blog_controller');
+var readController = require('./controllers/read_controller');
 
 // Connect controllers and other services
 // app.use(express.static(path.join(__dirname, 'public')));
@@ -36,6 +37,7 @@ app.use('/scripts', express.static(__dirname + "/node_modules/highlight.js/lib/"
 app.use(logger(':method :url :status :res[content-length] - :response-time ms'));
 app.use('/', indexController);
 app.use('/blog', blogController);
+app.use('/read', readController);
 app.use('/credits', function (req, res) {
     res.render('credit', { 
         title: 'Credits - Aung Moe',

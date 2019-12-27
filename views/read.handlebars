@@ -1,0 +1,17 @@
+<main class="hljs">
+    <div class="container">
+    {{#if didError }}
+        <h2>Oops</h2>
+        <p>
+            Could not grab the contents of the URL.
+        </p>
+    {{else}}
+        <h2>{{ textTitle }}</h2>
+        {{#each textParagraphs}}
+        <p>
+            {{ this }}
+        </p>
+        {{/each}}
+    {{/if}}
+    </div>
+</main>
