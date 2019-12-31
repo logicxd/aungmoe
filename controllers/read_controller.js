@@ -45,6 +45,7 @@ async function loadReadPage(req, res) {
         textTitle: title,
         textParagraphs: paragraphs,
         didError: html === '',
+        currentPageLink: req.query.url,
         nextPageLink: nextPageLink
     });
 }

@@ -29,12 +29,56 @@
                     <i class="material-icons left">home</i>
                 </button>
                 {{#if nextPageLink }}
-                <button class="btn waves-effect waves-light" onclick="window.location.href='/read?url={{ nextPageLink }}'">Next
+                <button id="next-page-button" class="btn waves-effect waves-light" onclick="nextPageClicked('{{ nextPageLink }}')">Next
                     <i class="material-icons right">arrow_forward</i>
                 </button>
                 {{/if}}
             </div>
+        </div>  
+        <div class="fixed-action-btn">
+            <a id="floating-settings-button" class="btn-floating">
+                <i class="material-icons">settings</i>
+            </a>
+            <ul>
+                <li><a class="btn-floating red" onclick="autoscrollButtonClicked();"><i class="material-icons">play_arrow</i></a></li>
+                <li><a class="btn-floating green" href="#scroll-to-top"><i class="material-icons" style="pointer-events:none;">publish</i></a></li>
+                <li><a class="btn-floating blue" onclick="window.open('{{ currentPageLink }}', '_blank');"><i class="material-icons">launch</i></a></li>
+                <li><a class="btn-floating" onclick="openModal();"><i class="material-icons">mode_edit</i></a></li>
+            </ul>
         </div>
     {{/if}}
     </div>
 </main>
+
+<!-- Modal Structure -->
+<div id="settings-modal" class="modal bottom-sheet modal-fixed-footer">
+    <div class="modal-content">
+        <h4>Settings</h4>
+        <div class="row">
+            <div class="input-field col s12">
+                <input id="url" placeholder="URL of the website that contains the text" type="url" class="validate" value="{{ currentPageLink }}">
+                <label for="url">Article/Text URL</label>
+            </div>
+        </div>
+        <div class="row">
+            <label class="col s6">
+                <input id="autoscroll" type="checkbox"/>
+                <span>Automatically scroll based on reading speed</span>
+            </label>
+            <div class="input-field col s6">
+                <input id="words-per-minute" placeholder="300" type="number" class="validate">
+                <label for="words-per-minute">Speed (WPM)</label>
+                <span class="helper-text" data-error="Please enter a valid number"></span>
+            </div>
+        </div>
+        <div class="row">
+            <label class="col s12">
+                <input id="autoload-next" type="checkbox"/>
+                <span>Automatically load next page</span>
+            </label>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <a id="apply" class="modal-close waves-effect waves-green btn-flat">Apply</a>
+    </div>
+</div>

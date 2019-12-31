@@ -13,8 +13,19 @@
             </div>
         </div>
         <div class="row">
-            <label>
-                <input id="autoload-next" type="checkbox" disabled/>
+            <label class="col s6">
+                <input id="autoscroll" type="checkbox"/>
+                <span>Automatically scroll based on reading speed</span>
+            </label>
+            <div class="input-field col s6">
+                <input id="words-per-minute" placeholder="300" type="number" class="validate">
+                <label for="words-per-minute">Speed (WPM)</label>
+                <span class="helper-text" data-error="Please enter a valid number"></span>
+            </div>
+        </div>
+        <div class="row">
+            <label class="col s12">
+                <input id="autoload-next" type="checkbox"/>
                 <span>Automatically load next page</span>
             </label>
         </div>
