@@ -10,7 +10,9 @@ $('#submit').click(() => {
 $('.tap-to-scroll').click(() => {
     var clientHeight = document.documentElement.clientHeight;
     var scrollByAmount = clientHeight * 0.90;
-    window.scrollBy(0, scrollByAmount);
+    $('html, body').animate({
+        scrollTop: `+=${scrollByAmount}`
+     }, 300);
 });
 
 function autoscroll() {
