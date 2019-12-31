@@ -23,18 +23,18 @@
         </div>
         <div class="divider"></div>
         <p class="center" id="end-of-page">This is the end of the page</p>
-        {{#if nextPageLink }}
         <div class="row">
             <div class="center">
                 <button class="btn waves-effect waves-light" onclick="window.location.href='/read'">Home
                     <i class="material-icons left">home</i>
                 </button>
+                {{#if nextPageLink }}
                 <button class="btn waves-effect waves-light" onclick="window.location.href='/read?url={{ nextPageLink }}'">Next
                     <i class="material-icons right">arrow_forward</i>
                 </button>
+                {{/if}}
             </div>
         </div>
-        {{/if}}
     {{/if}}
     </div>
 </main>
