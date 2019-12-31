@@ -1,2 +1,7 @@
 @import './layouts/main.scss';
 @import '/css/highlight/atom-one-dark.css';
+
+// Modal Bottom Sheet Style
+.modal.bottom-sheet {
+    max-height: 55%;
+}

@@ -6578,3 +6578,6 @@ header .nav-wrapper a {
 
 .page-footer .footer-copyright {
   font-size: 0.8em; }
+
+.modal.bottom-sheet {
+  max-height: 55%; }
