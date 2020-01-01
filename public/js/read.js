@@ -4,7 +4,7 @@ var global = {
 };
 
 $(document).ready(function () {
-    updateDefaultSettings();
+    updateDefaultValues();
     initializeValuesOnLoad();
     $('.modal').modal();
     $('.fixed-action-btn').floatingActionButton({
@@ -42,13 +42,17 @@ $('#floating-settings-button').click(() => {
     global.isAutoScrolling = false;
 });
 
+$('#autoscroll').click(() => {
+    updateStateOfValues();
+});
+
 function nextPageClicked(url) {
     setCookie('currentPageLink', url);
     changePage(url);
 }
 
 function openModal() {
-    updateDefaultSettings();
+    updateDefaultValues();
     var element = document.getElementById("settings-modal");
     M.Modal.getInstance(element).open();
 }
@@ -69,7 +73,7 @@ function saveSettings() {
         wordsPerMinute: $('#words-per-minute').val()
     };
     settings.urlChanged = currentUrl !== settings.url;
-    settings.wordsPerMinute = settings.wordsPerMinute <= 0 ? 300 : settings.wordsPerMinute;
+    settings.wordsPerMinute = settings.wordsPerMinute <= 0 ? 250 : settings.wordsPerMinute;
 
     setCookie('currentPageLink', settings.url);
     setCookie('autoloadNext', settings.autoloadNext);
@@ -81,10 +85,17 @@ function saveSettings() {
     return settings;
 }
 
-function updateDefaultSettings() {
+function updateDefaultValues() {
     $('#autoload-next').prop('checked', getCookie('autoloadNext'));
     $('#autoscroll').prop('checked', getCookie('autoscroll'));
     $('#words-per-minute').val(getCookie('wordsPerMinute'));
+    updateStateOfValues();
+}
+
+function updateStateOfValues() {
+    var autoscrollChecked = $('#autoscroll').is(':checked');
+    $('#autoload-next').prop('disabled', !autoscrollChecked);
+    $('#words-per-minute').prop('disabled', !autoscrollChecked);
 }
 
 function pageDown() {
@@ -120,7 +131,10 @@ function autoscrollIfEnabled() {
         }, timeout);
     } else {
         if (getCookie('autoloadNext') === 'true') {
-            $('#next-page-button').click();
+            $('#nextpage-preloader').show();
+            setTimeout(function() {
+                $('#next-page-button').click();
+            }, 3000);
         }
     }
 }
