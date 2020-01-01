@@ -1,6 +1,7 @@
 var global = {
     currentParagraph: 0,
-    isAutoScrolling: false
+    isAutoScrolling: false,
+    windowHeight: document.documentElement.clientHeight
 };
 
 $(document).ready(function () {
@@ -15,6 +16,7 @@ $(document).ready(function () {
 function initializeValuesOnLoad() {
     global.currentParagraph = 0;
     global.isAutoScrolling = getCookie('autoscroll') === 'true';
+    global.windowHeight = document.documentElement.clientHeight;
     autoscrollIfEnabled();
 }
 
@@ -99,11 +101,10 @@ function updateStateOfValues() {
 }
 
 function pageDown() {
-    var clientHeight = document.documentElement.clientHeight;
-    var scrollByAmount = clientHeight * 0.90;
+    var scrollByAmount = global.windowHeight * 0.90;
     $('html, body').animate({
         scrollTop: `+=${scrollByAmount}`
-     }, 400);
+    }, 400);
 }
 
 function changePage(url) {
@@ -121,8 +122,10 @@ function autoscrollIfEnabled() {
 
     var element = document.getElementById(`text-paragraph-${global.currentParagraph++}`);
     if (element) {
-        element.scrollIntoView({behavior: "smooth", block: "center"});
-        
+        $('html, body').animate({
+            scrollTop: $(element).offset().top - global.windowHeight/2.5
+        }, 400);
+
         var wpm = getCookie('wordsPerMinute');
         var numberOfWords = element.textContent.split(' ').length;
         var timeout = numberOfWords / (wpm / 60.0 / 1000.0);
