@@ -88,7 +88,8 @@ function saveSettings() {
 }
 
 function updateDefaultValues() {
-    $('#autoload-next').prop('checked', getCookie('autoloadNext'));
+    var autoloadNext = getCookie('autoloadNext') == null ? true : getCookie('autoloadNext');
+    $('#autoload-next').prop('checked', autoloadNext);
     $('#autoscroll').prop('checked', getCookie('autoscroll'));
     $('#words-per-minute').val(getCookie('wordsPerMinute'));
     updateStateOfValues();
