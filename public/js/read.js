@@ -36,12 +36,12 @@ $('#apply').click(() => {
 });
 
 $('.tap-to-scroll').click(() => {
-    global.isAutoScrolling = false;
+    stopAutoscroll();
     pageDown();
 });
 
 $('#floating-settings-button').click(() => {
-    global.isAutoScrolling = false;
+    stopAutoscroll();
 });
 
 $('#autoscroll-read').click(() => {
@@ -138,6 +138,11 @@ function autoscrollIfEnabled() {
     }
 }
 
+function stopAutoscroll() {
+    global.isAutoScrolling = false;
+    window.speechSynthesis.cancel();
+}
+
 function autoscrollRead() {
     var element = document.getElementById(`text-paragraph-${global.currentParagraph++}`);
     if (element) {
@@ -214,11 +219,13 @@ function textToSpeech() {
 
         // event after text has been spoken
         utter.onend = function() {
+            global.utter = null;
             autoscrollIfEnabled();
         }
 
         // speak
         window.speechSynthesis.speak(utter);
+        global.utter = utter;
     } else {
         if (getCookie('autoloadNext') === 'true') {
             $('#nextpage-preloader').show();
