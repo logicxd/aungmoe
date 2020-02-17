@@ -15,7 +15,7 @@ $(document).ready(function () {
  
 function initializeValuesOnLoad() {
     global.currentParagraph = 0;
-    global.isAutoScrolling = getCookie('autoscroll') === 'true';
+    global.isAutoScrolling = getCookie('autoscroll-read') === 'true';
     global.windowHeight = document.documentElement.clientHeight;
     autoscrollIfEnabled();
 }
@@ -44,7 +44,7 @@ $('#floating-settings-button').click(() => {
     global.isAutoScrolling = false;
 });
 
-$('#autoscroll').click(() => {
+$('#autoscroll-read').click(() => {
     updateStateOfValues();
 });
 
@@ -71,7 +71,7 @@ function saveSettings() {
     var settings = {
         url: $('#url').val(),
         autoloadNext: $('#autoload-next').is(':checked'),
-        autoscroll: $('#autoscroll').is(':checked'),
+        autoscroll: $('#autoscroll-read').is(':checked'),
         wordsPerMinute: $('#words-per-minute').val()
     };
     settings.urlChanged = currentUrl !== settings.url;
@@ -79,7 +79,7 @@ function saveSettings() {
 
     setCookie('currentPageLink', settings.url);
     setCookie('autoloadNext', settings.autoloadNext);
-    setCookie('autoscroll', settings.autoscroll);
+    setCookie('autoscroll-read', settings.autoscroll);
     setCookie('wordsPerMinute', settings.wordsPerMinute);
 
     global.isAutoScrolling = settings.autoscroll;
@@ -90,13 +90,13 @@ function saveSettings() {
 function updateDefaultValues() {
     var autoloadNext = getCookie('autoloadNext') == null ? true : getCookie('autoloadNext');
     $('#autoload-next').prop('checked', autoloadNext);
-    $('#autoscroll').prop('checked', getCookie('autoscroll'));
+    $('#autoscroll-read').prop('checked', getCookie('autoscroll-read'));
     $('#words-per-minute').val(getCookie('wordsPerMinute'));
     updateStateOfValues();
 }
 
 function updateStateOfValues() {
-    var autoscrollChecked = $('#autoscroll').is(':checked');
+    var autoscrollChecked = $('#autoscroll-read').is(':checked');
     $('#autoload-next').prop('disabled', !autoscrollChecked);
     $('#words-per-minute').prop('disabled', !autoscrollChecked);
 }
@@ -113,7 +113,7 @@ function changePage(url) {
 }
 
 function canAutoScroll() {
-    return getCookie('autoscroll') === 'true' && global.isAutoScrolling;
+    return getCookie('autoscroll-read') === 'true' && global.isAutoScrolling;
 }
 
 function autoscrollIfEnabled() {
