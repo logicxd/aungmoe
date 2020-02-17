@@ -212,7 +212,7 @@ function textToSpeech() {
 
         // new SpeechSynthesisUtterance object
 	    var utter = new SpeechSynthesisUtterance();
-        utter.rate = getCookie('autoscrollTTSRate') || 1;
+        utter.rate = parseFloat(getCookie('autoscrollTTSRate'))/25.0;
         utter.pitch = 1;
         utter.text = element.textContent;
         utter.voice = global.ttsLanguage;
