@@ -4,7 +4,7 @@ $(document).ready(function () {
     $('.sidenav').sidenav();
 });
 
-function setCookie(name,value,days = 7) {
+function setCookie(name,value,days = 30) {
     var expires = "";
     if (days) {
         var date = new Date();

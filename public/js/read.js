@@ -77,18 +77,22 @@ function saveSettings() {
     var settings = {
         url: $('#url').val(),
         autoloadNext: $('#autoload-next').is(':checked'),
-        autoscroll: $('#autoscroll-read').is(':checked'),
-        wordsPerMinute: $('#words-per-minute').val()
+        autoscrollRead: $('#autoscroll-read').is(':checked'),
+        wordsPerMinute: $('#words-per-minute').val(),
+        autoscrollTTS: $('#autoscroll-text-to-speech').is(':checked'),
+        autoscrollTTSRate: $('#text-to-speech-rate').val()
     };
     settings.urlChanged = currentUrl !== settings.url;
     settings.wordsPerMinute = settings.wordsPerMinute <= 0 ? 270 : settings.wordsPerMinute;
 
     setCookie('currentPageLink', settings.url);
     setCookie('autoloadNext', settings.autoloadNext);
-    setCookie('autoscroll-read', settings.autoscroll);
+    setCookie('autoscroll-read', settings.autoscrollRead);
     setCookie('wordsPerMinute', settings.wordsPerMinute);
+    setCookie('autoscrollTTS', settings.autoscrollTTS);
+    setCookie('autoscrollTTSRate', settings.autoscrollTTSRate);
 
-    global.isAutoScrolling = settings.autoscroll;
+    global.isAutoScrolling = settings.autoscrollRead;
 
     return settings;
 }
@@ -98,6 +102,8 @@ function updateDefaultValues() {
     $('#autoload-next').prop('checked', autoloadNext);
     $('#autoscroll-read').prop('checked', getCookie('autoscroll-read'));
     $('#words-per-minute').val(getCookie('wordsPerMinute'));
+    $('#autoscroll-text-to-speech').prop('checked', getCookie('autoscrollTTS'));
+    $('#text-to-speech-rate').val(getCookie('autoscrollTTSRate'));
     updateStateOfValues();
 }
 
