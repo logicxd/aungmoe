@@ -75,7 +75,7 @@ function saveSettings() {
         wordsPerMinute: $('#words-per-minute').val()
     };
     settings.urlChanged = currentUrl !== settings.url;
-    settings.wordsPerMinute = settings.wordsPerMinute <= 0 ? 250 : settings.wordsPerMinute;
+    settings.wordsPerMinute = settings.wordsPerMinute <= 0 ? 270 : settings.wordsPerMinute;
 
     setCookie('currentPageLink', settings.url);
     setCookie('autoloadNext', settings.autoloadNext);
