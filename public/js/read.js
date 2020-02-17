@@ -15,7 +15,7 @@ $(document).ready(function () {
  
 function initializeValuesOnLoad() {
     global.currentParagraph = 0;
-    global.isAutoScrolling = getCookie('autoscroll-read') === 'true';
+    global.isAutoScrolling = getCookie('autoscroll-read') === 'true' || getCookie('autoscrollTTS') === 'true';
     global.windowHeight = document.documentElement.clientHeight;
     autoscrollIfEnabled();
 }
@@ -92,7 +92,7 @@ function saveSettings() {
     setCookie('autoscrollTTS', settings.autoscrollTTS);
     setCookie('autoscrollTTSRate', settings.autoscrollTTSRate);
 
-    global.isAutoScrolling = settings.autoscrollRead;
+    global.isAutoScrolling = settings.autoscrollRead || settings.autoscrollTTS;
 
     return settings;
 }
@@ -126,21 +126,22 @@ function changePage(url) {
     window.location.href = `?url=${url}`;
 }
 
-function canAutoScroll() {
-    return getCookie('autoscroll-read') === 'true' && global.isAutoScrolling;
-}
-
 function autoscrollIfEnabled() {
-    if (!canAutoScroll()) {
+    if (!global.isAutoScrolling) {
         return;
     }
 
+    if (getCookie('autoscroll-read') === 'true') {
+        autoscrollRead();
+    } else if (getCookie('autoscrollTTS') === 'true') {
+        autoscrollTTS();
+    }
+}
+
+function autoscrollRead() {
     var element = document.getElementById(`text-paragraph-${global.currentParagraph++}`);
     if (element) {
-        $('html, body').animate({
-            scrollTop: $(element).offset().top - global.windowHeight/2.5
-        }, 400);
-
+        scrollToElement(element);
         var wpm = getCookie('wordsPerMinute');
         var numberOfWords = element.textContent.split(' ').length;
         var timeout = numberOfWords / (wpm / 60.0 / 1000.0);
@@ -155,4 +156,81 @@ function autoscrollIfEnabled() {
             }, 3000);
         }
     }
+}
+
+function autoscrollTTS() {
+    if (!global.ttsLanguage) {
+        loadAndPlayTextToSpeech();
+    } else {
+        textToSpeech(); 
+    }
+}
+
+function loadAndPlayTextToSpeech() {
+    // list of languages is probably not loaded, wait for it
+    if(window.speechSynthesis.getVoices().length == 0) {
+        window.speechSynthesis.addEventListener('voiceschanged', function() {
+            loadTextToSpeechLanguage()
+        });
+    }
+    else {
+        // languages list available, no need to wait
+        loadTextToSpeechLanguage()
+    }
+}
+
+function loadTextToSpeechLanguage() {
+    // get all voices that browser offers
+	var available_voices = window.speechSynthesis.getVoices();
+
+	// this will hold an english voice
+	var english_voice = '';
+
+	// find voice by language locale "en-US"
+	// if not then select the first voice
+	for(var i=0; i<available_voices.length; i++) {
+		if(available_voices[i].lang === 'en-US') {
+			english_voice = available_voices[i];
+			break;
+		}
+	}
+	if(english_voice === '')
+        english_voice = available_voices[0];
+    global.ttsLanguage = english_voice;
+    textToSpeech();
+}
+
+function textToSpeech() {
+    var element = document.getElementById(`text-paragraph-${global.currentParagraph++}`);
+    if (element) {
+        scrollToElement(element);
+
+        // new SpeechSynthesisUtterance object
+	    var utter = new SpeechSynthesisUtterance();
+        utter.rate = getCookie('autoscrollTTSRate') || 1;
+        utter.pitch = 1;
+        utter.text = element.textContent;
+        utter.voice = global.ttsLanguage;
+
+        // event after text has been spoken
+        utter.onend = function() {
+            autoscrollIfEnabled();
+        }
+
+        // speak
+        window.speechSynthesis.speak(utter);
+    } else {
+        if (getCookie('autoloadNext') === 'true') {
+            $('#nextpage-preloader').show();
+            setTimeout(function() {
+                $('#next-page-button').click();
+            }, 3000);
+        }
+    }
+}
+
+function scrollToElement(element) {
+    $('html, body').animate({
+        scrollTop: $(element).offset().top - global.windowHeight/2.5
+    }, 400);
 }
