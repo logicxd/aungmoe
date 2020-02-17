@@ -45,6 +45,12 @@ $('#floating-settings-button').click(() => {
 });
 
 $('#autoscroll-read').click(() => {
+    $('#autoscroll-text-to-speech').prop('checked', false);
+    updateStateOfValues();
+});
+
+$('#autoscroll-text-to-speech').click(() => {
+    $('#autoscroll-read').prop('checked', false);
     updateStateOfValues();
 });
 
@@ -96,9 +102,11 @@ function updateDefaultValues() {
 }
 
 function updateStateOfValues() {
-    var autoscrollChecked = $('#autoscroll-read').is(':checked');
-    $('#autoload-next').prop('disabled', !autoscrollChecked);
-    $('#words-per-minute').prop('disabled', !autoscrollChecked);
+    var autoscrollRead = $('#autoscroll-read').is(':checked');
+    var autoscrollTTS = $('#autoscroll-text-to-speech').is(':checked');
+    $('#words-per-minute').prop('disabled', !autoscrollRead);
+    $('#text-to-speech-rate').prop('disabled', !autoscrollTTS);
+    $('#autoload-next').prop('disabled', !autoscrollRead && !autoscrollTTS);
 }
 
 function pageDown() {
