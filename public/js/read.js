@@ -103,7 +103,9 @@ function updateDefaultValues() {
     $('#autoscroll-read').prop('checked', getCookie('autoscroll-read'));
     $('#words-per-minute').val(getCookie('wordsPerMinute'));
     $('#autoscroll-text-to-speech').prop('checked', getCookie('autoscrollTTS'));
-    $('#text-to-speech-rate').val(getCookie('autoscrollTTSRate'));
+    if (getCookie('autoscrollTTSRate')) {
+        $('#text-to-speech-rate').val(getCookie('autoscrollTTSRate'));
+    }
     updateStateOfValues();
 }
 
@@ -174,9 +176,7 @@ function autoscrollTTS() {
 function loadAndPlayTextToSpeech() {
     // list of languages is probably not loaded, wait for it
     if(window.speechSynthesis.getVoices().length == 0) {
-        window.speechSynthesis.addEventListener('voiceschanged', function() {
-            loadTextToSpeechLanguage()
-        });
+        window.speechSynthesis.onvoiceschanged = loadTextToSpeechLanguage();
     }
     else {
         // languages list available, no need to wait
@@ -212,7 +212,7 @@ function textToSpeech() {
 
         // new SpeechSynthesisUtterance object
 	    var utter = new SpeechSynthesisUtterance();
-        utter.rate = parseFloat(getCookie('autoscrollTTSRate'))/25.0;
+        utter.rate = getTTSRateForSpeechSynthesisUtterance();
         utter.pitch = 1;
         utter.text = element.textContent;
         utter.voice = global.ttsLanguage;
@@ -234,6 +234,15 @@ function textToSpeech() {
             }, 3000);
         }
     }
+}
+
+function getTTSRateForSpeechSynthesisUtterance() {
+    var userVisibleRate = parseFloat(getCookie('autoscrollTTSRate'));   // UI displays numbers 1 through 7
+    var speechSynthesisRate = 1.0;                                      // Convert to rate between 1.0 to 1.6
+    userVisibleRate -= 1.0;
+    userVisibleRate /= 10.0;
+    speechSynthesisRate += userVisibleRate;
+    return speechSynthesisRate;
 }
 
 function scrollToElement(element) {
