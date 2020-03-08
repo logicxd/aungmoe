@@ -1,7 +1,10 @@
 var global = {
     currentParagraph: 0,
     isAutoScrolling: false,
-    windowHeight: document.documentElement.clientHeight
+    windowHeight: document.documentElement.clientHeight,
+    timer: null,
+    ttsLanguage: null,
+    utter: null
 };
 
 $(document).ready(function () {
@@ -36,9 +39,10 @@ $('#apply').click(() => {
 });
 
 $('#controls-bar-fast-rewind').click(() => {
+    global.utter.onend = null;
     global.currentParagraph = global.currentParagraph == 0 ? 0 : global.currentParagraph-1;
     window.speechSynthesis.cancel();
-    clearTimeout(global.timeout);
+    clearTimeout(global.timer);
     autoscrollIfEnabled();
 });
 
@@ -51,9 +55,10 @@ $('#controls-bar-play-pause').click(() => {
 });
 
 $('#controls-bar-fast-forward').click(() => {
+    global.utter.onend = null;
     global.currentParagraph++;
     window.speechSynthesis.cancel();
-    clearTimeout(global.timeout);
+    clearTimeout(global.timer);
     autoscrollIfEnabled();
 });
 
@@ -165,29 +170,28 @@ function autoscrollIfEnabled() {
 function stopAutoscroll() {
     global.isAutoScrolling = false;
     window.speechSynthesis.cancel();
-    clearTimeout(global.timeout);
+    clearTimeout(global.timer);
 }
 
 function autoscrollRead() {
-    var element = document.getElementById(`text-paragraph-${global.currentParagraph++}`);
+    var element = document.getElementById(`text-paragraph-${global.currentParagraph}`);
     if (element) {
         scrollToElement(element);
         var wpm = getCookie('wordsPerMinute');
         var numberOfWords = element.textContent.split(' ').length;
         var timeout = numberOfWords / (wpm / 60.0 / 1000.0);
         clearTimeout(global.timer);
-        global.timer = function() {
+        global.timer = setTimeout(() => {
+            global.currentParagraph++;
             autoscrollIfEnabled();
-        };
-        setTimeout(global.timer, timeout);
+        }, timeout);
     } else {
         if (getCookie('autoloadNext') === 'true') {
             $('#nextpage-preloader').show();
             clearTimeout(global.timer);
-            global.timer = function() {
+            global.timer = setTimeout(() => {
                 $('#next-page-button').click();
-            };
-            setTimeout(global.timer, 3000);
+            }, 3000);
         }
     }
 }
@@ -233,7 +237,9 @@ function loadTextToSpeechLanguage() {
 }
 
 function textToSpeech() {
-    var element = document.getElementById(`text-paragraph-${global.currentParagraph++}`);
+    var element = document.getElementById(`text-paragraph-${global.currentParagraph}`);
+    console.trace();
+    console.log(global.currentParagraph);
     if (element) {
         scrollToElement(element);
 
@@ -247,6 +253,7 @@ function textToSpeech() {
         // event after text has been spoken
         utter.onend = function() {
             global.utter = null;
+            global.currentParagraph++;
             autoscrollIfEnabled();
         }
 
@@ -257,10 +264,9 @@ function textToSpeech() {
         if (getCookie('autoloadNext') === 'true') {
             $('#nextpage-preloader').show();
             clearTimeout(global.timer);
-            global.timer = function() {
+            global.timer = setTimeout(() => {
                 $('#next-page-button').click();
-            };
-            setTimeout(global.timer, 3000);
+            }, 3000);
         }
     }
 }
