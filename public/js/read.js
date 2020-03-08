@@ -35,6 +35,28 @@ $('#apply').click(() => {
     autoscrollIfEnabled();
 });
 
+$('#controls-bar-fast-rewind').click(() => {
+    global.currentParagraph = global.currentParagraph == 0 ? 0 : global.currentParagraph-1;
+    window.speechSynthesis.cancel();
+    clearTimeout(global.timeout);
+    autoscrollIfEnabled();
+});
+
+$('#controls-bar-play-pause').click(() => {
+    if (global.isAutoScrolling) {
+        
+    } else {
+
+    }
+});
+
+$('#controls-bar-fast-forward').click(() => {
+    global.currentParagraph++;
+    window.speechSynthesis.cancel();
+    clearTimeout(global.timeout);
+    autoscrollIfEnabled();
+});
+
 $('.tap-to-scroll').click(() => {
     stopAutoscroll();
     pageDown();
@@ -143,6 +165,7 @@ function autoscrollIfEnabled() {
 function stopAutoscroll() {
     global.isAutoScrolling = false;
     window.speechSynthesis.cancel();
+    clearTimeout(global.timeout);
 }
 
 function autoscrollRead() {
@@ -152,15 +175,19 @@ function autoscrollRead() {
         var wpm = getCookie('wordsPerMinute');
         var numberOfWords = element.textContent.split(' ').length;
         var timeout = numberOfWords / (wpm / 60.0 / 1000.0);
-        setTimeout(function() {
+        clearTimeout(global.timer);
+        global.timer = function() {
             autoscrollIfEnabled();
-        }, timeout);
+        };
+        setTimeout(global.timer, timeout);
     } else {
         if (getCookie('autoloadNext') === 'true') {
             $('#nextpage-preloader').show();
-            setTimeout(function() {
+            clearTimeout(global.timer);
+            global.timer = function() {
                 $('#next-page-button').click();
-            }, 3000);
+            };
+            setTimeout(global.timer, 3000);
         }
     }
 }
@@ -229,9 +256,11 @@ function textToSpeech() {
     } else {
         if (getCookie('autoloadNext') === 'true') {
             $('#nextpage-preloader').show();
-            setTimeout(function() {
+            clearTimeout(global.timer);
+            global.timer = function() {
                 $('#next-page-button').click();
-            }, 3000);
+            };
+            setTimeout(global.timer, 3000);
         }
     }
 }

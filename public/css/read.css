@@ -6581,3 +6581,22 @@ header .nav-wrapper a {
 
 .modal.bottom-sheet {
   max-height: 55%; }
+
+.fixed-controls-bar-container {
+  width: 300px;
+  height: 40px;
+  display: flex;
+  position: fixed;
+  left: 50%;
+  bottom: 23px;
+  margin: 0 auto;
+  margin-left: -150px;
+  z-index: 1;
+  border-radius: 18px;
+  overflow: hidden; }
+
+.fixed-controls-bar-button {
+  flex-grow: 1;
+  height: 40px;
+  line-height: 40px;
+  vertical-align: text-bottom; }

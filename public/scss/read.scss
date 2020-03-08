@@ -1,7 +1,33 @@
 @import './layouts/main.scss';
 @import '/css/highlight/atom-one-dark.css';
 
+$fixed-play-btn-height: 40px; 
+$fixed-play-btn-width: 300px;
+
 // Modal Bottom Sheet Style
 .modal.bottom-sheet {
     max-height: 55%;
+}
+
+.fixed-controls-bar-container {
+    width: $fixed-play-btn-width;
+    height: $fixed-play-btn-height;
+
+    display: flex;
+    position: fixed;
+    left: 50%;
+    bottom: 23px; 
+    margin: 0 auto;
+    margin-left: -($fixed-play-btn-width / 2);
+    z-index: 1;
+
+    border-radius: 18px;
+    overflow: hidden;
+}
+
+.fixed-controls-bar-button {
+    flex-grow: 1;
+    height: $fixed-play-btn-height;
+    line-height: $fixed-play-btn-height;
+    vertical-align: text-bottom;
 }
