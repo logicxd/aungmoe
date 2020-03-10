@@ -39,7 +39,9 @@ $('#apply').click(() => {
 });
 
 $('#controls-bar-fast-rewind').click(() => {
-    global.utter.onend = null;
+    if (global.utter) {
+        global.utter.onend = null;
+    }
     global.currentParagraph = global.currentParagraph == 0 ? 0 : global.currentParagraph-1;
     window.speechSynthesis.cancel();
     clearTimeout(global.timer);
@@ -50,12 +52,14 @@ $('#controls-bar-play-pause').click(() => {
     if (global.isAutoScrolling) {
         
     } else {
-
+        autoscrollIfEnabled();
     }
 });
 
 $('#controls-bar-fast-forward').click(() => {
-    global.utter.onend = null;
+    if (global.utter) {
+        global.utter.onend = null;
+    }
     global.currentParagraph++;
     window.speechSynthesis.cancel();
     clearTimeout(global.timer);
@@ -156,10 +160,6 @@ function changePage(url) {
 }
 
 function autoscrollIfEnabled() {
-    if (!global.isAutoScrolling) {
-        return;
-    }
-
     if (getCookie('autoscroll-read') === 'true') {
         autoscrollRead();
     } else if (getCookie('autoscrollTTS') === 'true') {
@@ -168,6 +168,9 @@ function autoscrollIfEnabled() {
 }
 
 function stopAutoscroll() {
+    if (global.utter) {
+        global.utter.onend = null;
+    }
     global.isAutoScrolling = false;
     window.speechSynthesis.cancel();
     clearTimeout(global.timer);
@@ -182,8 +185,10 @@ function autoscrollRead() {
         var timeout = numberOfWords / (wpm / 60.0 / 1000.0);
         clearTimeout(global.timer);
         global.timer = setTimeout(() => {
-            global.currentParagraph++;
-            autoscrollIfEnabled();
+            if (global.isAutoScrolling) {
+                global.currentParagraph++;
+                autoscrollIfEnabled();
+            }
         }, timeout);
     } else {
         if (getCookie('autoloadNext') === 'true') {
@@ -253,8 +258,10 @@ function textToSpeech() {
         // event after text has been spoken
         utter.onend = function() {
             global.utter = null;
-            global.currentParagraph++;
-            autoscrollIfEnabled();
+            if (global.isAutoScrolling) {
+                global.currentParagraph++;
+                autoscrollIfEnabled();
+            }
         }
 
         // speak
