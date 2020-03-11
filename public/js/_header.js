@@ -20,3 +20,30 @@ function getCookie(name) {
 function eraseCookie(name) {   
     document.cookie = name+'=; Max-Age=-99999999;';  
 }
+
+var animationEnd = (function (el) {
+    var animations = {
+        animation: 'animationend',
+        OAnimation: 'oAnimationEnd',
+        MozAnimation: 'mozAnimationEnd',
+        WebkitAnimation: 'webkitAnimationEnd',
+    };
+
+    for (var t in animations) {
+        if (el.style[t] !== undefined) {
+            return animations[t];
+        }
+    }
+    return 'animationend';
+})(document.createElement('div'));
+
+$.fn.extend({
+    animateCss: function (animationName, callback) {
+        this.addClass('animated ' + animationName).one(animationEnd, function () {
+            $(this).removeClass('animated ' + animationName);
+            if (typeof callback === 'function') callback();
+        });
+
+        return this;
+    },
+});

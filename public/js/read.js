@@ -21,6 +21,7 @@ function initializeValuesOnLoad() {
     global.isAutoScrolling = getCookie('autoscroll-read') === 'true' || getCookie('autoscrollTTS') === 'true';
     global.windowHeight = document.documentElement.clientHeight;
     autoscrollIfEnabled();
+    updateStateOfControlsBarPlayPauseButton();
 }
 
 /// Button events
@@ -39,6 +40,7 @@ $('#apply').click(() => {
 });
 
 $('#controls-bar-fast-rewind').click(() => {
+    $('#controls-bar-fast-rewind-icon').animateCss('shift-left', null);
     if (global.utter) {
         global.utter.onend = null;
     }
@@ -50,13 +52,16 @@ $('#controls-bar-fast-rewind').click(() => {
 
 $('#controls-bar-play-pause').click(() => {
     if (global.isAutoScrolling) {
-        
+        stopAutoscroll();
     } else {
+        global.isAutoScrolling = true; 
         autoscrollIfEnabled();
     }
+    updateStateOfControlsBarPlayPauseButton();
 });
 
 $('#controls-bar-fast-forward').click(() => {
+    $('#controls-bar-fast-forward-icon').animateCss('shift-right', null);
     if (global.utter) {
         global.utter.onend = null;
     }
@@ -148,6 +153,21 @@ function updateStateOfValues() {
     $('#autoload-next').prop('disabled', !autoscrollRead && !autoscrollTTS);
 }
 
+function updateStateOfControlsBarPlayPauseButton() {
+    const icon = $('#controls-bar-play-pause-icon');
+    if (global.isAutoScrolling && icon.text() !== 'pause') {
+        icon.animateCss('rotateOut', () => {
+            icon.text('pause');
+            icon.animateCss('rotateIn', null);
+        });
+    } else if (!global.isAutoScrolling && icon.text() !== 'play_arrow'){
+        icon.animateCss('rotateOut', () => {
+            icon.text('play_arrow');
+            icon.animateCss('rotateIn', null);
+        });
+    }
+}
+
 function pageDown() {
     var scrollByAmount = global.windowHeight * 0.90;
     $('html, body').animate({
@@ -174,6 +194,7 @@ function stopAutoscroll() {
     global.isAutoScrolling = false;
     window.speechSynthesis.cancel();
     clearTimeout(global.timer);
+    updateStateOfControlsBarPlayPauseButton();
 }
 
 function autoscrollRead() {
@@ -243,8 +264,6 @@ function loadTextToSpeechLanguage() {
 
 function textToSpeech() {
     var element = document.getElementById(`text-paragraph-${global.currentParagraph}`);
-    console.trace();
-    console.log(global.currentParagraph);
     if (element) {
         scrollToElement(element);
 

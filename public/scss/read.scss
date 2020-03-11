@@ -3,6 +3,7 @@
 
 $fixed-play-btn-height: 40px; 
 $fixed-play-btn-width: 300px;
+$shift-pixel: 8px;
 
 // Modal Bottom Sheet Style
 .modal.bottom-sheet {
@@ -23,11 +24,97 @@ $fixed-play-btn-width: 300px;
 
     border-radius: 18px;
     overflow: hidden;
-}
 
-.fixed-controls-bar-button {
-    flex-grow: 1;
-    height: $fixed-play-btn-height;
-    line-height: $fixed-play-btn-height;
-    vertical-align: text-bottom;
+    .fixed-controls-bar-button {
+        flex-grow: 1;
+        height: $fixed-play-btn-height;
+        line-height: $fixed-play-btn-height;
+        vertical-align: text-bottom;
+    }
+
+    .animated {
+        animation-duration: 0.3s !important;
+    }
+
+    @-webkit-keyframes shift-left {
+        from,
+        to {
+            -webkit-transform: translate3d(0, 0, 0);
+            transform: translate3d(0, 0, 0);
+        }
+      
+        0% {
+            -webkit-transform: translate3d(-$shift-pixel, 0, 0);
+            transform: translate3d(-$shift-pixel, 0, 0);
+        }
+      
+        100% {
+            -webkit-transform: translate3d(0, 0, 0);
+            transform: translate3d(0, 0, 0);
+        }
+    }
+      
+    @keyframes shift-left {
+        from,
+        to {
+            -webkit-transform: translate3d(0, 0, 0);
+            transform: translate3d(0, 0, 0);
+        }
+      
+        0% {
+            -webkit-transform: translate3d(-$shift-pixel, 0, 0);
+            transform: translate3d(-$shift-pixel, 0, 0);
+        }
+      
+        100% {
+            -webkit-transform: translate3d(0, 0, 0);
+            transform: translate3d(0, 0, 0);
+        }
+    }
+      
+    .shift-left {
+        -webkit-animation-name: shift-left;
+        animation-name: shift-left;
+    }
+
+    @-webkit-keyframes shift-right {
+        from,
+        to {
+            -webkit-transform: translate3d(0, 0, 0);
+            transform: translate3d(0, 0, 0);
+        }
+      
+        0% {
+            -webkit-transform: translate3d($shift-pixel, 0, 0);
+            transform: translate3d($shift-pixel, 0, 0);
+        }
+      
+        100% {
+            -webkit-transform: translate3d(0, 0, 0);
+            transform: translate3d(0, 0, 0);
+        }
+    }
+      
+    @keyframes shift-right {
+        from,
+        to {
+            -webkit-transform: translate3d(0, 0, 0);
+            transform: translate3d(0, 0, 0);
+        }
+      
+        0% {
+            -webkit-transform: translate3d($shift-pixel, 0, 0);
+            transform: translate3d($shift-pixel, 0, 0);
+        }
+      
+        100% {
+            -webkit-transform: translate3d(0, 0, 0);
+            transform: translate3d(0, 0, 0);
+        }
+    }
+      
+    .shift-right {
+        -webkit-animation-name: shift-right;
+        animation-name: shift-right;
+    }
 }
