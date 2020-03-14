@@ -3,7 +3,6 @@ var express = require('express');
 var router = express.Router();
 var rp = require('request-promise');
 var unfluff = require('unfluff');
-var hljs = require('highlight.js');
 
 router.get('/', async function (req, res) {
     if (req.query.url) {

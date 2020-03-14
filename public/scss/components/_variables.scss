@@ -35,6 +35,8 @@
 // ==========================================================================
 
 $my-dark-color: #2A3D50 !default;
+$my-dark-color-light: lighten($my-dark-color, 15%) !default;
+$my-dark-color-dark: darken($my-dark-color, 15%) !default;
 $my-white-color: #FBFBFB !default;
 $my-slate-color: #687D91 !default;
 $my-cyan-color: #62B7E6 !default;

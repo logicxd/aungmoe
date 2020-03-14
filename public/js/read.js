@@ -1,7 +1,10 @@
 var global = {
     currentParagraph: 0,
     isAutoScrolling: false,
-    windowHeight: document.documentElement.clientHeight
+    windowHeight: document.documentElement.clientHeight,
+    timer: null,
+    ttsLanguage: null,
+    utter: null
 };
 
 $(document).ready(function () {
@@ -18,6 +21,7 @@ function initializeValuesOnLoad() {
     global.isAutoScrolling = getCookie('autoscroll-read') === 'true' || getCookie('autoscrollTTS') === 'true';
     global.windowHeight = document.documentElement.clientHeight;
     autoscrollIfEnabled();
+    updateStateOfControlsBarPlayPauseButton();
 }
 
 /// Button events
@@ -33,6 +37,36 @@ $('#apply').click(() => {
         changePage(settings.url);
     }
     autoscrollIfEnabled();
+});
+
+$('#controls-bar-fast-rewind').click(() => {
+    $('#controls-bar-fast-rewind-icon').animateCss('shift-left', null);
+    if (global.utter) {
+        global.utter.onend = null;
+    }
+    window.speechSynthesis.cancel();
+    clearTimeout(global.timer);
+    changeCurrentParagraph(global.currentParagraph-1);
+});
+
+$('#controls-bar-play-pause').click(() => {
+    if (global.isAutoScrolling) {
+        stopAutoscroll();
+    } else {
+        global.isAutoScrolling = true; 
+        autoscrollIfEnabled();
+    }
+    updateStateOfControlsBarPlayPauseButton();
+});
+
+$('#controls-bar-fast-forward').click(() => {
+    $('#controls-bar-fast-forward-icon').animateCss('shift-right', null);
+    if (global.utter) {
+        global.utter.onend = null;
+    }
+    window.speechSynthesis.cancel();
+    clearTimeout(global.timer);
+    changeCurrentParagraph(global.currentParagraph+1);
 });
 
 $('.tap-to-scroll').click(() => {
@@ -117,6 +151,21 @@ function updateStateOfValues() {
     $('#autoload-next').prop('disabled', !autoscrollRead && !autoscrollTTS);
 }
 
+function updateStateOfControlsBarPlayPauseButton() {
+    const icon = $('#controls-bar-play-pause-icon');
+    if (global.isAutoScrolling && icon.text() !== 'pause') {
+        icon.animateCss('rotateOut', () => {
+            icon.text('pause');
+            icon.animateCss('rotateIn', null);
+        });
+    } else if (!global.isAutoScrolling && icon.text() !== 'play_arrow'){
+        icon.animateCss('rotateOut', () => {
+            icon.text('play_arrow');
+            icon.animateCss('rotateIn', null);
+        });
+    }
+}
+
 function pageDown() {
     var scrollByAmount = global.windowHeight * 0.90;
     $('html, body').animate({
@@ -129,36 +178,46 @@ function changePage(url) {
 }
 
 function autoscrollIfEnabled() {
-    if (!global.isAutoScrolling) {
-        return;
-    }
-
-    if (getCookie('autoscroll-read') === 'true') {
+    const read = getCookie('autoscroll-read') === 'true';
+    const tts = getCookie('autoscrollTTS') === 'true';
+    $('#fixed-controls-bar-container').toggleClass('hide', !read && !tts);
+    $(`#text-paragraph-${global.currentParagraph}`).removeClass('active-paragraph');
+    if (read) {
         autoscrollRead();
-    } else if (getCookie('autoscrollTTS') === 'true') {
+    } else if (tts) {
         autoscrollTTS();
     }
+    updateStateOfControlsBarPlayPauseButton();
 }
 
 function stopAutoscroll() {
+    if (global.utter) {
+        global.utter.onend = null;
+    }
     global.isAutoScrolling = false;
     window.speechSynthesis.cancel();
+    clearTimeout(global.timer);
+    updateStateOfControlsBarPlayPauseButton();
 }
 
 function autoscrollRead() {
-    var element = document.getElementById(`text-paragraph-${global.currentParagraph++}`);
+    var element = document.getElementById(`text-paragraph-${global.currentParagraph}`);
     if (element) {
         scrollToElement(element);
         var wpm = getCookie('wordsPerMinute');
         var numberOfWords = element.textContent.split(' ').length;
         var timeout = numberOfWords / (wpm / 60.0 / 1000.0);
-        setTimeout(function() {
-            autoscrollIfEnabled();
+        clearTimeout(global.timer);
+        global.timer = setTimeout(() => {
+            if (global.isAutoScrolling) {
+                changeCurrentParagraph(global.currentParagraph+1);
+            }
         }, timeout);
     } else {
         if (getCookie('autoloadNext') === 'true') {
             $('#nextpage-preloader').show();
-            setTimeout(function() {
+            clearTimeout(global.timer);
+            global.timer = setTimeout(() => {
                 $('#next-page-button').click();
             }, 3000);
         }
@@ -206,7 +265,7 @@ function loadTextToSpeechLanguage() {
 }
 
 function textToSpeech() {
-    var element = document.getElementById(`text-paragraph-${global.currentParagraph++}`);
+    var element = document.getElementById(`text-paragraph-${global.currentParagraph}`);
     if (element) {
         scrollToElement(element);
 
@@ -220,7 +279,9 @@ function textToSpeech() {
         // event after text has been spoken
         utter.onend = function() {
             global.utter = null;
-            autoscrollIfEnabled();
+            if (global.isAutoScrolling) {
+                changeCurrentParagraph(global.currentParagraph+1);
+            }
         }
 
         // speak
@@ -229,7 +290,8 @@ function textToSpeech() {
     } else {
         if (getCookie('autoloadNext') === 'true') {
             $('#nextpage-preloader').show();
-            setTimeout(function() {
+            clearTimeout(global.timer);
+            global.timer = setTimeout(() => {
                 $('#next-page-button').click();
             }, 3000);
         }
@@ -246,7 +308,17 @@ function getTTSRateForSpeechSynthesisUtterance() {
 }
 
 function scrollToElement(element) {
+    $(element).addClass('active-paragraph');
     $('html, body').animate({
         scrollTop: $(element).offset().top - global.windowHeight/2.5
     }, 400);
+}
+
+function changeCurrentParagraph(newParagraph) {
+    var element = $(`#text-paragraph-${newParagraph}`);
+    if (element.length) {
+        $(`#text-paragraph-${global.currentParagraph}`).removeClass('active-paragraph');
+        global.currentParagraph = newParagraph;
+        autoscrollIfEnabled();
+    }
 }
