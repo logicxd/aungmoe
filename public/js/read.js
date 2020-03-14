@@ -44,10 +44,9 @@ $('#controls-bar-fast-rewind').click(() => {
     if (global.utter) {
         global.utter.onend = null;
     }
-    global.currentParagraph = global.currentParagraph == 0 ? 0 : global.currentParagraph-1;
     window.speechSynthesis.cancel();
     clearTimeout(global.timer);
-    autoscrollIfEnabled();
+    changeCurrentParagraph(global.currentParagraph-1);
 });
 
 $('#controls-bar-play-pause').click(() => {
@@ -65,10 +64,9 @@ $('#controls-bar-fast-forward').click(() => {
     if (global.utter) {
         global.utter.onend = null;
     }
-    global.currentParagraph++;
     window.speechSynthesis.cancel();
     clearTimeout(global.timer);
-    autoscrollIfEnabled();
+    changeCurrentParagraph(global.currentParagraph+1);
 });
 
 $('.tap-to-scroll').click(() => {
@@ -180,11 +178,16 @@ function changePage(url) {
 }
 
 function autoscrollIfEnabled() {
-    if (getCookie('autoscroll-read') === 'true') {
+    const read = getCookie('autoscroll-read') === 'true';
+    const tts = getCookie('autoscrollTTS') === 'true';
+    $('#fixed-controls-bar-container').toggleClass('hide', !read && !tts);
+    $(`#text-paragraph-${global.currentParagraph}`).removeClass('active-paragraph');
+    if (read) {
         autoscrollRead();
-    } else if (getCookie('autoscrollTTS') === 'true') {
+    } else if (tts) {
         autoscrollTTS();
     }
+    updateStateOfControlsBarPlayPauseButton();
 }
 
 function stopAutoscroll() {
@@ -207,8 +210,7 @@ function autoscrollRead() {
         clearTimeout(global.timer);
         global.timer = setTimeout(() => {
             if (global.isAutoScrolling) {
-                global.currentParagraph++;
-                autoscrollIfEnabled();
+                changeCurrentParagraph(global.currentParagraph+1);
             }
         }, timeout);
     } else {
@@ -278,8 +280,7 @@ function textToSpeech() {
         utter.onend = function() {
             global.utter = null;
             if (global.isAutoScrolling) {
-                global.currentParagraph++;
-                autoscrollIfEnabled();
+                changeCurrentParagraph(global.currentParagraph+1);
             }
         }
 
@@ -307,7 +308,17 @@ function getTTSRateForSpeechSynthesisUtterance() {
 }
 
 function scrollToElement(element) {
+    $(element).addClass('active-paragraph');
     $('html, body').animate({
         scrollTop: $(element).offset().top - global.windowHeight/2.5
     }, 400);
+}
+
+function changeCurrentParagraph(newParagraph) {
+    var element = $(`#text-paragraph-${newParagraph}`);
+    if (element.length) {
+        $(`#text-paragraph-${global.currentParagraph}`).removeClass('active-paragraph');
+        global.currentParagraph = newParagraph;
+        autoscrollIfEnabled();
+    }
 }

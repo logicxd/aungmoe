@@ -6597,7 +6597,10 @@ header .nav-wrapper a {
 .modal.bottom-sheet {
   max-height: 55%; }
 
-.fixed-controls-bar-container {
+.active-paragraph {
+  background-color: #2A3D50; }
+
+#fixed-controls-bar-container {
   width: 300px;
   height: 40px;
   display: flex;
@@ -6609,12 +6612,12 @@ header .nav-wrapper a {
   z-index: 1;
   border-radius: 18px;
   overflow: hidden; }
-  .fixed-controls-bar-container .fixed-controls-bar-button {
+  #fixed-controls-bar-container .fixed-controls-bar-button {
     flex-grow: 1;
     height: 40px;
     line-height: 40px;
     vertical-align: text-bottom; }
-  .fixed-controls-bar-container .animated {
+  #fixed-controls-bar-container .animated {
     animation-duration: 0.3s !important; }
 
 @-webkit-keyframes shift-left {
@@ -6640,7 +6643,7 @@ header .nav-wrapper a {
   100% {
     -webkit-transform: translate3d(0, 0, 0);
     transform: translate3d(0, 0, 0); } }
-  .fixed-controls-bar-container .shift-left {
+  #fixed-controls-bar-container .shift-left {
     -webkit-animation-name: shift-left;
     animation-name: shift-left; }
 
@@ -6667,6 +6670,6 @@ header .nav-wrapper a {
   100% {
     -webkit-transform: translate3d(0, 0, 0);
     transform: translate3d(0, 0, 0); } }
-  .fixed-controls-bar-container .shift-right {
+  #fixed-controls-bar-container .shift-right {
     -webkit-animation-name: shift-right;
     animation-name: shift-right; }

@@ -10,7 +10,11 @@ $shift-pixel: 8px;
     max-height: 55%;
 }
 
-.fixed-controls-bar-container {
+.active-paragraph {
+    background-color: $my-dark-color;
+}
+
+#fixed-controls-bar-container {
     width: $fixed-play-btn-width;
     height: $fixed-play-btn-height;
 
