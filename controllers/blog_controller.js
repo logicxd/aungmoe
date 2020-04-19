@@ -79,7 +79,7 @@ try {
     }
 
     // Order from most recent to oldest.
-    sortedPages.sort((a, b) => a.date > b.date);
+    sortedPages.sort((a, b) => b.date - a.date);
 }
 catch (err) {
     console.log('Error parsing markdown pages: ' + err);
