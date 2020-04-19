@@ -6601,14 +6601,14 @@ header .nav-wrapper a {
   background-color: #2A3D50; }
 
 #fixed-controls-bar-container {
-  width: 300px;
+  width: 240px;
   height: 40px;
   display: flex;
   position: fixed;
   left: 50%;
   bottom: 23px;
   margin: 0 auto;
-  margin-left: -150px;
+  margin-left: -120px;
   z-index: 1;
   border-radius: 18px;
   overflow: hidden; }

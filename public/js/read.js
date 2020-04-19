@@ -18,7 +18,7 @@ $(document).ready(function () {
  
 function initializeValuesOnLoad() {
     global.currentParagraph = 0;
-    global.isAutoScrolling = getCookie('autoscroll-read') === 'true' || getCookie('autoscrollTTS') === 'true';
+    global.isAutoScrolling = false;
     global.windowHeight = document.documentElement.clientHeight;
     autoscrollIfEnabled();
     updateStateOfControlsBarPlayPauseButton();
@@ -41,11 +41,7 @@ $('#apply').click(() => {
 
 $('#controls-bar-fast-rewind').click(() => {
     $('#controls-bar-fast-rewind-icon').animateCss('shift-left', null);
-    if (global.utter) {
-        global.utter.onend = null;
-    }
-    window.speechSynthesis.cancel();
-    clearTimeout(global.timer);
+    stopAutoscroll();
     changeCurrentParagraph(global.currentParagraph-1);
 });
 
@@ -61,11 +57,7 @@ $('#controls-bar-play-pause').click(() => {
 
 $('#controls-bar-fast-forward').click(() => {
     $('#controls-bar-fast-forward-icon').animateCss('shift-right', null);
-    if (global.utter) {
-        global.utter.onend = null;
-    }
-    window.speechSynthesis.cancel();
-    clearTimeout(global.timer);
+    stopAutoscroll();
     changeCurrentParagraph(global.currentParagraph+1);
 });
 
@@ -181,7 +173,6 @@ function autoscrollIfEnabled() {
     const read = getCookie('autoscroll-read') === 'true';
     const tts = getCookie('autoscrollTTS') === 'true';
     $('#fixed-controls-bar-container').toggleClass('hide', !read && !tts);
-    $(`#text-paragraph-${global.currentParagraph}`).removeClass('active-paragraph');
     if (read) {
         autoscrollRead();
     } else if (tts) {
@@ -204,22 +195,17 @@ function autoscrollRead() {
     var element = document.getElementById(`text-paragraph-${global.currentParagraph}`);
     if (element) {
         scrollToElement(element);
-        var wpm = getCookie('wordsPerMinute');
-        var numberOfWords = element.textContent.split(' ').length;
-        var timeout = numberOfWords / (wpm / 60.0 / 1000.0);
-        clearTimeout(global.timer);
-        global.timer = setTimeout(() => {
-            if (global.isAutoScrolling) {
-                changeCurrentParagraph(global.currentParagraph+1);
-            }
-        }, timeout);
-    } else {
-        if (getCookie('autoloadNext') === 'true') {
-            $('#nextpage-preloader').show();
+
+        if (global.isAutoScrolling) {
+            var wpm = getCookie('wordsPerMinute');
+            var numberOfWords = element.textContent.split(' ').length;
+            var timeout = numberOfWords / (wpm / 60.0 / 1000.0);
             clearTimeout(global.timer);
             global.timer = setTimeout(() => {
-                $('#next-page-button').click();
-            }, 3000);
+                if (global.isAutoScrolling) {
+                    changeCurrentParagraph(global.currentParagraph+1);
+                }
+            }, timeout);
         }
     }
 }
@@ -269,31 +255,25 @@ function textToSpeech() {
     if (element) {
         scrollToElement(element);
 
-        // new SpeechSynthesisUtterance object
-	    var utter = new SpeechSynthesisUtterance();
-        utter.rate = getTTSRateForSpeechSynthesisUtterance();
-        utter.pitch = 1;
-        utter.text = element.textContent;
-        utter.voice = global.ttsLanguage;
+        if (global.isAutoScrolling) {
+            // new SpeechSynthesisUtterance object
+            var utter = new SpeechSynthesisUtterance();
+            utter.rate = getTTSRateForSpeechSynthesisUtterance();
+            utter.pitch = 1;
+            utter.text = element.textContent;
+            utter.voice = global.ttsLanguage;
 
-        // event after text has been spoken
-        utter.onend = function() {
-            global.utter = null;
-            if (global.isAutoScrolling) {
-                changeCurrentParagraph(global.currentParagraph+1);
+            // event after text has been spoken
+            utter.onend = function() {
+                global.utter = null;
+                if (global.isAutoScrolling) {
+                    changeCurrentParagraph(global.currentParagraph+1);
+                }
             }
-        }
 
-        // speak
-        window.speechSynthesis.speak(utter);
-        global.utter = utter;
-    } else {
-        if (getCookie('autoloadNext') === 'true') {
-            $('#nextpage-preloader').show();
-            clearTimeout(global.timer);
-            global.timer = setTimeout(() => {
-                $('#next-page-button').click();
-            }, 3000);
+            // speak
+            window.speechSynthesis.speak(utter);
+            global.utter = utter;
         }
     }
 }
@@ -320,5 +300,13 @@ function changeCurrentParagraph(newParagraph) {
         $(`#text-paragraph-${global.currentParagraph}`).removeClass('active-paragraph');
         global.currentParagraph = newParagraph;
         autoscrollIfEnabled();
+    } else if (newParagraph > 0) {
+        if (getCookie('autoloadNext') === 'true') {
+            $('#nextpage-preloader').show();
+            clearTimeout(global.timer);
+            global.timer = setTimeout(() => {
+                $('#next-page-button').click();
+            }, 3000);
+        }
     }
 }
