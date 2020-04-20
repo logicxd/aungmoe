@@ -3,6 +3,7 @@ var express = require('express');
 var router = express.Router();
 var rp = require('request-promise');
 var unfluff = require('unfluff');
+var cheerio = require('cheerio');
 
 router.get('/', async function (req, res) {
     if (req.query.url) {
@@ -33,7 +34,8 @@ async function loadReadPage(req, res) {
     var data = unfluff(html);
     var paragraphs = data.text.split('\n\n');
     var title = data.title || 'Error';
-    var nextPageLink = findNextPageLink(data.links);
+    var nextPageLink = findNextPageLinkUsingUnfluff(data.links);
+    nextPageLink = nextPageLink === '' ? findNextPageLinkUsingCheerio(html) : nextPageLink;
     nextPageLink = turnURLIntoAbsolutePathIfNeeded(nextPageLink, req.query.url);
 
     res.render('read', {
@@ -49,7 +51,7 @@ async function loadReadPage(req, res) {
     });
 }
 
-function findNextPageLink(links) {
+function findNextPageLinkUsingUnfluff(links) {
     var link = '';
     for (var i = links.length - 1; i >= 0; --i ) {
         var linkObject = links[i];
@@ -58,6 +60,26 @@ function findNextPageLink(links) {
             link = linkObject.href;
             break;
         }
+    }
+    return link;
+}
+
+function findNextPageLinkUsingCheerio(html) {
+    var link = '';
+    var loadedHTML = cheerio.load(html);
+    var linkContents = loadedHTML('a').contents();
+    try {
+        for (var i = linkContents.length - 1; i >= 0; --i) {
+            var nodeObject = linkContents.get(i);
+            var nodeText = nodeObject.data;
+            nodeText = nodeText == null ? '' : nodeText.toLowerCase();
+            if (nodeText.includes('next')) {
+                link = nodeObject.parent.attribs.href;
+                break;
+            }
+        }
+    } catch (error) {
+        console.error(error);
     }
     return link;
 }
