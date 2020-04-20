@@ -15,7 +15,10 @@
             </button>
         </div>
     {{else}}
-        <h2>{{ textTitle }}</h2>
+        <h3>{{ textTitle }}</h3>
+        {{#if textAlternativeTitles }}
+        <h6>Alternative titles: {{ textAlternativeTitles }}</h6>
+        {{/if}}
         <div class="flow-text tap-to-scroll">
             {{#each textParagraphs}}
             <p id="text-paragraph-{{@index}}">{{ this }}</p>
