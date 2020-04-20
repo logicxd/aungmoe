@@ -93,10 +93,12 @@
                 <i class="material-icons">settings</i>
             </a>
             <ul>
-                <li><a class="btn-floating red" onclick="autoscrollButtonClicked();"><i class="material-icons">play_arrow</i></a></li>
-                <li><a class="btn-floating green" href="#scroll-to-top"><i class="material-icons" style="pointer-events:none;">publish</i></a></li>
-                <li><a class="btn-floating blue" onclick="window.open('{{ currentPageLink }}', '_blank');"><i class="material-icons">launch</i></a></li>
-                <li><a class="btn-floating" onclick="openModal();"><i class="material-icons">mode_edit</i></a></li>
+                <li><a class="btn-floating tooltipped green" data-tooltip="Scroll to top" data-position="left" href="#scroll-to-top"><i class="material-icons" style="pointer-events:none;">publish</i></a></li>
+                <li><a class="btn-floating tooltipped blue" data-tooltip="Open link in new tab" data-position="left" onclick="window.open('{{ currentPageLink }}', '_blank');"><i class="material-icons">launch</i></a></li>
+                {{#if nextPageLink }}
+                <li><a class="btn-floating tooltipped orange" data-tooltip="Next page" data-position="left" onclick="nextPageClicked('{{ nextPageLink }}')"><i class="material-icons">arrow_forward</i></a></li>
+                {{/if}}
+                <li><a class="btn-floating tooltipped" data-tooltip="Settings" data-position="left" onclick="openModal();"><i class="material-icons">mode_edit</i></a></li>
             </ul>
         </div>
     {{/if}}

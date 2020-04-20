@@ -14,6 +14,7 @@ $(document).ready(function () {
     $('.fixed-action-btn').floatingActionButton({
         hoverEnabled: false
     });
+    $('.tooltipped').tooltip();
 });
  
 function initializeValuesOnLoad() {
@@ -89,11 +90,6 @@ function openModal() {
     updateDefaultValues();
     var element = document.getElementById("settings-modal");
     M.Modal.getInstance(element).open();
-}
-
-function autoscrollButtonClicked() {
-    global.isAutoScrolling = !global.isAutoScrolling;
-    autoscrollIfEnabled();
 }
 
 /// Helper
