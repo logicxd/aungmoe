@@ -147,19 +147,6 @@ function turnURLIntoAbsolutePathIfNeeded(link, currentUrl) {
     var url = new URL(currentUrl);
     url.pathname = link;
     return url.toString();
-
-    // var tokenizeCurrentUrl = currentUrl.split('/').reverse();
-    // var tokenizeLink = link.split('/').reverse();
-    // var newLink = '';
-    // var isFirst = 0;
-    // while (tokenizeLink.length > 0) {
-    //     if (tokenizeCurrentUrl.length > tokenizeLink.length) {
-    //         newLink += (isFirst++ === 0 ? '' : '/') + tokenizeCurrentUrl.pop(); 
-    //     } else {
-    //         newLink += `/${tokenizeLink.pop()}`;
-    //     }
-    // }
-    // return newLink;
 }
 
 function isAbsoluteLink(link) {
