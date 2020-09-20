@@ -5,7 +5,10 @@ $(document).ready(function () {
 });
 
 function setCookie(name,value,days = 30) {
-    document.cookie = `${name}=${value || ""};max-age=${days * 24 * 60 * 60};path=/;samesite=strict;`;
+    var expirationDate = new Date();
+    expirationDate.setDate(expirationDate.getDate() + days);
+    document.cookie = `${name}=${value || ""};expires=${expirationDate.toUTCString()};path=/;samesite=strict;`;
+    // document.cookie = `${name}=${value || ""};max-age=${days * 24 * 60 * 60};path=/;samesite=strict;`;
 }
 function getCookie(name) {
     var nameEQ = name + "=";
