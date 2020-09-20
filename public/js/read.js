@@ -82,7 +82,7 @@ $('#autoscroll-text-to-speech').click(() => {
 });
 
 function nextPageClicked(url) {
-    setCookie('currentPageLink', url);
+    localStorage.setItem('currentPageLink', url);
     changePage(url);
 }
 
@@ -95,7 +95,7 @@ function openModal() {
 /// Helper
 
 function saveSettings() {
-    var currentUrl = getCookie('currentPageLink');
+    var currentUrl = localStorage.getItem('currentPageLink');
     var settings = {
         url: $('#url').val(),
         autoloadNext: $('#autoload-next').is(':checked'),
@@ -107,12 +107,12 @@ function saveSettings() {
     settings.urlChanged = currentUrl !== settings.url;
     settings.wordsPerMinute = settings.wordsPerMinute <= 0 ? 270 : settings.wordsPerMinute;
 
-    setCookie('currentPageLink', settings.url);
-    setCookie('autoloadNext', settings.autoloadNext);
-    setCookie('autoscroll-read', settings.autoscrollRead);
-    setCookie('wordsPerMinute', settings.wordsPerMinute);
-    setCookie('autoscrollTTS', settings.autoscrollTTS);
-    setCookie('autoscrollTTSRate', settings.autoscrollTTSRate);
+    localStorage.setItem('currentPageLink', settings.url);
+    localStorage.setItem('autoloadNext', settings.autoloadNext);
+    localStorage.setItem('autoscroll-read', settings.autoscrollRead);
+    localStorage.setItem('wordsPerMinute', settings.wordsPerMinute);
+    localStorage.setItem('autoscrollTTS', settings.autoscrollTTS);
+    localStorage.setItem('autoscrollTTSRate', settings.autoscrollTTSRate);
 
     global.isAutoScrolling = settings.autoscrollRead || settings.autoscrollTTS;
 
@@ -120,13 +120,13 @@ function saveSettings() {
 }
 
 function updateDefaultValues() {
-    var autoloadNext = getCookie('autoloadNext') == null ? true : getCookie('autoloadNext');
+    var autoloadNext = localStorage.getItem('autoloadNext') == null ? true : localStorage.getItem('autoloadNext');
     $('#autoload-next').prop('checked', autoloadNext);
-    $('#autoscroll-read').prop('checked', getCookie('autoscroll-read'));
-    $('#words-per-minute').val(getCookie('wordsPerMinute'));
-    $('#autoscroll-text-to-speech').prop('checked', getCookie('autoscrollTTS'));
-    if (getCookie('autoscrollTTSRate')) {
-        $('#text-to-speech-rate').val(getCookie('autoscrollTTSRate'));
+    $('#autoscroll-read').prop('checked', localStorage.getItem('autoscroll-read'));
+    $('#words-per-minute').val(localStorage.getItem('wordsPerMinute'));
+    $('#autoscroll-text-to-speech').prop('checked', localStorage.getItem('autoscrollTTS'));
+    if (localStorage.getItem('autoscrollTTSRate')) {
+        $('#text-to-speech-rate').val(localStorage.getItem('autoscrollTTSRate'));
     }
     updateStateOfValues();
 }
@@ -166,8 +166,8 @@ function changePage(url) {
 }
 
 function autoscrollIfEnabled() {
-    const read = getCookie('autoscroll-read') === 'true';
-    const tts = getCookie('autoscrollTTS') === 'true';
+    const read = localStorage.getItem('autoscroll-read') === 'true';
+    const tts = localStorage.getItem('autoscrollTTS') === 'true';
     $('#fixed-controls-bar-container').toggleClass('hide', !read && !tts);
     if (read) {
         autoscrollRead();
@@ -193,7 +193,7 @@ function autoscrollRead() {
         scrollToElement(element);
 
         if (global.isAutoScrolling) {
-            var wpm = getCookie('wordsPerMinute');
+            var wpm = localStorage.getItem('wordsPerMinute');
             var numberOfWords = element.textContent.split(' ').length;
             var timeout = numberOfWords / (wpm / 60.0 / 1000.0);
             clearTimeout(global.timer);
@@ -275,7 +275,7 @@ function textToSpeech() {
 }
 
 function getTTSRateForSpeechSynthesisUtterance() {
-    var userVisibleRate = parseFloat(getCookie('autoscrollTTSRate'));   // UI displays numbers 1 through 7
+    var userVisibleRate = parseFloat(localStorage.getItem('autoscrollTTSRate'));   // UI displays numbers 1 through 7
     var speechSynthesisRate = 1.0;                                      // Convert to rate between 1.0 to 1.6
     userVisibleRate -= 1.0;
     userVisibleRate /= 10.0;
@@ -297,7 +297,7 @@ function changeCurrentParagraph(newParagraph) {
         global.currentParagraph = newParagraph;
         autoscrollIfEnabled();
     } else if (newParagraph > 0) {
-        if (getCookie('autoloadNext') === 'true') {
+        if (localStorage.getItem('autoloadNext') === 'true') {
             $('#nextpage-preloader').show();
             clearTimeout(global.timer);
             global.timer = setTimeout(() => {
