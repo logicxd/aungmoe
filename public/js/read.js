@@ -120,11 +120,11 @@ function saveSettings() {
 }
 
 function updateDefaultValues() {
-    var autoloadNext = localStorage.getItem('autoloadNext') == null ? true : localStorage.getItem('autoloadNext');
+    var autoloadNext = localStorage.getItem('autoloadNext') === null ? true : localStorage.getItem('autoloadNext') === 'true';
     $('#autoload-next').prop('checked', autoloadNext);
-    $('#autoscroll-read').prop('checked', localStorage.getItem('autoscroll-read'));
+    $('#autoscroll-read').prop('checked', localStorage.getItem('autoscroll-read') === 'true');
     $('#words-per-minute').val(localStorage.getItem('wordsPerMinute'));
-    $('#autoscroll-text-to-speech').prop('checked', localStorage.getItem('autoscrollTTS'));
+    $('#autoscroll-text-to-speech').prop('checked', localStorage.getItem('autoscrollTTS') === 'true');
     if (localStorage.getItem('autoscrollTTSRate')) {
         $('#text-to-speech-rate').val(localStorage.getItem('autoscrollTTSRate'));
     }
