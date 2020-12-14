@@ -126,9 +126,10 @@ function findNextPageLinkUsingCheerio(html) {
     try {
         for (var i = linkContents.length - 1; i >= 0; --i) {
             var node = linkContents.get(i);
-            var nodeText = node.data;
-            nodeText = nodeText == null ? '' : nodeText.toLowerCase();
-            if (nodeText.includes('next')) {
+            var foundNextLink = findNextPageLinkUsingCheerio_CheckForCurrentNodeData(node);
+            foundNextLink = foundNextLink || findNextPageLinkUsingCheerio_CheckForChildrenNodeData(node);
+
+            if (foundNextLink) {
                 link = node.parent.attribs.href;
                 break;
             }
@@ -137,6 +138,28 @@ function findNextPageLinkUsingCheerio(html) {
         console.error(error);
     }
     return link;
+}
+
+function findNextPageLinkUsingCheerio_CheckForCurrentNodeData(node) {
+    var nodeText = node.data;
+    nodeText = nodeText == null ? '' : nodeText.toLowerCase();
+    return nodeText.includes('next')
+}
+
+function findNextPageLinkUsingCheerio_CheckForChildrenNodeData(node) {
+    if (!node.children) { return false; }
+
+    for (var i = 0; i < node.children.length; ++i) {
+        var childNode = node.children[i];
+
+        if (!childNode.data) { 
+            continue; 
+        }
+        if (childNode.data.toLowerCase().includes('next')) {
+            return true;
+        }
+    }
+    return false;
 }
 
 function turnURLIntoAbsolutePathIfNeeded(link, currentUrl) {
