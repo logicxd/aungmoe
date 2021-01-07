@@ -8,7 +8,7 @@ urlName: combine-email-bills-using-gmail-api
 
 I wanted to automate combining monthly bills to share it with your roommates so I created this script. Let me know what you guys think!
 
-<https://github.com/logicxd/Combine-Bills-Using-Gmail>
+<https://github.com/logicxd/Combine-Email-Bills-Using-Gmail-API>
 
 ## Preview from GitHub
 
@@ -37,4 +37,4 @@ An example of how I use it:
 4. Write email scripts to extract the amount.
 5. Download code on my raspbery pi and schedule it to run every month to send me monthly aggregated bills 🎉.
 
-Check out the [GitHub repository](https://github.com/logicxd/Combine-Bills-Using-Gmail) for a more extensive writeup.
+Check out the [GitHub repository](https://github.com/logicxd/Combine-Email-Bills-Using-Gmail-API) for a more extensive writeup.
