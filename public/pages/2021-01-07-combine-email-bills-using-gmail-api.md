@@ -1,9 +1,9 @@
 ---
-title:  "Combine Bills Using Gmail"
+title:  "Combine Email Bills Using Gmail API"
 date:   2021-01-07
 updatedDate: 2021-01-07
 category: NodeJS
-urlName: combine-bills-using-gmail
+urlName: combine-email-bills-using-gmail-api
 ---
 
 I wanted to automate combining monthly bills to share it with your roommates so I created this script. Let me know what you guys think!
