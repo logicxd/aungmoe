@@ -6,7 +6,7 @@ category: NodeJS
 urlName: combine-bills-using-gmail
 ---
 
-I wanted to automate combining my monthly bills to share it with my roommates so I created this script. Let me know what you guys think!
+I wanted to automate combining monthly bills to share it with your roommates so I created this script. Let me know what you guys think!
 
 <https://github.com/logicxd/Combine-Bills-Using-Gmail>
 
