@@ -86,7 +86,7 @@
         <div class="footer-copyright">
             <div class="container">
                 <div class="center">
-                    Copyright &copy; 2020 <a href="/">Aung (David) Moe</a> | All Rights Reserved | <a href="/credits">Credits</a>
+                    Copyright &copy; <span id="copyright-year">2021</span> <a href="/">Aung (David) Moe</a> | All Rights Reserved | <a href="/credits">Credits</a>
                 </div>
             </div>
         </div>
@@ -95,5 +95,11 @@
     {{#each js}}
     <script src="{{ this }}" ></script>
     {{/each}}
+    <script>
+        $(document).ready(() => {
+            let year = (new Date()).getFullYear()
+            $('#copyright-year').text(year)
+        })
+    </script>
 </body>
 </html>
