@@ -86,7 +86,7 @@ global.js = {
     highlightCDN: 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.4.0/languages/go.min.js'
 }
 global.configs = {
-    domainUrl: 'http://www.aungmoe.net',
+    domainUrl: 'http://www.aungmoe.com',
     websiteTitle: 'Aung Moe',
 }
 
