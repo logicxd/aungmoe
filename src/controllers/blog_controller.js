@@ -23,7 +23,7 @@ var md = require('markdown-it')({
     }
 }).use(mdMeta).use(emoji);
 
-var pagesDir = './public/pages';
+var pagesDir = './src/public/pages';
 var pages = {};
 var sortedPages = [];
 

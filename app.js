@@ -7,38 +7,35 @@ var app = express();
 var path = require('path');
 var logger = require('morgan');
 
-// Server
-var server = app.listen(PORT, function () {
-    console.log('Server has started on port ' + PORT);
-});
-
-// View engine setup
+/* #region View Engine Setup to handlebars */
 var hbs = exphbs.create({
     defaultLayout: 'main',
-    layoutsDir: path.join(__dirname, './views/layouts/'),
-    partialsDir: path.join(__dirname, './views/partials/'),
+    layoutsDir: path.join(__dirname, 'src/views/layouts/'),
+    partialsDir: path.join(__dirname, 'src/views/partials/'),
     helpers: {
-        foo: function() { return 'FOO!'; }
+        // These are helper functions that can be used inside handlebar
+        foo: function () { return 'FOO!'; }
     }
 });
 app.engine('handlebars', hbs.engine);
 app.set('view engine', 'handlebars');
+app.set('views', path.join(__dirname, 'src/views'))
+/* #endregion */
 
 // Create controllers
-var indexController = require('./controllers/index_controller');
-var blogController = require('./controllers/blog_controller');
-var readController = require('./controllers/read_controller');
+var indexController = require('./src/controllers/index_controller');
+var blogController = require('./src/controllers/blog_controller');
+var readController = require('./src/controllers/read_controller');
 
 // Connect controllers and other services
-// app.use(express.static(path.join(__dirname, 'public')));
-app.use(express.static(__dirname + "/public"));
+app.use(express.static(path.join(__dirname, '/src/public')));
 app.use('/scripts', express.static(__dirname + "/node_modules/highlight.js/lib/"));
 app.use(logger(':method :url :status :res[content-length] - :response-time ms'));
 app.use('/', indexController);
 app.use('/blog', blogController);
 app.use('/read', readController);
 app.use('/credits', function (req, res) {
-    res.render('credit', { 
+    res.render('credit', {
         title: 'Credits - Aung Moe',
         description: 'Copyright informations and citations used in the production of this website.',
         css: [global.css.material_icons, '/css/default.css', global.css.animate_css, global.css.fontawesome],
@@ -47,14 +44,14 @@ app.use('/credits', function (req, res) {
 });
 
 // catch 404 and forward to error handler
-app.use(function(req, res, next) {
+app.use(function (req, res, next) {
     var err = new Error('Not Found');
     err.status = 404;
     next(err);
 });
 
 // error handler
-app.use(function(err, req, res, next) {
+app.use(function (err, req, res, next) {
     // set locals, only providing error in development
     res.locals.message = err.message;
     res.locals.error = req.app.get('env') === 'development' ? err : {};
@@ -62,7 +59,7 @@ app.use(function(err, req, res, next) {
     // render the error page
     // res.send('Erorr 404!');
     res.status(err.status || 500);
-    res.render('error', { 
+    res.render('error', {
         title: '404 - Aung Moe',
         description: 'Page not found!',
         css: [global.css.material_icons, '/css/default.css', global.css.animate_css],
@@ -87,5 +84,9 @@ global.configs = {
     domainUrl: 'http://www.aungmoe.com',
     websiteTitle: 'Aung Moe',
 }
+
+app.listen(PORT, function () {
+    console.log('Server has started on port ' + PORT);
+});
 
 module.exports = app;
