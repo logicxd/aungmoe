@@ -1,7 +1,6 @@
 "use strict";
 const PORT = process.env.PORT || 8081;
 
-require('newrelic');
 var express = require('express');
 var exphbs = require('express-handlebars');
 var app = express();
@@ -82,7 +81,6 @@ global.js = {
     materialize: '/js/materialize.min.js',
     header: '/js/_header.js',
     footer: '/js/_footer.js',
-    highlight: '/scripts/highlight.js',
     highlightCDN: 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.4.0/languages/go.min.js'
 }
 global.configs = {
