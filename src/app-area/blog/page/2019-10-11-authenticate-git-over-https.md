@@ -14,7 +14,7 @@ pretty straight forward. I'll just have to enter my credentials before every
 pulling or pushing. And then I ran `git clone` for the first time and ran into this:
 
 <div class='center'>
-    <img src='/media/images/git_https_failed_authentication.png'>
+    <img src='/blog/media/git_https_failed_authentication.png'>
 </div>
 
 Ok, what is this? Isn't it supposed to just ask me for my credentials every time?

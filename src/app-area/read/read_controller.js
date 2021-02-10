@@ -5,6 +5,11 @@ var rp = require('request-promise');
 var unfluff = require('unfluff');
 var cheerio = require('cheerio');
 var loadedCheerio = null;
+var utility = require('../utility')
+var path = require('path');
+
+var route = 'read'
+utility.setupRouterPaths(router, __dirname)
 
 router.get('/', async function (req, res) {
     if (req.query.url) {
@@ -15,11 +20,11 @@ router.get('/', async function (req, res) {
 });
 
 function loadSetupPage(req, res) {
-    res.render('read-tool', {
+    res.render(path.join(__dirname, 'view/read-tool'), {
         title: 'Reading Tool - Aung Moe',
         description: 'Aung\'s personal website',
-        css: [global.css.material_icons, '/css/read.css', global.css.animate_css, global.css.fontawesome],
-        js: [global.js.jquery, global.js.materialize, global.js.header, '/js/read.js', global.js.footer]
+        css: [global.css.material_icons, `${route}/css/read.css`, global.css.animate_css, global.css.fontawesome],
+        js: [global.js.jquery, global.js.materialize, global.js.header, `${route}/js/read.js`, global.js.footer]
     });
 }
 
@@ -40,11 +45,11 @@ async function loadReadPage(req, res) {
     nextPageLink = nextPageLink === '' ? findNextPageLinkUsingCheerio(html) : nextPageLink;
     nextPageLink = turnURLIntoAbsolutePathIfNeeded(nextPageLink, req.query.url);
 
-    res.render('read', {
+    res.render(path.join(__dirname, 'view/read'), {
         title: `${data.title || 'Unknown'} - Aung Moe`,
         description: 'Aung\'s personal website',
-        css: [global.css.material_icons, '/css/read.css', global.css.animate_css, global.css.fontawesome],
-        js: [global.js.jquery, global.js.materialize, global.js.header, '/js/read.js', global.js.footer],
+        css: [global.css.material_icons, `${route}/css/read.css`, global.css.animate_css, global.css.fontawesome],
+        js: [global.js.jquery, global.js.materialize, global.js.header, `${route}/js/read.js`, global.js.footer],
         textTitle: textTitles[0],
         textAlternativeTitles: getAlternativeTitleString(textTitles),
         textParagraphs: paragraphs,

@@ -22,8 +22,12 @@ var md = require('markdown-it')({
         return '<pre class="hljs"><code>' + md.utils.escapeHtml(str) + '</code></pre>';
     }
 }).use(mdMeta).use(emoji);
+var utility = require('../utility')
 
-var pagesDir = './src/public/pages';
+var route = 'blog'
+utility.setupRouterPaths(router, __dirname)
+
+var pagesDir = `./src/app-area/${route}/page`;
 var pages = {};
 var sortedPages = [];
 
@@ -87,11 +91,11 @@ catch (err) {
 }
 
 router.get('/', function (req, res) {
-    res.render('blog', {
+    res.render(path.join(__dirname, 'view/blog'), {
         title: 'Blog - Aung Moe',
         description: 'Aung\'s personal website',
-        css: [global.css.material_icons, '/css/blog.css', global.css.animate_css, global.css.fontawesome],
-        js: [global.js.jquery, global.js.materialize, global.js.header, '/js/index.js', global.js.footer],
+        css: [global.css.material_icons, `/${route}/css/blog.css`, global.css.animate_css, global.css.fontawesome],
+        js: [global.js.jquery, global.js.materialize, global.js.header, global.js.footer],
         pages: sortedPages
     });
 });
@@ -100,11 +104,11 @@ router.get('/:category/:year/:month/:day/:title', function (req, res, next) {
     var url = `${req.params['category']}/${req.params['year']}/${req.params['month']}/${req.params['day']}/${req.params['title']}`;
     if (url != null && pages[url] != null) {
         var page = pages[url];
-        res.render('blogtemplate', {
+        res.render(path.join(__dirname, 'view/blogtemplate'), {
             title: `${page.title} - Aung Moe`,
             description: 'Aung\'s personal website',
-            css: [global.css.material_icons, '/css/blogtemplate.css', global.css.animate_css, global.css.fontawesome],
-            js: [global.js.jquery, global.js.materialize, global.js.header, '/js/blogtemplate.js', global.js.footer],
+            css: [global.css.material_icons, `/${route}/css/blogtemplate.css`, global.css.animate_css, global.css.fontawesome],
+            js: [global.js.jquery, global.js.materialize, global.js.header, `/${route}/js/blogtemplate.js`, global.js.footer],
             page: page
         });
     } else {

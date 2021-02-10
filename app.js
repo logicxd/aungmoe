@@ -7,11 +7,11 @@ var app = express();
 var path = require('path');
 var logger = require('morgan');
 
-/* #region View Engine Setup to handlebars */
+/* #region View Engine Setup to handlebars and set up view paths */
 var hbs = exphbs.create({
-    defaultLayout: 'main',
-    layoutsDir: path.join(__dirname, 'src/views/layouts/'),
-    partialsDir: path.join(__dirname, 'src/views/partials/'),
+    layoutsDir: path.join(__dirname, 'src/'),
+    // partialsDir: path.join(__dirname, 'src/global/view/partial/'),
+    defaultLayout: 'global/view/layout/template',
     helpers: {
         // These are helper functions that can be used inside handlebar
         foo: function () { return 'FOO!'; }
@@ -19,21 +19,22 @@ var hbs = exphbs.create({
 });
 app.engine('handlebars', hbs.engine);
 app.set('view engine', 'handlebars');
-app.set('views', path.join(__dirname, 'src/views'))
+app.set('views', path.join(__dirname, 'src/global/view'))
 /* #endregion */
 
-// Create controllers
-var indexController = require('./src/controllers/index_controller');
-var blogController = require('./src/controllers/blog_controller');
-var readController = require('./src/controllers/read_controller');
+/* #region Connect controllers */
+app.use('/', require('./src/app-area/index/index_controller'));
+app.use('/blog', require('./src/app-area/blog/blog_controller'));
+app.use('/read', require('./src/app-area/read/read_controller'));
+/* #endregion */
 
-// Connect controllers and other services
-app.use(express.static(path.join(__dirname, '/src/public')));
+/* #region Connect other services */
+app.use(express.static(path.join(__dirname, '/src/global')));
 app.use('/scripts', express.static(__dirname + "/node_modules/highlight.js/lib/"));
 app.use(logger(':method :url :status :res[content-length] - :response-time ms'));
-app.use('/', indexController);
-app.use('/blog', blogController);
-app.use('/read', readController);
+/* #endregion */
+
+/* #region Credits Page */
 app.use('/credits', function (req, res) {
     res.render('credit', {
         title: 'Credits - Aung Moe',
@@ -42,7 +43,9 @@ app.use('/credits', function (req, res) {
         js: [global.js.jquery, global.js.materialize, global.js.header, global.js.footer]
     });
 });
+/* #endregion */
 
+/* #region Error Page */
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
     var err = new Error('Not Found');
@@ -55,9 +58,6 @@ app.use(function (err, req, res, next) {
     // set locals, only providing error in development
     res.locals.message = err.message;
     res.locals.error = req.app.get('env') === 'development' ? err : {};
-
-    // render the error page
-    // res.send('Erorr 404!');
     res.status(err.status || 500);
     res.render('error', {
         title: '404 - Aung Moe',
@@ -66,7 +66,9 @@ app.use(function (err, req, res, next) {
         js: [global.js.jquery, global.js.materialize, global.js.header, global.js.footer]
     });
 });
+/* #endregion */
 
+/* #region Global Configs */
 // Set reusable css or js links
 global.css = {
     material_icons: 'https://fonts.googleapis.com/icon?family=Material+Icons',
@@ -84,6 +86,7 @@ global.configs = {
     domainUrl: 'http://www.aungmoe.com',
     websiteTitle: 'Aung Moe',
 }
+/* #endregion */
 
 app.listen(PORT, function () {
     console.log('Server has started on port ' + PORT);

@@ -35,7 +35,7 @@ You can find a whole list of Shortcuts that other people have posted on
 ## Making Your Own
 
 <div class='center'>
-    <img src='/media/images/shortcuts_send_eta.png'>
+    <img src='/blog/media/shortcuts_send_eta.png'>
 </div>
 
 These are pretty self explanatory if you have some
