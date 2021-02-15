@@ -5,7 +5,7 @@ var router = express.Router()
 var rp = require('request-promise')
 var unfluff = require('unfluff')
 var cheerio = require('cheerio')
-var utility = require('../utility')
+var utility = require('../../utility')
 var path = require('path')
 
 var loadedCheerio = null;

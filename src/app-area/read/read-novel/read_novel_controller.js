@@ -5,7 +5,7 @@ var rp = require('request-promise');
 var unfluff = require('unfluff');
 var cheerio = require('cheerio');
 var loadedCheerio = null;
-var utility = require('../utility')
+var utility = require('../../utility')
 var path = require('path');
 
 var route = 'read-novel'
