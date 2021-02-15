@@ -8,7 +8,7 @@ var loadedCheerio = null;
 var utility = require('../utility')
 var path = require('path');
 
-var route = 'read'
+var route = 'read-novel'
 utility.setupRouterPaths(router, __dirname)
 
 router.get('/', async function (req, res) {
