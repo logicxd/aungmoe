@@ -1,0 +1,35 @@
+<main>
+    <div class="container">
+        <h2>Setup Page - Webtoons</h2>
+        <div>
+            This reading tool is to enhance the user's reading experience on existing websites by providing additional features such as:
+            <ul class="browser-default">
+                <li><b>Dark mode</b></b></li>
+                <li><b>Tap to scroll</b> down a page</li>
+                <li>If this is a continous reading material, it will attempt to <b>find the next page</b> for you.</li>
+            </ul>
+        </div>
+        <p>
+            Disclaimer: Please use this tool ethically, such as for public material content that are not monetized. 
+            The main purpose is to give additional features to enhance the reading experience. This will not store any data it extracts. 
+        </p>
+        <div class="row">
+            <div class="input-field col s12">
+                <input id="config-webtoon-url" placeholder="URL of your webtoon" type="url" class="validate">
+                <label for="config-webtoon-url">Webtoon URL</label>
+                <span class="helper-text" data-error="Please enter a valid URL"></span>
+            </div>
+        </div>
+        <div class="row">
+            <label class="col s12">
+                <input id="config-webtoon-tap-to-scroll" type="checkbox"/>
+                <span>Enable Tap-to-scroll</span>
+            </label>
+        </div>
+        <div class="row">
+            <button id="submit" class="btn waves-effect waves-light right" type="submit" name="action">Submit
+                <i class="material-icons right">send</i>
+            </button>
+        </div>
+    </div>
+</main>

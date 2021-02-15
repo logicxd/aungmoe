@@ -26,6 +26,7 @@ app.set('views', path.join(__dirname, 'src/global/view'))
 app.use('/', require('./src/app-area/index/index_controller'));
 app.use('/blog', require('./src/app-area/blog/blog_controller'));
 app.use('/read', require('./src/app-area/read/read_controller'));
+app.use('/read-webtoon', require('./src/app-area/read-webtoon/read_webtoon_controller'));
 /* #endregion */
 
 /* #region Connect other services */
