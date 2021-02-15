@@ -4,10 +4,10 @@ var router = express.Router();
 var rp = require('request-promise');
 var unfluff = require('unfluff');
 var cheerio = require('cheerio');
-var loadedCheerio = null;
 var utility = require('../../utility')
 var path = require('path');
 
+var loadedCheerio = null;
 var route = 'read-novel'
 utility.setupRouterPaths(router, __dirname)
 
@@ -20,7 +20,7 @@ router.get('/', async function (req, res) {
 });
 
 function loadSetupPage(req, res) {
-    res.render(path.join(__dirname, 'view/read-tool'), {
+    res.render(path.join(__dirname, 'view/read-setup'), {
         title: 'Reading Tool - Aung Moe',
         description: 'Aung\'s personal website',
         css: [global.css.material_icons, `${route}/css/read.css`, global.css.animate_css, global.css.fontawesome],

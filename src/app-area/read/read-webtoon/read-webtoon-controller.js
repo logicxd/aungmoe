@@ -25,7 +25,7 @@ function loadSetupPage(req, res) {
     return res.render(path.join(__dirname, 'view/read-setup'), {
         title: 'Read Webtoon Setup - Aung Moe',
         description: 'Aung\'s personal website',
-        css: [global.css.material_icons, `${route}/css/read-setup.css`, global.css.animate_css, global.css.fontawesome],
+        css: [global.css.material_icons, `${route}/css/read.css`, global.css.animate_css, global.css.fontawesome],
         js: [global.js.jquery, global.js.materialize, global.js.header, `${route}/js/read-setup.js`, global.js.footer]
     })
 }

@@ -23,10 +23,10 @@ app.set('views', path.join(__dirname, 'src/global/view'))
 /* #endregion */
 
 /* #region Connect controllers */
-app.use('/', require('./src/app-area/index/index_controller'));
-app.use('/blog', require('./src/app-area/blog/blog_controller'));
-app.use('/read-novel', require('./src/app-area/read/read-novel/read_novel_controller'));
-app.use('/read-webtoon', require('./src/app-area/read/read-webtoon/read_webtoon_controller'));
+app.use('/', require('./src/app-area/index/index-controller'));
+app.use('/blog', require('./src/app-area/blog/blog-controller'));
+app.use('/read-novel', require('./src/app-area/read/read-novel/read-novel-controller'));
+app.use('/read-webtoon', require('./src/app-area/read/read-webtoon/read-webtoon-controller'));
 /* #endregion */
 
 /* #region Connect other services */
