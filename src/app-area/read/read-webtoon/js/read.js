@@ -40,7 +40,7 @@ function nextPageClicked(url) {
 /* #endregion */
 
 function pageDown() {
-    var scrollByAmount = document.documentElement.clientHeight * 0.90;
+    var scrollByAmount = document.documentElement.clientHeight * 0.70;
     $('html, body').animate({
         scrollTop: `+=${scrollByAmount}`
     }, 200);
