@@ -1,6 +1,30 @@
 @import '../../../global/scss/layouts/main';
 @import '/css/highlight/atom-one-dark.css';
 
+.hljs {
+    padding: 0;
+}
+
+.read-webtoon-container {
+    padding: 0;
+    margin: 0;
+    max-width: 1280px;
+    width: 100%; 
+}
+  
+@media only screen and (min-width: 601px) {
+    .read-webtoon-container {
+        margin: 0 auto;
+        width: 85%; 
+    } 
+}
+  
+@media only screen and (min-width: 993px) {
+    .read-webtoon-container {
+        width: 70%; 
+    } 
+}
+
 .reading-area {
     @extend .center;
     line-height: 0;
