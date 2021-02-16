@@ -1,75 +1,20 @@
-"use strict";
-var express = require('express');
-var router = express.Router();
-var rp = require('request-promise');
-var unfluff = require('unfluff');
-var cheerio = require('cheerio');
-var loadedCheerio = null;
-var utility = require('../utility')
-var path = require('path');
 
-var route = 'read'
-utility.setupRouterPaths(router, __dirname)
-
-router.get('/', async function (req, res) {
-    if (req.query.url) {
-        await loadReadPage(req, res);
-    } else {
-        loadSetupPage(req, res);
-    }
-});
-
-function loadSetupPage(req, res) {
-    res.render(path.join(__dirname, 'view/read-tool'), {
-        title: 'Reading Tool - Aung Moe',
-        description: 'Aung\'s personal website',
-        css: [global.css.material_icons, `${route}/css/read.css`, global.css.animate_css, global.css.fontawesome],
-        js: [global.js.jquery, global.js.materialize, global.js.header, `${route}/js/read.js`, global.js.footer]
-    });
-}
-
-async function loadReadPage(req, res) {
-    var html = '';
-    loadedCheerio = null;
-    try {
-        html = await rp(req.query.url);
-    } catch (error) {
-        console.log(error);
-        html = '';
-    }
-    
-    var data = unfluff(html);
-    var textTitles = findTextTitle(data.title, html);
-    var paragraphs = data.text.split('\n\n');
-    var nextPageLink = findNextPageLinkUsingUnfluff(data.links);
-    nextPageLink = nextPageLink === '' ? findNextPageLinkUsingCheerio(html) : nextPageLink;
-    nextPageLink = turnURLIntoAbsolutePathIfNeeded(nextPageLink, req.query.url);
-
-    res.render(path.join(__dirname, 'view/read'), {
-        title: `${data.title || 'Unknown'} - Aung Moe`,
-        description: 'Aung\'s personal website',
-        css: [global.css.material_icons, `${route}/css/read.css`, global.css.animate_css, global.css.fontawesome],
-        js: [global.js.jquery, global.js.materialize, global.js.header, `${route}/js/read.js`, global.js.footer],
-        textTitle: textTitles[0],
-        textAlternativeTitles: getAlternativeTitleString(textTitles),
-        textParagraphs: paragraphs,
-        didError: html === '',
-        currentPageLink: req.query.url,
-        nextPageLink: nextPageLink
-    });
-}
-
-// returns an array of ['Text Title', 'Alt. title 1', 'Alt. Title 2', ...]
-function findTextTitle(unfluffTitle, html) {
-    loadedCheerio = loadedCheerio == null ? cheerio.load(html) : loadedCheerio;
+/* #region  Title */
+/**
+ * Tries to find title and alternative titles or chapters
+ * @param {string} unfluffTitle title parsed using unfluff
+ * @param {Object} loadedCheerio html-loaded cheerio
+ * @returns {string[]} an array of ['Text Title', 'Alt. title 1', 'Alt. Title 2', ...] 
+ */
+function findTextTitle(unfluffTitle, loadedCheerio) {
     var titleCandidates = [unfluffTitle];
     var selectors = ['h1', 'h2', 'h3', 'p:contains("Chapter")'];
     var textTitles = [unfluffTitle];
-    var subTitleSet = new Set([unfluffTitle]); 
+    var subTitleSet = new Set([unfluffTitle]);
     try {
         // Grab possible content titles from `selectors` elements
         for (var i = 0; i < selectors.length; ++i) {
-            loadedCheerio(selectors[i]).contents().each(function(i, node) {
+            loadedCheerio(selectors[i]).contents().each(function (i, node) {
                 if (node.data != null) {
                     var title = node.data.trim();
                     if (title.length > 0) {
@@ -102,18 +47,38 @@ function findTextTitle(unfluffTitle, html) {
     return textTitles;
 }
 
+/**
+ * Gets alternative titles text
+ * @param {string[]} textTitles array of titles found
+ * @returns {string} comma separated string to represent alternative titles
+ */
 function getAlternativeTitleString(textTitles) {
     var titles = textTitles.slice(1);
     var titleString = '';
     for (var i = 0; i < titles.length && i < 5; ++i) {
-        titleString += `${i>0 ? ',' : ''} ${titles[i]}`;
+        titleString += `${i > 0 ? ',' : ''} ${titles[i]}`;
     }
     return titleString;
+}
+/* #endregion */
+
+/* #region  Next Page URL*/
+/**
+ * Attempts to find the "Next" page link for the given website
+ * @param {string[]} unfluffLinks array of links found using unfluff
+ * @param {Object} loadedCheerio html-loaded cheerio
+ * @param {string} sourceUrl base URL of the website visiting
+ */
+function findNextPageLink(unfluffLinks, loadedCheerio, sourceUrl) {
+    var nextPageLink = findNextPageLinkUsingUnfluff(unfluffLinks)
+    nextPageLink = nextPageLink === '' ? findNextPageLinkUsingCheerio(loadedCheerio) : nextPageLink
+    nextPageLink = turnURLIntoAbsolutePathIfNeeded(nextPageLink, sourceUrl)
+    return nextPageLink
 }
 
 function findNextPageLinkUsingUnfluff(links) {
     var link = '';
-    for (var i = links.length - 1; i >= 0; --i ) {
+    for (var i = links.length - 1; i >= 0; --i) {
         var linkObject = links[i];
         var linkText = linkObject.text.toLowerCase();
         if (linkText.includes('next')) {
@@ -124,8 +89,7 @@ function findNextPageLinkUsingUnfluff(links) {
     return link;
 }
 
-function findNextPageLinkUsingCheerio(html) {
-    loadedCheerio = loadedCheerio == null ? cheerio.load(html) : loadedCheerio;
+function findNextPageLinkUsingCheerio(loadedCheerio) {
     var linkContents = loadedCheerio('a').contents();
     var link = '';
     try {
@@ -157,8 +121,8 @@ function findNextPageLinkUsingCheerio_CheckForChildrenNodeData(node) {
     for (var i = 0; i < node.children.length; ++i) {
         var childNode = node.children[i];
 
-        if (!childNode.data) { 
-            continue; 
+        if (!childNode.data) {
+            continue;
         }
         if (childNode.data.toLowerCase().includes('next')) {
             return true;
@@ -166,13 +130,21 @@ function findNextPageLinkUsingCheerio_CheckForChildrenNodeData(node) {
     }
     return false;
 }
+/* #endregion */
 
-function turnURLIntoAbsolutePathIfNeeded(link, currentUrl) {
+/* #region  URL Utility */
+/**
+ * Makes sure the given link is turned into an absolute URL string
+ * @param {string} link an absolute or a relative URL
+ * @param {string} baseUrl base domain to append relative URL to
+ * @returns {string} absolute URL string
+ */
+function turnURLIntoAbsolutePathIfNeeded(link, baseUrl) {
     if (link === '' || isAbsoluteLink(link)) {
         return link;
     }
 
-    var url = new URL(currentUrl);
+    var url = new URL(baseUrl);
     url.pathname = link;
     return url.toString();
 }
@@ -181,5 +153,10 @@ function isAbsoluteLink(link) {
     var r = new RegExp('^(?:[a-z]+:)?//', 'i');
     return r.test(link);
 }
+/* #endregion */
 
-module.exports = router;
+module.exports = {
+    findTextTitle,
+    findNextPageLink,
+    getAlternativeTitleString,
+}

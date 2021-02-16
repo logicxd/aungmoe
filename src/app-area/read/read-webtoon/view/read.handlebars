@@ -1,0 +1,94 @@
+<main class="hljs">
+    <div class="container">
+    {{#if didError }}
+        <h2>Uh oh...</h2>
+        <p>
+            Could not grab the contents of the URL. Please check:
+            <ul class="browser-default">
+                <li>that the URL path is correct</li>
+                <li>if that still doesn't work, the content in the website might not be formatted nicely for us to extract</li>
+            </ul>
+        </p>
+        <div class="row">
+            <button class="btn waves-effect waves-light" onclick="window.location.href='/read-webtoon'">Back
+                <i class="material-icons left">arrow_back</i>
+            </button>
+        </div>
+    {{else}}
+        <h3>{{ textTitle }}</h3>
+        {{#if textAlternativeTitles }}
+        <h6>Alternative titles: {{ textAlternativeTitles }}</h6>
+        {{/if}}
+        <div class="reading-area tap-to-scroll">
+            {{#each webtoonImages}}
+            <div>
+                <img id="webtoon-img-{{@index}}" src="{{this}}"></img>
+            </div>
+            {{/each}}
+        </div>
+        <p> {{!-- Empty block space --}} </p>
+        <div class="divider"></div>
+        <p class="center" id="end-of-page">This is the end of the page</p>
+        <div class="row">
+            <div class="center">
+                <button class="btn waves-effect waves-light" onclick="window.location.href='/read-webtoon'">Home
+                    <i class="material-icons left">home</i>
+                </button>
+                {{#if nextPageLink }}
+                <button id="next-page-button" class="btn waves-effect waves-light" onclick="nextPageClicked('{{ nextPageLink }}')">Next
+                    <i class="material-icons right">arrow_forward</i>
+                </button>
+                {{/if}}
+            </div>
+        </div>
+
+        <div id="fixed-controls-bar-container" class="btn-floating hide"> 
+            <a id="controls-bar-fast-rewind" class="fixed-controls-bar-button btn">
+                <i id="controls-bar-fast-rewind-icon" class="material-icons">fast_rewind</i>
+            </a>
+            <a id="controls-bar-play-pause" class="fixed-controls-bar-button btn">
+                <i id="controls-bar-play-pause-icon" class="material-icons">play_arrow</i>
+            </a>
+            <a id="controls-bar-fast-forward" class="fixed-controls-bar-button btn">
+                <i id="controls-bar-fast-forward-icon" class="material-icons">fast_forward</i>
+            </a>
+        </div>
+        <div class="fixed-action-btn">
+            <a id="floating-settings-button" class="btn-floating">
+                <i class="material-icons">settings</i>
+            </a>
+            <ul>
+                <li><a class="btn-floating tooltipped green" data-tooltip="Scroll to top" data-position="left" href="#scroll-to-top"><i class="material-icons" style="pointer-events:none;">publish</i></a></li>
+                <li><a class="btn-floating tooltipped blue" data-tooltip="Open link in new tab" data-position="left" onclick="window.open('{{ currentPageLink }}', '_blank');"><i class="material-icons">launch</i></a></li>
+                {{#if nextPageLink }}
+                <li><a class="btn-floating tooltipped orange" data-tooltip="Next page" data-position="left" onclick="nextPageClicked('{{ nextPageLink }}')"><i class="material-icons">arrow_forward</i></a></li>
+                {{/if}}
+                <li><a class="btn-floating tooltipped" data-tooltip="Settings" data-position="left" onclick="openModal();"><i class="material-icons">mode_edit</i></a></li>
+            </ul>
+        </div>
+    {{/if}}
+    </div>
+</main>
+
+<!-- Modal Structure -->
+<div id="settings-modal" class="modal bottom-sheet modal-fixed-footer">
+    <div class="modal-content">
+        <h4>Settings</h4>
+        <div class="row">
+            <div class="input-field col s12">
+                <input id="config-webtoon-url" placeholder="URL of your webtoon" type="url" class="validate" value="{{ currentPageLink }}">
+                <label for="config-webtoon-url">Webtoon URL</label>
+                <span class="helper-text" data-error="Please enter a valid URL"></span>
+            </div>
+        </div>
+        <div class="row">
+            <label class="col s12">
+                <input id="config-webtoon-tap-to-scroll" type="checkbox"/>
+                <span>Enable Tap-to-scroll</span>
+            </label>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <a id="apply" class="modal-close waves-effect waves-green btn-flat">Apply</a>
+    </div>
+</div>
