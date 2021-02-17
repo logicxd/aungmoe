@@ -29,7 +29,7 @@ function loadSetupPage(req, res) {
         title: 'Read Webtoon Setup - Aung Moe',
         description: 'Aung\'s personal website',
         css: [global.css.material_icons, `${route}/css/read.css`, global.css.animate_css, global.css.fontawesome],
-        js: [global.js.jquery, global.js.materialize, global.js.header, `${route}/js/read-setup.js`, global.js.footer]
+        js: [global.js.jquery, global.js.materialize, global.js.header, `${route}/js/read-utility.js`, `${route}/js/read-setup.js`, global.js.footer]
     })
 }
 /* #endregion */
@@ -54,7 +54,7 @@ async function loadReadPage(req, res) {
         title: `${data.title || 'Unknown'} - Aung Moe`,
         description: 'Aung\'s personal website',
         css: [global.css.material_icons, `${route}/css/read.css`, global.css.animate_css, global.css.fontawesome],
-        js: [global.js.jquery, global.js.materialize, global.js.header, `${route}/js/read.js`, global.js.footer],
+        js: [global.js.jquery, global.js.materialize, global.js.header, `${route}/js/read-utility.js`, `${route}/js/read.js`, global.js.footer],
         textTitle: textTitles[0],
         textAlternativeTitles: readControllerUtility.getAlternativeTitleString(textTitles),
         webtoonImages: webtoonImages,
@@ -65,10 +65,37 @@ async function loadReadPage(req, res) {
 }
 
 function findWebtoonImages(loadedCheerio) {
-    var images = []
+    let images = []
+    let extensions = new Set(['png', 'jpg', 'jpeg'])
     try {
         loadedCheerio('img').each((i, node) => {
-            images.push(node.attribs.src.trim())
+            let attribs = node.attribs
+            let imgUrl = null
+
+            if (attribs.src) {
+                imgUrl = attribs.src.trim()
+            } else {
+                let keys = Object.keys(attribs)
+                for (let key of keys) {
+                    let value = attribs[key]
+
+                    if (!value) {
+                        continue
+                    }
+
+                    value = value.trim()
+                    let split = value.split('.')
+                    let extension = split[split.length-1]
+                    if (extensions.has(extension)) {
+                        imgUrl = value
+                        break
+                    }
+                }
+            }
+
+            if (imgUrl) {
+                images.push(imgUrl)
+            }
         })
     } catch (error) {
         console.error(error)

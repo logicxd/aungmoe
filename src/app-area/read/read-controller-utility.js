@@ -94,9 +94,10 @@ function findNextPageLinkUsingCheerio(loadedCheerio) {
     var link = '';
     try {
         for (var i = linkContents.length - 1; i >= 0; --i) {
-            var node = linkContents.get(i);
-            var foundNextLink = findNextPageLinkUsingCheerio_CheckForCurrentNodeData(node);
-            foundNextLink = foundNextLink || findNextPageLinkUsingCheerio_CheckForChildrenNodeData(node);
+            var node = linkContents.get(i)
+            var foundNextLink = findNextPageLinkUsingCheerio_CheckForContentNodeData(node)
+            foundNextLink = foundNextLink || findNextPageLinkUsingCheerio_CheckForChildrenNodeData(node)
+            foundNextLink = foundNextLink || findNextPageLinkUsingCheerio_CheckParentNodeAttributes(node)
 
             if (foundNextLink) {
                 link = node.parent.attribs.href;
@@ -109,7 +110,7 @@ function findNextPageLinkUsingCheerio(loadedCheerio) {
     return link;
 }
 
-function findNextPageLinkUsingCheerio_CheckForCurrentNodeData(node) {
+function findNextPageLinkUsingCheerio_CheckForContentNodeData(node) {
     var nodeText = node.data;
     nodeText = nodeText == null ? '' : nodeText.toLowerCase();
     return nodeText.includes('next')
@@ -129,6 +130,17 @@ function findNextPageLinkUsingCheerio_CheckForChildrenNodeData(node) {
         }
     }
     return false;
+}
+
+function findNextPageLinkUsingCheerio_CheckParentNodeAttributes(node) {
+    var parent = node.parent
+    var attribs = parent.attribs
+    if (attribs) {
+        if (attribs.rel && attribs.rel.toLowerCase().includes('next')) {
+            return true
+        }
+    }
+    return false
 }
 /* #endregion */
 

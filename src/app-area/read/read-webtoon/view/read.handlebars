@@ -1,6 +1,6 @@
 <main class="hljs">
-    <div class="container">
     {{#if didError }}
+    <div class="container">
         <h2>Uh oh...</h2>
         <p>
             Could not grab the contents of the URL. Please check:
@@ -14,11 +14,15 @@
                 <i class="material-icons left">arrow_back</i>
             </button>
         </div>
+    </div>
     {{else}}
+    <div class="container">
         <h3>{{ textTitle }}</h3>
         {{#if textAlternativeTitles }}
         <h6>Alternative titles: {{ textAlternativeTitles }}</h6>
         {{/if}}
+    </div>
+    <div class="read-webtoon-container">
         <div class="reading-area tap-to-scroll">
             {{#each webtoonImages}}
             <div>
@@ -27,6 +31,8 @@
             {{/each}}
         </div>
         <p> {{!-- Empty block space --}} </p>
+    </div>
+    <div class="container">
         <div class="divider"></div>
         <p class="center" id="end-of-page">This is the end of the page</p>
         <div class="row">
@@ -41,36 +47,37 @@
                 {{/if}}
             </div>
         </div>
-
-        <div id="fixed-controls-bar-container" class="btn-floating hide"> 
-            <a id="controls-bar-fast-rewind" class="fixed-controls-bar-button btn">
-                <i id="controls-bar-fast-rewind-icon" class="material-icons">fast_rewind</i>
-            </a>
-            <a id="controls-bar-play-pause" class="fixed-controls-bar-button btn">
-                <i id="controls-bar-play-pause-icon" class="material-icons">play_arrow</i>
-            </a>
-            <a id="controls-bar-fast-forward" class="fixed-controls-bar-button btn">
-                <i id="controls-bar-fast-forward-icon" class="material-icons">fast_forward</i>
-            </a>
-        </div>
-        <div class="fixed-action-btn">
-            <a id="floating-settings-button" class="btn-floating">
-                <i class="material-icons">settings</i>
-            </a>
-            <ul>
-                <li><a class="btn-floating tooltipped green" data-tooltip="Scroll to top" data-position="left" href="#scroll-to-top"><i class="material-icons" style="pointer-events:none;">publish</i></a></li>
-                <li><a class="btn-floating tooltipped blue" data-tooltip="Open link in new tab" data-position="left" onclick="window.open('{{ currentPageLink }}', '_blank');"><i class="material-icons">launch</i></a></li>
-                {{#if nextPageLink }}
-                <li><a class="btn-floating tooltipped orange" data-tooltip="Next page" data-position="left" onclick="nextPageClicked('{{ nextPageLink }}')"><i class="material-icons">arrow_forward</i></a></li>
-                {{/if}}
-                <li><a class="btn-floating tooltipped" data-tooltip="Settings" data-position="left" onclick="openModal();"><i class="material-icons">mode_edit</i></a></li>
-            </ul>
-        </div>
-    {{/if}}
     </div>
+
+    {{!-- Floating Settings Button --}}
+    <div id="fixed-controls-bar-container" class="btn-floating hide"> 
+        <a id="controls-bar-fast-rewind" class="fixed-controls-bar-button btn">
+            <i id="controls-bar-fast-rewind-icon" class="material-icons">fast_rewind</i>
+        </a>
+        <a id="controls-bar-play-pause" class="fixed-controls-bar-button btn">
+            <i id="controls-bar-play-pause-icon" class="material-icons">play_arrow</i>
+        </a>
+        <a id="controls-bar-fast-forward" class="fixed-controls-bar-button btn">
+            <i id="controls-bar-fast-forward-icon" class="material-icons">fast_forward</i>
+        </a>
+    </div>
+    <div class="fixed-action-btn">
+        <a id="floating-settings-button" class="btn-floating">
+            <i class="material-icons">settings</i>
+        </a>
+        <ul>
+            <li><a class="btn-floating tooltipped green" data-tooltip="Scroll to top" data-position="left" href="#scroll-to-top"><i class="material-icons" style="pointer-events:none;">publish</i></a></li>
+            <li><a class="btn-floating tooltipped blue" data-tooltip="Open link in new tab" data-position="left" onclick="window.open('{{ currentPageLink }}', '_blank');"><i class="material-icons">launch</i></a></li>
+            {{#if nextPageLink }}
+            <li><a class="btn-floating tooltipped orange" data-tooltip="Next page" data-position="left" onclick="nextPageClicked('{{ nextPageLink }}')"><i class="material-icons">arrow_forward</i></a></li>
+            {{/if}}
+            <li><a id="floating-settings-button" class="btn-floating tooltipped" data-tooltip="Settings" data-position="left"><i class="material-icons">mode_edit</i></a></li>
+        </ul>
+    </div>
+    {{/if}}
 </main>
 
-<!-- Modal Structure -->
+<!-- Settings Modal Structure -->
 <div id="settings-modal" class="modal bottom-sheet modal-fixed-footer">
     <div class="modal-content">
         <h4>Settings</h4>
