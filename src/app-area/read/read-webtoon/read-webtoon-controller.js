@@ -65,10 +65,37 @@ async function loadReadPage(req, res) {
 }
 
 function findWebtoonImages(loadedCheerio) {
-    var images = []
+    let images = []
+    let extensions = new Set(['png', 'jpg', 'jpeg'])
     try {
         loadedCheerio('img').each((i, node) => {
-            images.push(node.attribs.src.trim())
+            let attribs = node.attribs
+            let imgUrl = null
+
+            if (attribs.src) {
+                imgUrl = attribs.src.trim()
+            } else {
+                let keys = Object.keys(attribs)
+                for (let key of keys) {
+                    let value = attribs[key]
+
+                    if (!value) {
+                        continue
+                    }
+
+                    value = value.trim()
+                    let split = value.split('.')
+                    let extension = split[split.length-1]
+                    if (extensions.has(extension)) {
+                        imgUrl = value
+                        break
+                    }
+                }
+            }
+
+            if (imgUrl) {
+                images.push(imgUrl)
+            }
         })
     } catch (error) {
         console.error(error)
