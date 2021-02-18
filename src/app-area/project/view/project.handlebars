@@ -1,0 +1,20 @@
+<main>
+    <div class="container">
+        <h2>Blog</h2>
+        <p>
+            Tech blog about tools, guides, or anything in general that I want to blog about. :D 
+        </p>
+        <ul class="blog-list">
+            {{#each pages}}
+            <li>
+                <span class="blog-date">{{this.dateString}} - {{this.category}}</span>
+                <h4 class="m-t-0">
+                    <a class="blog-link" href="blog/{{this.url}}">
+                        {{this.title}}
+                    </a>
+                </h4>
+            </li>
+            {{/each}}
+        </ul>
+    </div>
+</main>
