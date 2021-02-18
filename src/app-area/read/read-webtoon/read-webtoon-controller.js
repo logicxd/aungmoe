@@ -71,28 +71,24 @@ function findWebtoonImages(loadedCheerio) {
         loadedCheerio('img').each((i, node) => {
             let attribs = node.attribs
             let imgUrl = null
+            let keys = Object.keys(attribs)
+            
+            for (let key of keys) {
+                let value = attribs[key]
 
-            if (attribs.src) {
-                imgUrl = attribs.src.trim()
-            } else {
-                let keys = Object.keys(attribs)
-                for (let key of keys) {
-                    let value = attribs[key]
+                if (!value) {
+                    continue
+                }
 
-                    if (!value) {
-                        continue
-                    }
-
-                    value = value.trim()
-                    let split = value.split('.')
-                    let extension = split[split.length-1]
-                    if (extensions.has(extension)) {
-                        imgUrl = value
-                        break
-                    }
+                value = value.trim()
+                let split = value.split('.')
+                let extension = split[split.length-1]
+                if (extensions.has(extension)) {
+                    imgUrl = value
+                    break
                 }
             }
-
+            
             if (imgUrl) {
                 images.push(imgUrl)
             }
