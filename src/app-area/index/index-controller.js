@@ -11,8 +11,8 @@ router.get('/', function (req, res) {
     res.render(path.join(__dirname, 'view/index'), {
         title: 'Aung Moe',
         description: 'Aung\'s personal website',
-        css: [`${route}/css/index.css`, global.css.material_icons, global.css.animate_css, global.css.fontawesome],
-        js: [global.js.jquery, global.js.materialize, global.js.header, `${route}/js/index.js`, global.js.footer],
+        css: [`${route}/css/index.css`, global.css.animate_css],
+        js: [`${route}/js/index.js`],
         data: {
             occupations: [
                 { state: "Experienced in", occupation: "full-stack development" },

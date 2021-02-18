@@ -40,9 +40,8 @@ app.use(logger(':method :url :status :res[content-length] - :response-time ms'))
 app.use('/credits', function (req, res) {
     res.render('credit', {
         title: 'Credits - Aung Moe',
-        description: 'Copyright informations and citations used in the production of this website.',
-        css: [global.css.material_icons, '/css/default.css', global.css.animate_css, global.css.fontawesome],
-        js: [global.js.jquery, global.js.materialize, global.js.header, global.js.footer]
+        description: 'Copyright informations and citations used in this website.',
+        css: ['/css/default.css']
     });
 });
 /* #endregion */
@@ -64,25 +63,18 @@ app.use(function (err, req, res, next) {
     res.render('error', {
         title: '404 - Aung Moe',
         description: 'Page not found!',
-        css: [global.css.material_icons, '/css/default.css', global.css.animate_css],
-        js: [global.js.jquery, global.js.materialize, global.js.header, global.js.footer]
+        css: ['/css/default.css']
     });
 });
 /* #endregion */
 
 /* #region Global Configs */
 // Set reusable css or js links
+
 global.css = {
-    material_icons: 'https://fonts.googleapis.com/icon?family=Material+Icons',
-    animate_css: 'https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.5.2/animate.min.css',
-    highlightCDN: 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.9.0/styles/default.min.css'
+    animate_css: 'https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.5.2/animate.min.css'
 }
 global.js = {
-    jquery: 'https://code.jquery.com/jquery-3.2.1.min.js',
-    materialize: '/js/materialize.min.js',
-    header: '/js/_header.js',
-    footer: '/js/_footer.js',
-    highlightCDN: 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.4.0/languages/go.min.js'
 }
 global.configs = {
     domainUrl: 'http://www.aungmoe.com',
