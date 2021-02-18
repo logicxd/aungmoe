@@ -66,7 +66,7 @@ async function loadReadPage(req, res) {
 
 function findWebtoonImages(loadedCheerio) {
     let images = []
-    let extensions = new Set(['png', 'jpg', 'jpeg'])
+    let extensions = new Set(['png', 'jpg', 'jpeg', 'webp'])
     try {
         loadedCheerio('img').each((i, node) => {
             let attribs = node.attribs
