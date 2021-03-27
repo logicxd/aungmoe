@@ -1,9 +1,17 @@
 ---
-title:  "Combine Email Bills Using Gmail API"
+title:  "Combine Email Bills Using Gmail API (Dropped)"
 date:   2021-01-07
 updatedDate: 2021-01-07
 category: NodeJS
 urlName: combine-email-bills-using-gmail-api
+---
+
+## Reason for Dropping the Project
+
+After a couple of months, I ran into a few difficulties that would require me to re-think my logic for writing scripts like this. 
+1. The refresh token expires after 7 days so you'd have to keep requesting token. This means this is not really automated anymore. For long lasting accounts, you could use a service account but this requires a GSuite account.
+2. Found out about Google App Scripts. I'm in the process of migrating all this work into Google App Scripts.
+
 ---
 
 I wanted to automate combining monthly bills to share it with your roommates so I created this script. Let me know what you guys think!
