@@ -3,9 +3,12 @@ var express = require('express');
 var router = express.Router();
 var path = require('path');
 var utility = require('../utility')
+var passport = require('passport')
+var database = require('../index/js/database')
 
 var route = 'index'
 utility.setupRouterPaths(router, __dirname, route)
+database.connectIfNeeded()
 
 router.get('/', function (req, res) {
     res.render(path.join(__dirname, 'view/index'), {
@@ -115,5 +118,31 @@ router.get('/', function (req, res) {
         }
     });
 });
+
+router.get('/login', async function (req, res) {
+    if (req.isAuthenticated()) {
+        console.log(`authenticated, ${req.user}`)
+        return res.redirect('/')
+    } else {
+        return res.render(path.join(__dirname, 'view/login'), {
+            title: 'Login - Aung Moe',
+            description: 'Login',
+            css: [`${route}/css/login.css`],
+            redirectUrl: '' // TODO: Add callback url from query parameter
+        })
+    }
+})
+
+router.post('/login', passport.authenticate('local', { failureRedirect: '/login', failureFlash: true }), function(req, res) {
+    // TODO: if callback url exists, redirect to that instead of to main page
+    return res.redirect('/');
+});
+
+// router.post('/login', passport.authenticate('local', { failureRedirect: '/login', failureFlash: true }), function(req, res) {
+//     return res.redirect('/');
+// });
+
+// router.post('/login', (req, res) => passport.authenticate('local', { 
+//     successRedirect: '/', failureRedirect: '/login'})(req, res));
 
 module.exports = router;

@@ -1,11 +1,18 @@
 "use strict";
 const PORT = process.env.PORT || 8081;
 
+/* #region  Imports */
 var express = require('express');
 var exphbs = require('express-handlebars');
 var app = express();
 var path = require('path');
 var logger = require('morgan');
+var passport = require('passport')
+var cookieParser = require('cookie-parser')
+var session = require('express-session')
+var appDir = path.dirname(require.main.filename);
+var secrets = require(path.join(appDir, 'config/secrets.json'))
+/* #endregion */
 
 /* #region View Engine Setup to handlebars and set up view paths */
 var hbs = exphbs.create({
@@ -20,6 +27,23 @@ var hbs = exphbs.create({
 app.engine('handlebars', hbs.engine);
 app.set('view engine', 'handlebars');
 app.set('views', path.join(__dirname, 'src/global/view'))
+/* #endregion */
+
+/* #region  Config Express Routes (must be set before registering routers) */
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }))
+app.use(cookieParser())
+app.use(session({ 
+    secret: process.env.SESSION_SECRET || secrets.SESSION_SECRET, 
+    saveUninitialized: false,
+    resave: false,
+    cookie: {
+        sameSite: "strict",
+        maxAge: 31536000    // 1 year :D
+    }
+}))
+app.use(passport.initialize());
+app.use(passport.session());;
 /* #endregion */
 
 /* #region Connect controllers */

@@ -4,35 +4,36 @@
 var express = require('express');
 var router = express.Router();
 var path = require('path');
+var appDir = path.dirname(require.main.filename);
 var utility = require('../utility')
-var database = require('./js/database')
+var database = require('../index/js/database')
 var mongoose = require('mongoose')
-var UserModel = require('./db-models/User')
+var UserModel = require('../index/database-models/User')
+var passport = require('passport')
 /* #endregion */
 
 var route = 'bookmark'
 utility.setupRouterPaths(router, __dirname)
 database.connectIfNeeded()
 
-// Create an instance of model SomeModel
-var user = new UserModel({ username: 'test1234', passwordHash: 'pass1234', fullName: 'David' });
+// // Create an instance of model SomeModel
+// var user = new UserModel({ username: 'test12345', fullName: 'David' });
 
-// Save the new model instance, passing a callback
-user.save(function (err) {
-    if (err) {
-        console.error(err.message)
-        return
-    }
-    console.log('saved')
-    // saved!
-});
+// UserModel.register(user, 'uniquepass', err => {
+//     if (err) {
+//         console.error(err.message)
+//         return
+//     }
+//     console.log('user registered')
+//     // saved!    
+// })
 
 router.get('/', async function (req, res) {
-    return res.render(path.join(__dirname, 'view/login'), {
-        title: 'Login to Bookmark - Aung Moe',
-        description: 'Login page to access bookmark for reading materials',
-        css: [`${route}/css/login.css`]
-    })
+    if (req.isAuthenticated()) {
+        console.log(`authenticated, ${req.user}`)
+    } 
+    
+    return res.redirect('/login')    
 })
 
 module.exports = router
