@@ -1,5 +1,7 @@
 node_modules
 node_modules/*
+config
+config/*
 
 # Macbook
 .DS_Store

@@ -1,0 +1,42 @@
+//Require Mongoose
+var mongoose = require('mongoose');
+
+//Define a schema
+var Schema = mongoose.Schema;
+
+var UserSchema = new Schema({
+  username: {
+    type: String,
+    required: true,
+    // unique: true,
+    trim: true,
+    lowercase: true,
+    minLength: [6, 'Must be 6 or more characters'],
+    maxLength: [20, 'Must be less than or equal to 20 characters'],
+  }, 
+  passwordHash: { 
+    type: String,
+    required: true,
+    minLength: [8, 'Must be 8 or more characters'],
+    maxLength: [64, 'Must be less than or equal to 64 characters'],
+  },
+  fullName: {
+    type: String,
+    required: true,
+    minLength: [2, 'Must be 2 or more characters'],
+    maxLength: [16, 'Must be less than or equal to 16 characters'],
+  }, 
+  createdDate: {
+    type: Date,
+    default: Date.now
+  },
+  lastLoginDate: {
+    type: Date,
+    default: Date.now
+  }
+});
+
+// Compile model from schema
+var UserModel = mongoose.model('User', UserSchema);
+
+module.exports = UserModel
