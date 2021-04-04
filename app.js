@@ -27,7 +27,8 @@ app.use('/', require('./src/app-area/index/index-controller'));
 app.use('/blog', require('./src/app-area/blog/blog-controller'));
 app.use('/read-novel', require('./src/app-area/read/read-novel/read-novel-controller'));
 app.use('/read-webtoon', require('./src/app-area/read/read-webtoon/read-webtoon-controller'));
-app.use('/project', require('./src/app-area/project/project-controller'));
+app.use('/projects', require('./src/app-area/project/project-controller'));
+app.use('/bookmark', require('./src/app-area/bookmark/bookmark-controller'));
 /* #endregion */
 
 /* #region Connect other services */
