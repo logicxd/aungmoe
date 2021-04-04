@@ -27,8 +27,8 @@
 
 .reading-area {
     @extend .center;
+    @extend .no-select;
     line-height: 0;
-    user-select: none;
 
     img {
         max-width: 100%;

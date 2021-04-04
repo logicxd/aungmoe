@@ -1,4 +1,3 @@
-@import url(/css/highlight/atom-one-dark.css);
 .materialize-red {
   background-color: #e51c23 !important; }
 
@@ -2509,7 +2508,7 @@ td, th {
 .right-align {
   text-align: right; }
 
-.center, .reading-area, .center-align {
+.center, .center-align {
   text-align: center; }
 
 .left {
@@ -2519,7 +2518,7 @@ td, th {
   float: right !important; }
 
 .no-select, input[type=range],
-input[type=range] + .thumb, .reading-area {
+input[type=range] + .thumb {
   user-select: none; }
 
 .circle {
@@ -3206,7 +3205,7 @@ nav {
     display: inline-block;
     font-size: 1.5rem;
     padding: 0; }
-    nav .brand-logo.center, nav .brand-logo.reading-area {
+    nav .brand-logo.center {
       left: 50%;
       transform: translateX(-50%); }
     @media only screen and (max-width: 992px) {
@@ -6594,25 +6593,32 @@ header .nav-wrapper a {
 .page-footer .footer-copyright {
   font-size: 0.8em; }
 
-.hljs {
-  padding: 0; }
-
-.read-webtoon-container {
-  padding: 0;
-  margin: 0;
-  max-width: 1280px;
-  width: 100%; }
-
 @media only screen and (min-width: 601px) {
-  .read-webtoon-container {
-    margin: 0 auto;
-    width: 85%; } }
+  p {
+    font-size: 18px; } }
 
 @media only screen and (min-width: 993px) {
-  .read-webtoon-container {
-    width: 70%; } }
+  p {
+    font-size: 21px; } }
 
-.reading-area {
-  line-height: 0; }
-  .reading-area img {
-    max-width: 100%; }
+.project-list li {
+  margin-bottom: 30px; }
+
+.project-list .project-date {
+  color: #687D91;
+  font-size: 1.1em; }
+
+.project-list .project-link {
+  color: #2A3D50;
+  font-size: 1.4rem; }
+
+.project-list .project-link:hover {
+  text-decoration: underline; }
+
+@media only screen and (min-width: 601px) {
+  .project-list .project-link {
+    font-size: 1.7rem; } }
+
+@media only screen and (min-width: 993px) {
+  .project-list .project-link {
+    font-size: 2.28rem; } }

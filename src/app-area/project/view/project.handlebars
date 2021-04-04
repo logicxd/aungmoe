@@ -1,0 +1,91 @@
+<main>
+    <div class="container">
+        <h2>Projects</h2>
+        <ul class="project-list">
+            {{#each projects}}
+            <li>
+                <span class="project-date">{{this.dateString}} - {{this.category}}</span>
+                <h4 class="m-t-0">
+                    <a class="project-link" href="{{this.url}}">
+                        {{this.title}}
+                    </a>
+                </h4>
+            </li>
+
+            {{!-- Option 1 --}}
+            {{!-- <div class="card hoverable">
+                <div class="card-image">
+                    <a href="{{this.image.href}}" target="_blank">
+                        <img src="https://user-images.githubusercontent.com/12219300/103457672-18470b00-4cb6-11eb-9e84-5c69af90e90a.png">
+                    </a>
+                </div>
+                <div class="card-content">
+                    <span class="card-title">Some Title</span>
+                </div>
+
+                <h4 class="card-content">
+                    <a class="blog-link card-title" href="{{this.url}}">
+                        {{this.name}}
+                    </a>
+                    <p>
+                        {{{this.description}}}
+                    </p>
+                </h4>
+            </div> --}}
+
+            {{!-- Option 2 --}}
+            {{!-- <div class="card-panel teal">
+                <div class="container">
+                    Hey What's up doe
+                </div>
+            </div> --}}
+
+            {{!-- Option 3 --}}
+            {{!-- <li>
+                <h4 class="m-t-0">
+                    <a class="blog-link" href="{{this.url}}">
+                        {{this.name}}
+                    </a>
+                </h4>
+                <div>
+                    {{this.description}}
+                </div>
+            </li> --}}
+
+            {{!-- Option 4 --}}
+            {{!-- <div class="card hoverable">
+                <div class="card-content">
+                    <div class="project-row">
+                        <div class="col s12 m6">
+                            <img class="materialboxed projects-image" src="{{this.image}}">
+                        </div>
+                        <div class="col s12 m6 projects-description-container">
+                            <h5>{{this.name}}</h5>
+                            {{#each this.skills}}
+                            <div class="chip">
+                                <img src="{{this.image}}" alt="Skill Icon"> {{this.name}}
+                            </div>
+                            {{/each}}
+                            <p>
+                                {{{this.description}}}
+                            </p>
+                            <div class="projects-description-button-container">
+                                {{#if this.github}}
+                                <a href="{{this.github}}" target="_blank" class="waves-effect waves-light btn projects-description-button">
+                                    <i class="fab fa-github"></i> GitHub</i>
+                                </a>
+                                {{/if}}
+                                {{#if this.website}}
+                                <a href="{{this.website.link}}" target="_blank" class="waves-effect waves-light btn projects-description-button">
+                                    <i class="fas fa-link"></i> {{this.website.name}}</i>
+                                </a>
+                                {{/if}}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div> --}}
+            {{/each}}
+        </ul>
+    </div>
+</main>

@@ -26,10 +26,10 @@ router.get('/', async function (req, res) {
 /* #region  Setup Page */
 function loadSetupPage(req, res) {
     res.render(path.join(__dirname, 'view/read-setup'), {
-        title: 'Reading Tool - Aung Moe',
-        description: 'Aung\'s personal website',
-        css: [global.css.material_icons, `${route}/css/read.css`, global.css.animate_css, global.css.fontawesome],
-        js: [global.js.jquery, global.js.materialize, global.js.header, `${route}/js/read.js`, global.js.footer]
+        title: 'Read Novel - Aung Moe',
+        description: 'Novel Reading Tool',
+        css: [`${route}/css/read.css`],
+        js: [`${route}/js/read.js`]
     });
 }
 /* #endregion */
@@ -52,9 +52,9 @@ async function loadReadPage(req, res) {
 
     res.render(path.join(__dirname, 'view/read'), {
         title: `${data.title || 'Unknown'} - Aung Moe`,
-        description: 'Aung\'s personal website',
-        css: [global.css.material_icons, `${route}/css/read.css`, global.css.animate_css, global.css.fontawesome],
-        js: [global.js.jquery, global.js.materialize, global.js.header, `${route}/js/read.js`, global.js.footer],
+        description: `${data.title}`,
+        css: [`${route}/css/read.css`],
+        js: [`${route}/js/read.js`],
         textTitle: textTitles[0],
         textAlternativeTitles: readControllerUtility.getAlternativeTitleString(textTitles),
         textParagraphs: paragraphs,

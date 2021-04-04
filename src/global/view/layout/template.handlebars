@@ -26,6 +26,7 @@
 
     <title>{{ title }}</title>
 
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons" />
     {{#each css}}
     <link rel="stylesheet" href="{{this}}" />
     {{/each}}
@@ -52,7 +53,7 @@
                     <li><a href="/">Home</a></li>
                     {{!-- <li><a href="/media/resume.pdf" target="_blank">Resume</a></li> --}}
                     <li><a href="/blog">Blog</a></li>
-                    <li><a href="/read">Tool</a></li>
+                    <li><a href="/project">Project</a></li>
                 </ul>
             </div>
         </nav>
@@ -60,7 +61,7 @@
             <li><a href="/">Home</a></li>
             {{!-- <li><a href="/media/resume.pdf" target="_blank">Resume</a></li> --}}
             <li><a href="/blog">Blog</a></li>
-            <li><a href="/read">Tool</a></li>
+            <li><a href="/project">Project</a></li>
         </ul>
     </header>
     
@@ -92,9 +93,13 @@
         </div>
     </footer>
 
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js" ></script>
+    <script src="/js/materialize.min.js" ></script>
+    <script src="/js/_header.js" ></script>
     {{#each js}}
     <script src="{{ this }}" ></script>
     {{/each}}
+    <script src="/js/_footer.js" ></script>
     <script>
         $(document).ready(() => {
             let year = (new Date()).getFullYear()

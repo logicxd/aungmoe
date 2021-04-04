@@ -93,9 +93,8 @@ catch (err) {
 router.get('/', function (req, res) {
     res.render(path.join(__dirname, 'view/blog'), {
         title: 'Blog - Aung Moe',
-        description: 'Aung\'s personal website',
-        css: [global.css.material_icons, `/${route}/css/blog.css`, global.css.animate_css, global.css.fontawesome],
-        js: [global.js.jquery, global.js.materialize, global.js.header, global.js.footer],
+        description: 'Aung\'s blogs',
+        css: [`/${route}/css/blog.css`],
         pages: sortedPages
     });
 });
@@ -106,9 +105,9 @@ router.get('/:category/:year/:month/:day/:title', function (req, res, next) {
         var page = pages[url];
         res.render(path.join(__dirname, 'view/blogtemplate'), {
             title: `${page.title} - Aung Moe`,
-            description: 'Aung\'s personal website',
-            css: [global.css.material_icons, `/${route}/css/blogtemplate.css`, global.css.animate_css, global.css.fontawesome],
-            js: [global.js.jquery, global.js.materialize, global.js.header, `/${route}/js/blogtemplate.js`, global.js.footer],
+            description: `${page.title}`,
+            css: [`/${route}/css/blogtemplate.css`],
+            js: [`/${route}/js/blogtemplate.js`],
             page: page
         });
     } else {
