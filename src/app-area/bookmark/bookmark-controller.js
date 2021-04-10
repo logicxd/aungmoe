@@ -32,8 +32,7 @@ router.get('/', async function (req, res) {
     if (req.isAuthenticated()) {
         console.log(`authenticated, ${req.user}`)
     } 
-    
-    return res.redirect('/login')    
+    return res.redirect(`/login?redirectUrl=${route}`)    
 })
 
 module.exports = router

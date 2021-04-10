@@ -128,21 +128,16 @@ router.get('/login', async function (req, res) {
             title: 'Login - Aung Moe',
             description: 'Login',
             css: [`${route}/css/login.css`],
-            redirectUrl: '' // TODO: Add callback url from query parameter
+            redirectUrl: req.query.redirectUrl
         })
     }
 })
 
 router.post('/login', passport.authenticate('local', { failureRedirect: '/login', failureFlash: true }), function(req, res) {
-    // TODO: if callback url exists, redirect to that instead of to main page
+    if (req.body.redirectUrl) {
+        return res.redirect(req.body.redirectUrl)
+    }
     return res.redirect('/');
 });
-
-// router.post('/login', passport.authenticate('local', { failureRedirect: '/login', failureFlash: true }), function(req, res) {
-//     return res.redirect('/');
-// });
-
-// router.post('/login', (req, res) => passport.authenticate('local', { 
-//     successRedirect: '/', failureRedirect: '/login'})(req, res));
 
 module.exports = router;
