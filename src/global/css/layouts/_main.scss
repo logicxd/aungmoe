@@ -39,6 +39,10 @@ body {
     overflow-y: overlay;
 }
 
+html {
+    font-family: "Roboto", sans-serif;
+}
+
 header {
     nav {
         background-color: $my-white-color;
