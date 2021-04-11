@@ -19,8 +19,34 @@ $('#bookmark-modal-add-button').click(() => {
     } else if ($('#bookmark-modal-add-radio-novel').is(':checked')) {
         contentType = 'novel'
     }
+
+    // Display loading screen 
     $('#bookmark-loading-screen').css('display', 'flex')
-    
+    $.ajax({
+        method: 'POST',
+        url: 'bookmark',
+        data: {
+            'title': $('#bookmark-modal-add-title').val(),
+            'imageUrl': $('#bookmark-modal-add-image').val(),
+            'url': $('#bookmark-modal-add-url').val(),
+            'type': contentType
+        },
+        success: function(res) {
+            M.toast({
+                html: "Added bookmark!", 
+                classes: 'green lighten-1',
+                displayLength: 2000,
+                completeCallback: () => {
+                    location.reload()
+            }})
+        },
+        error: function(error) {
+            console.error(error.responseText)
+            M.toast({html: error.responseText, classes: 'red lighten-1'})
+        }
+    }).always(()=> {
+        $('#bookmark-loading-screen').css('display', 'none')
+    })
 })
 
 $('#bookmark-modal-add-title').keyup(() => {

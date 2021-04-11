@@ -16,5 +16,9 @@ module.exports = {
     
         //Bind connection to error event (to get notification of connection errors)
         db.on('error', console.error.bind(console, 'MongoDB connection error:'));
+    },
+    urlValidator: function(val) {
+        urlRegex = /(http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-/]))?/;
+        return urlRegex.test(val);
     }
 }
