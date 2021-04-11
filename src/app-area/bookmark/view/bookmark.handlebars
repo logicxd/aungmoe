@@ -1,5 +1,8 @@
 <main class="container">
     <h2>Bookmark</h2>
+    <div class="row">
+        <a id="bookmark-add-button" class="waves-effect waves-light btn-small">Add</a>
+    </div>
     {{#each bookmarks}}
     <div class="row bookmark">
         <div class="card horizontal bookmark-card">
@@ -35,3 +38,101 @@
     </div>
     {{/each}}
 </main>
+
+<!-- Add Modal -->
+<div id="bookmark-modal-add" class="modal bottom-sheet modal-fixed-footer">
+    <div class="modal-content">
+        <h4>Add Bookmark</h4>
+        <div class="row m-b-0">
+            <div class="input-field col s12">
+                <input id="bookmark-modal-add-title" type="text" class="validate" required aria-required="true">
+                <label for="bookmark-modal-add-title" data-error="Invalid">Title</label>
+                <span class="helper-text" data-error="Please enter a title"></span>
+            </div>
+        </div>
+        <div class="row m-b-0">
+            <label class="input-field col s12">
+                <input id="bookmark-modal-add-image" type="url" class="validate" required aria-required="true">
+                <label for="bookmark-modal-add-image" data-error="Invalid">Image</label>
+                <span class="helper-text" data-error="Please enter a image URL"></span>
+            </label>
+        </div>
+        <div class="row m-b-0">
+            <label class="input-field col s12">
+                <input id="bookmark-modal-add-url" type="url" class="validate" required aria-required="true">
+                <label for="bookmark-modal-add-url" data-error="Invalid">URL</label>
+                <span class="helper-text" data-error="Please enter the content URL"></span>
+            </label>
+        </div>
+        <div class="row m-b-0">
+            <div class="col s6">
+                <label>
+                    <input name="bookmark-modal-content-type-radio" type="radio" checked />
+                    <span>Webtoon</span>
+                </label>
+            </div>
+            <div class="col s6">
+                <label>
+                    <input name="bookmark-modal-content-type-radio" type="radio" />
+                    <span>Novel</span>
+                </label>
+            </div>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <a id="bookmark-modal-add-button" class="waves-effect btn">Add</a>
+    </div>
+
+    <!-- Loading screen -->
+    <div id="bookmark-loading-screen">
+        <div class="preloader-wrapper active ">
+            <div class="spinner-layer spinner-blue">
+                <div class="circle-clipper left">
+                    <div class="circle"></div>
+                </div>
+                <div class="gap-patch">
+                    <div class="circle"></div>
+                </div>
+                <div class="circle-clipper right">
+                    <div class="circle"></div>
+                </div>
+            </div>
+
+            <div class="spinner-layer spinner-red">
+                <div class="circle-clipper left">
+                    <div class="circle"></div>
+                </div>
+                <div class="gap-patch">
+                    <div class="circle"></div>
+                </div>
+                <div class="circle-clipper right">
+                    <div class="circle"></div>
+                </div>
+            </div>
+
+            <div class="spinner-layer spinner-yellow">
+                <div class="circle-clipper left">
+                    <div class="circle"></div>
+                </div>
+                <div class="gap-patch">
+                    <div class="circle"></div>
+                </div>
+                <div class="circle-clipper right">
+                    <div class="circle"></div>
+                </div>
+            </div>
+
+            <div class="spinner-layer spinner-green">
+                <div class="circle-clipper left">
+                    <div class="circle"></div>
+                </div>
+                <div class="gap-patch">
+                    <div class="circle"></div>
+                </div>
+                <div class="circle-clipper right">
+                    <div class="circle"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

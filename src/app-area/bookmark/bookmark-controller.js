@@ -36,6 +36,7 @@ router.get('/', async function (req, res) {
             title: 'Bookmark - Aung Moe',
             description: 'Bookmark',
             css: [`${route}/css/bookmark.css`],
+            js: [`${route}/js/bookmark.js`],
             bookmarks: [{
                 img: 'https://kissmanga.org/mangaimage/al925871.jpg',
                 title: 'Some Book Title',

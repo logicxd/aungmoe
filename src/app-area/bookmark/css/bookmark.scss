@@ -48,3 +48,22 @@
     }
     
 }
+
+.modal.bottom-sheet {
+    max-height: 60%;
+}
+
+#bookmark-loading-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(16, 16, 16, 0.5);
+    z-index: 2;
+
+    // Center
+    display: none;
+    align-items: center;
+    justify-content: center
+}
