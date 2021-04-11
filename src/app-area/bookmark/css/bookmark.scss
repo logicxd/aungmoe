@@ -1,0 +1,50 @@
+@import '../../../global/css/layouts/main';
+
+.bookmark {
+
+    .card {
+        .card-image img {
+            max-width: 100%;
+            height: auto;
+            width: 100px;
+        }
+
+        .card-title {
+            font-size: 16px;
+        }
+
+        .card-content {
+            padding: 16px;
+            padding-top: 8px;
+        }
+
+        @media only screen and (min-width: 601px) {
+            .card-title {
+                font-size: 20px;
+            }
+        }
+            
+        @media only screen and (min-width: 993px) {
+            .card-title {
+                font-size: 24px;
+            }
+        }    
+    }
+
+    a {
+        color: $my-cyan-color;
+        -webkit-transition: color .1s ease-in;   
+        transition: color .1s ease-in;    
+    }
+
+    a:hover {
+        color: $my-cyan-color-darker;
+    }
+
+    .bookmark-content-row {
+        @extend .row; 
+        // padding: 0px;
+        margin-bottom: 10px;
+    }
+    
+}

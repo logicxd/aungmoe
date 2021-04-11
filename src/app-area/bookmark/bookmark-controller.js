@@ -31,6 +31,34 @@ database.connectIfNeeded()
 router.get('/', async function (req, res) {
     if (req.isAuthenticated()) {
         console.log(`authenticated, ${req.user}`)
+
+        return res.render(path.join(__dirname, 'view/bookmark'), {
+            title: 'Bookmark - Aung Moe',
+            description: 'Bookmark',
+            css: [`${route}/css/bookmark.css`],
+            bookmarks: [{
+                img: 'https://kissmanga.org/mangaimage/al925871.jpg',
+                title: 'Some Book Title',
+                lastReadTitle: 'Chapter 123',
+                lastReadUrl: 'https://www.google.com',
+                nextChapterTitle: 'Chapter 124',
+                nextChapterUrl: 'https://www.google.com'
+            }, {
+                img: 'https://kissmanga.org/mangaimage/al925871.jpg',
+                title: 'Some Book Title',
+                lastReadTitle: 'Chapter 123',
+                lastReadUrl: 'https://www.google.com',
+                // nextChapterTitle: 'Chapter 124',
+                // nextChapterUrl: 'https://www.google.com'
+            }, {
+                img: 'https://kissmanga.org/mangaimage/al925871.jpg',
+                title: 'Some Book Title',
+                lastReadTitle: 'Chapter 123',
+                lastReadUrl: 'https://www.google.com',
+                nextChapterTitle: 'Chapter 124',
+                nextChapterUrl: 'https://www.google.com'
+            }]
+        })
     } 
     return res.redirect(`/login?redirectUrl=${route}`)    
 })

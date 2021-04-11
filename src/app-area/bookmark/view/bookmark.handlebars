@@ -1,0 +1,37 @@
+<main class="container">
+    <h2>Bookmark</h2>
+    {{#each bookmarks}}
+    <div class="row bookmark">
+        <div class="card horizontal bookmark-card">
+            <div class="card-image">
+                <img class="bookmark-image" src="{{this.img}}" />
+            </div>
+            <div class="card-stacked">
+                <div class="card-content">
+                    <span class="card-title">{{this.title}}</span>
+                    <div class="bookmark-content-row">
+                        Last: <a href="{{this.lastReadUrl}}">{{this.lastReadTitle}}</a>
+                        {{!-- <div class="col s12 m2">
+                            Last:
+                        </div>
+                        <div class="col s12 m10">
+                            <a href="{{this.lastReadUrl}}">{{this.lastReadTitle}}</a>
+                        </div> --}}
+                    </div>
+                    {{#if this.nextChapterUrl}}
+                    <div class="bookmark-content-row">
+                        Next: <a href="{{this.nextChapterUrl}}">{{this.nextChapterTitle}}</a>
+                        {{!-- <div class="col s12 m2">
+                            Next:
+                        </div>
+                        <div class="col s12 m10">
+                            <a href="{{this.nextChapterUrl}}">{{this.nextChapterTitle}}</a>
+                        </div> --}}
+                    </div>
+                    {{/if}}
+                </div>
+            </div>
+        </div>
+    </div>
+    {{/each}}
+</main>
