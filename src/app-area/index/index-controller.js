@@ -4,11 +4,9 @@ var router = express.Router();
 var path = require('path');
 var utility = require('../utility')
 var passport = require('passport')
-var database = require('../index/js/database')
 
 var route = 'index'
 utility.setupRouterPaths(router, __dirname, route)
-database.connectIfNeeded()
 
 router.get('/', function (req, res) {
     res.render(path.join(__dirname, 'view/index'), {

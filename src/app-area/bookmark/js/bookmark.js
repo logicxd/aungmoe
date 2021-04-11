@@ -19,10 +19,8 @@ $('#bookmark-modal-add-button').click(() => {
     } else if ($('#bookmark-modal-add-radio-novel').is(':checked')) {
         contentType = 'novel'
     }
-
-    // TODO: sanitize data (do this in backend)
-    console.log('Add content')
     $('#bookmark-loading-screen').css('display', 'flex')
+    
 })
 
 $('#bookmark-modal-add-title').keyup(() => {

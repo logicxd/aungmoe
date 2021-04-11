@@ -12,6 +12,7 @@ var cookieParser = require('cookie-parser')
 var session = require('express-session')
 var appDir = path.dirname(require.main.filename);
 var secrets = require(path.join(appDir, 'config/secrets.json'))
+var database = require('./src/database/database')
 /* #endregion */
 
 /* #region View Engine Setup to handlebars and set up view paths */
@@ -43,7 +44,8 @@ app.use(session({
     }
 }))
 app.use(passport.initialize());
-app.use(passport.session());;
+app.use(passport.session());
+database.connectIfNeeded()
 /* #endregion */
 
 /* #region Connect controllers */
