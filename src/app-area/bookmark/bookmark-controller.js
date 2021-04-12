@@ -51,7 +51,13 @@ router.get('/', async function (req, res) {
 
     try {
         bookmarks = await BookmarkModel.find({ user: req.user }).sort({modifiedDate: 'desc'}).lean()
-        console.log(bookmarks)
+        bookmarks = bookmarks.map(x => {
+            x.lastReadUrl = `/read-${x.type}?url=${x.lastReadUrl}`
+            if (x.nextChapterUrl) {
+                x.nextChapterUrl = `/read-${x.type}?url=${x.nextChapterUrl}`
+            }
+            return x
+        })
     } catch (error) {
         console.error(error)
     }
@@ -78,7 +84,7 @@ router.post('/', [
     })
 ], async function (req, res) {
     if (!req.isAuthenticated()) {
-        return res.status(403).end()
+        return res.status(403).send("You're not signed in, please sign in again.")
     }
 
     const errors = validationResult(req);
