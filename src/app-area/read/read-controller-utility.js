@@ -1,5 +1,23 @@
+/* #region  Imports */
+var rp = require('request-promise');
+var unfluff = require('unfluff');
+var cheerio = require('cheerio');
+/* #endregion */
 
 /* #region  Title */
+async function findTextTitleWithUrl(url) {
+    try {
+        var html = await rp(url)
+        var loadedCheerio = cheerio.load(html)
+        var data = unfluff(html);
+        var textTitles = findTextTitle(data.title, loadedCheerio);
+        return textTitles.length > 0 ? textTitles[0] : null
+    } catch (error) {
+        console.log(error);
+        return null
+    }
+}
+
 /**
  * Tries to find title and alternative titles or chapters
  * @param {string} unfluffTitle title parsed using unfluff
@@ -63,6 +81,19 @@ function getAlternativeTitleString(textTitles) {
 /* #endregion */
 
 /* #region  Next Page URL*/
+async function findNextPageLinkWithUrl(url) {
+    try {
+        var html = await rp(url)
+        var loadedCheerio = cheerio.load(html)
+        var data = unfluff(html);
+        var nextPageLink = findNextPageLink(data.links, loadedCheerio, url)
+        return nextPageLink
+    } catch (error) {
+        console.log(error);
+        return null
+    }
+}
+
 /**
  * Attempts to find the "Next" page link for the given website
  * @param {string[]} unfluffLinks array of links found using unfluff
@@ -168,7 +199,9 @@ function isAbsoluteLink(link) {
 /* #endregion */
 
 module.exports = {
+    findTextTitleWithUrl,
     findTextTitle,
+    findNextPageLinkWithUrl,
     findNextPageLink,
     getAlternativeTitleString,
 }

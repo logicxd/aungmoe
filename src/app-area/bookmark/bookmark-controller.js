@@ -8,9 +8,6 @@ var utility = require('../utility')
 var { body, validationResult } = require('express-validator');
 
 // Text parser
-var rp = require('request-promise');
-var unfluff = require('unfluff');
-var cheerio = require('cheerio');
 var readControllerUtility = require('../read/read-controller-utility')
 
 var UserModel = require('../../database/model/User')
@@ -52,9 +49,9 @@ router.get('/', async function (req, res) {
     try {
         bookmarks = await BookmarkModel.find({ user: req.user }).sort({ modifiedDate: 'desc' }).lean()
         bookmarks = bookmarks.map(x => {
-            x.lastReadUrl = `/read-${x.type}?url=${x.lastReadUrl}`
+            x.lastReadUrl = `/read-${x.type}?url=${x.lastReadUrl}&bookmark=${x._id.toString()}`
             if (x.nextChapterUrl) {
-                x.nextChapterUrl = `/read-${x.type}?url=${x.nextChapterUrl}`
+                x.nextChapterUrl = `/read-${x.type}?url=${x.nextChapterUrl}&bookmark=${x._id.toString()}`
             }
             return x
         })
@@ -133,12 +130,9 @@ router.patch('/check-updates', async (req, res) => {
         let bookmarks = await BookmarkModel.find({ user: req.user, nextChapterUrl: null })
         let numOfBookmarksUpdated = 0
         for (let bookmark of bookmarks) {
-            var html = await rp(bookmark.lastReadUrl)
-            var loadedCheerio = cheerio.load(html)
-            var data = unfluff(html);
-            var nextPageLink = readControllerUtility.findNextPageLink(data.links, loadedCheerio, req.query.url)
+            var nextPageLink = await readControllerUtility.findNextPageLinkWithUrl(bookmark.lastReadUrl)
             if (nextPageLink) {
-                var nextPageTitle = await findTitle(nextPageLink)
+                var nextPageTitle = await readControllerUtility.findTextTitleWithUrl(nextPageLink)
 
                 bookmark.nextChapterTitle = nextPageTitle ?? 'Next Chapter'
                 bookmark.nextChapterUrl = nextPageLink
@@ -156,18 +150,6 @@ router.patch('/check-updates', async (req, res) => {
 })
 
 /* #region  Helper Methods */
-async function findTitle(url) {
-    try {
-        var html = await rp(url)
-        var loadedCheerio = cheerio.load(html)
-        var data = unfluff(html);
-        var textTitles = readControllerUtility.findTextTitle(data.title, loadedCheerio);
-        return textTitles.length > 0 ? textTitles[0] : null
-    } catch (error) {
-        console.log(error);
-        return null
-    }
-}
 
 // p_createUser()
 // function p_createUser() {

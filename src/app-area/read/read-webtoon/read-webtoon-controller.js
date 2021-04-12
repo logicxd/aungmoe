@@ -60,7 +60,8 @@ async function loadReadPage(req, res) {
         webtoonImages: webtoonImages,
         didError: html === '',
         currentPageLink: req.query.url,
-        nextPageLink: nextPageLink
+        nextPageLink: nextPageLink,
+        bookmark: req.query.bookmark
     });
 }
 

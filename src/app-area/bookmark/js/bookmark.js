@@ -12,7 +12,7 @@ $('#bookmark-check-updates-button').click(() => {
         method: 'PATCH',
         url: 'bookmark/check-updates',
         success: function (res) {
-            let numOfBookmarksUpdated = parseInt(res.responseText)
+            let numOfBookmarksUpdated = parseInt(res)
             if (numOfBookmarksUpdated > 0) {
                 M.toast({
                     html: `${numOfBookmarksUpdated} bookmarks updated!`,

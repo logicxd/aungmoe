@@ -60,7 +60,8 @@ async function loadReadPage(req, res) {
         textParagraphs: paragraphs,
         didError: html === '',
         currentPageLink: req.query.url,
-        nextPageLink: nextPageLink
+        nextPageLink: nextPageLink,
+        bookmark: req.query.bookmark
     });
 }
 /* #endregion */
