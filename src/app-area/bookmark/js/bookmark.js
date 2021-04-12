@@ -28,15 +28,16 @@ $('#bookmark-check-updates-button').click(() => {
                     classes: 'green lighten-1',
                     displayLength: 2000
                 })
+                $('#bookmark-check-updates-button').removeClass('disabled')
             }
         },
         error: function (error) {
             console.error(error.responseText)
             M.toast({ html: error.responseText, classes: 'red lighten-1' })
+            $('#bookmark-check-updates-button').removeClass('disabled')
         }
     }).always(() => {
         $('#bookmark-check-updates-button').html('Check Updates')
-        $('#bookmark-check-updates-button').removeClass('disabled')
     })
 })
 
@@ -56,6 +57,7 @@ $('#bookmark-modal-add-button').click(() => {
     }
 
     // Display loading screen 
+    $('#bookmark-modal-add-button').addClass('disabled')
     $('#bookmark-loading-screen').css('display', 'flex')
     $.ajax({
         method: 'POST',
@@ -79,6 +81,7 @@ $('#bookmark-modal-add-button').click(() => {
         error: function (error) {
             console.error(error.responseText)
             M.toast({ html: error.responseText, classes: 'red lighten-1' })
+            $('#bookmark-modal-add-button').removeClass('disabled')
         }
     }).always(() => {
         $('#bookmark-loading-screen').css('display', 'none')

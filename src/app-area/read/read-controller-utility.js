@@ -6,9 +6,9 @@ var BookmarkModel = require('../../database/model/Bookmark')
 /* #endregion */
 
 /* #region  Bookmark */
-async function updateNextChapterBookmarkIfNeeded(req, bookmarkId, nextPageLink) {
+async function updateBookmarkIfNeeded(req, bookmarkId, lastReadTitle, lastReadUrl, nextPageLink) {
     try {
-        if (!req.isAuthenticated() || !bookmarkId || !nextPageLink) { return }
+        if (!req.isAuthenticated() || !bookmarkId) { return }
 
         let bookmark = await BookmarkModel.findById(bookmarkId)
         if (!bookmark) {
@@ -18,10 +18,20 @@ async function updateNextChapterBookmarkIfNeeded(req, bookmarkId, nextPageLink) 
         // This works but I want to reduce API hits so will replace it with static chapter
         // const nextPageTitle = await findTextTitleWithUrl(nextPageLink)
         const nextPageTitle = 'Next Chapter'
-        await updateBookmarkWithNextChapterInfo(bookmark, nextPageTitle, nextPageLink)
+        await updateBookmark(bookmark, lastReadTitle, lastReadUrl, nextPageTitle, nextPageLink)
     } catch (error) {
         console.error(error)
     }
+}
+
+async function updateBookmark(bookmark, lastReadTitle, lastReadUrl, nextPageTitle, nextPageLink) {
+    bookmark.lastReadTitle = lastReadTitle
+    bookmark.lastReadUrl = lastReadUrl
+    bookmark.nextChapterTitle = nextPageTitle ?? 'Next Chapter'
+    bookmark.nextChapterUrl = nextPageLink
+    bookmark.modifiedDate = Date.now()
+    bookmark.nextChapterCheckedOn = bookmark.modifiedDate
+    await bookmark.save()
 }
 
 async function updateBookmarkWithNextChapterInfo(bookmark, nextPageTitle, nextPageLink) {
@@ -228,7 +238,7 @@ function isAbsoluteLink(link) {
 /* #endregion */
 
 module.exports = {
-    updateNextChapterBookmarkIfNeeded,
+    updateBookmarkIfNeeded: updateBookmarkIfNeeded,
     updateBookmarkWithNextChapterInfo,
     findTextTitleWithUrl,
     findTextTitle,

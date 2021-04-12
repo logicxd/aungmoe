@@ -90,22 +90,20 @@ router.post('/', [
     }
 
     try {
-        const bookmark = await BookmarkModel.findOne({ user: req.user, title: req.body.title })
+        let bookmark = await BookmarkModel.findOne({ user: req.user, title: req.body.title })
         if (bookmark) {
             return res.status(409).send('Bookmark with this title already exists')
         }
 
-        const url = (new URL(req.body.url)).origin
-        let website = await WebsiteModel.findOne({ url: url })
+        const websiteUrl = (new URL(req.body.url)).origin
+        let website = await WebsiteModel.findOne({ url: websiteUrl })
         if (!website) {
-            website = await WebsiteModel.create({ url: url })
+            website = await WebsiteModel.create({ url: websiteUrl })
         }
 
-        // TODO: re-enable fetching the URL after test is over
-        // let lastReadTitle = await findTitle(req.body.url) ?? req.body.url
-        let lastReadTitle = req.body.url
+        let lastReadTitle = await readControllerUtility.findTextTitleWithUrl(req.body.url) ?? req.body.url
 
-        await BookmarkModel.create({
+        bookmark = await BookmarkModel.create({
             user: req.user,
             website: website,
             title: req.body.title,
@@ -114,6 +112,15 @@ router.post('/', [
             lastReadUrl: req.body.url,
             type: req.body.type
         })
+
+        let nextPageLink = await readControllerUtility.findNextPageLinkWithUrl(req.body.url)
+        if (nextPageLink) {
+            // This works but I want to reduce API hits so will replace it with static chapter
+            // var nextPageTitle = await readControllerUtility.findTextTitleWithUrl(nextPageLink)
+            var nextPageTitle = 'Next Chapter'
+            await readControllerUtility.updateBookmarkWithNextChapterInfo(bookmark, nextPageTitle, nextPageLink)
+        }
+
         return res.status(204).end()
     } catch (error) {
         console.error(error)

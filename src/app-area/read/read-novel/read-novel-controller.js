@@ -50,7 +50,7 @@ async function loadReadPage(req, res) {
     var paragraphs = data.text.split('\n\n')
     var nextPageLink = readControllerUtility.findNextPageLink(data.links, loadedCheerio, req.query.url)
 
-    await readControllerUtility.updateNextChapterBookmarkIfNeeded(req, req.query.bookmark, nextPageLink)
+    await readControllerUtility.updateBookmarkIfNeeded(req, req.query.bookmark, textTitles[0], req.query.url, nextPageLink)
 
     res.render(path.join(__dirname, 'view/read'), {
         title: `${data.title || 'Unknown'} - Aung Moe`,
