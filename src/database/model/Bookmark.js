@@ -16,8 +16,7 @@ var BookmarkSchema = new Schema({
   },
   title: {
     type: String,
-    required: true,
-    unique: true
+    required: true
   },
   imageUrl: {
     type: String,
@@ -59,6 +58,7 @@ var BookmarkSchema = new Schema({
 BookmarkSchema.path('imageUrl').validate(database.urlValidator, 'Invalid image url');
 BookmarkSchema.path('lastReadUrl').validate(database.urlValidator, 'Invalid last read url');
 BookmarkSchema.path('nextChapterUrl').validate(database.urlValidator, 'Invalid next chapter url');
+BookmarkSchema.index({'user': 1, 'title': 1}, {unique: true})
 
 // Compile model from schema
 var BookmarkModel = mongoose.model('Bookmark', BookmarkSchema);

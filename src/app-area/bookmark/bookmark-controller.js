@@ -13,7 +13,7 @@ var unfluff = require('unfluff');
 var cheerio = require('cheerio');
 var readControllerUtility = require('../read/read-controller-utility')
 
-require('../../database/model/User')
+var UserModel = require('../../database/model/User')
 var BookmarkModel = require('../../database/model/Bookmark')
 var WebsiteModel = require('../../database/model/Website')
 /* #endregion */
@@ -22,39 +22,46 @@ var route = 'bookmark'
 utility.setupRouterPaths(router, __dirname)
 
 router.get('/', async function (req, res) {
-    if (req.isAuthenticated()) {
-        console.log(`authenticated, ${req.user}`)
-
-        return res.render(path.join(__dirname, 'view/bookmark'), {
-            title: 'Bookmark - Aung Moe',
-            description: 'Bookmark',
-            css: [`${route}/css/bookmark.css`],
-            js: [`${route}/js/bookmark.js`],
-            bookmarks: [{
-                img: 'https://kissmanga.org/mangaimage/al925871.jpg',
-                title: 'Some Book Title',
-                lastReadTitle: 'Chapter 123',
-                lastReadUrl: 'https://www.google.com',
-                nextChapterTitle: 'Chapter 124',
-                nextChapterUrl: 'https://www.google.com'
-            }, {
-                img: 'https://kissmanga.org/mangaimage/al925871.jpg',
-                title: 'Some Book Title',
-                lastReadTitle: 'Chapter 123',
-                lastReadUrl: 'https://www.google.com',
-                // nextChapterTitle: 'Chapter 124',
-                // nextChapterUrl: 'https://www.google.com'
-            }, {
-                img: 'https://kissmanga.org/mangaimage/al925871.jpg',
-                title: 'Some Book Title',
-                lastReadTitle: 'Chapter 123',
-                lastReadUrl: 'https://www.google.com',
-                nextChapterTitle: 'Chapter 124',
-                nextChapterUrl: 'https://www.google.com'
-            }]
-        })
+    if (!req.isAuthenticated()) {
+        return res.redirect(`/login?redirectUrl=${route}`)
     }
-    return res.redirect(`/login?redirectUrl=${route}`)
+
+    // let bookmarks = BookmarkModel.find()
+
+    // try {
+
+    // } catch (error) {
+
+    // }
+
+    return res.render(path.join(__dirname, 'view/bookmark'), {
+        title: 'Bookmark - Aung Moe',
+        description: 'Bookmark',
+        css: [`${route}/css/bookmark.css`],
+        js: [`${route}/js/bookmark.js`],
+        bookmarks: [{
+            img: 'https://kissmanga.org/mangaimage/al925871.jpg',
+            title: 'Some Book Title',
+            lastReadTitle: 'Chapter 123',
+            lastReadUrl: 'https://www.google.com',
+            nextChapterTitle: 'Chapter 124',
+            nextChapterUrl: 'https://www.google.com'
+        }, {
+            img: 'https://kissmanga.org/mangaimage/al925871.jpg',
+            title: 'Some Book Title',
+            lastReadTitle: 'Chapter 123',
+            lastReadUrl: 'https://www.google.com',
+            // nextChapterTitle: 'Chapter 124',
+            // nextChapterUrl: 'https://www.google.com'
+        }, {
+            img: 'https://kissmanga.org/mangaimage/al925871.jpg',
+            title: 'Some Book Title',
+            lastReadTitle: 'Chapter 123',
+            lastReadUrl: 'https://www.google.com',
+            nextChapterTitle: 'Chapter 124',
+            nextChapterUrl: 'https://www.google.com'
+        }]
+    })
 })
 
 router.post('/', [
@@ -78,7 +85,7 @@ router.post('/', [
         return res.status(400).json({ errors: errors.array() });
     }
     try {
-        const bookmark = await BookmarkModel.findOne({ title: req.body.title })
+        const bookmark = await BookmarkModel.findOne({ user: req.user, title: req.body.title })
         if (bookmark) {
             return res.status(409).send('Bookmark with this title already exists')
         }
@@ -89,6 +96,7 @@ router.post('/', [
             website = await WebsiteModel.create({ url: url })
         }
 
+        // TODO: re-enable fetching the URL after test is over
         // let lastReadTitle = await findTitle(req.body.url) ?? req.body.url
         let lastReadTitle = req.body.url
 
@@ -122,18 +130,20 @@ async function findTitle(url) {
     }
 }
 
+// p_createUser()
+// function p_createUser() {
+//     // Create an instance of model SomeModel
+//     var user = new UserModel({ username: 'test12345', fullName: 'David' });
 
-// // Create an instance of model SomeModel
-// var user = new UserModel({ username: 'test12345', fullName: 'David' });
-
-// UserModel.register(user, 'uniquepass', err => {
-//     if (err) {
-//         console.error(err.message)
-//         return
-//     }
-//     console.log('user registered')
-//     // saved!    
-// })
+//     UserModel.register(user, 'uniquepass', err => {
+//         if (err) {
+//             console.error(err.message)
+//             return
+//         }
+//         console.log('user registered')
+//         // saved!    
+//     })
+// }
 
 /* #endregion */
 module.exports = router
