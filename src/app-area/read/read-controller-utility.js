@@ -2,6 +2,35 @@
 var rp = require('request-promise');
 var unfluff = require('unfluff');
 var cheerio = require('cheerio');
+var BookmarkModel = require('../../database/model/Bookmark')
+/* #endregion */
+
+/* #region  Bookmark */
+async function updateNextChapterBookmarkIfNeeded(req, bookmarkId, nextPageLink) {
+    try {
+        if (!req.isAuthenticated() || !bookmarkId || !nextPageLink) { return }
+
+        let bookmark = await BookmarkModel.findById(bookmarkId)
+        if (!bookmark) {
+            return
+        }
+
+        // This works but I want to reduce API hits so will replace it with static chapter
+        // const nextPageTitle = await findTextTitleWithUrl(nextPageLink)
+        const nextPageTitle = 'Next Chapter'
+        await updateBookmarkWithNextChapterInfo(bookmark, nextPageTitle, nextPageLink)
+    } catch (error) {
+        console.error(error)
+    }
+}
+
+async function updateBookmarkWithNextChapterInfo(bookmark, nextPageTitle, nextPageLink) {
+    bookmark.nextChapterTitle = nextPageTitle ?? 'Next Chapter'
+    bookmark.nextChapterUrl = nextPageLink
+    bookmark.modifiedDate = Date.now()
+    bookmark.nextChapterCheckedOn = bookmark.modifiedDate
+    await bookmark.save()
+}
 /* #endregion */
 
 /* #region  Title */
@@ -199,6 +228,8 @@ function isAbsoluteLink(link) {
 /* #endregion */
 
 module.exports = {
+    updateNextChapterBookmarkIfNeeded,
+    updateBookmarkWithNextChapterInfo,
     findTextTitleWithUrl,
     findTextTitle,
     findNextPageLinkWithUrl,

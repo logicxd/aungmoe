@@ -132,15 +132,13 @@ router.patch('/check-updates', async (req, res) => {
         for (let bookmark of bookmarks) {
             var nextPageLink = await readControllerUtility.findNextPageLinkWithUrl(bookmark.lastReadUrl)
             if (nextPageLink) {
-                var nextPageTitle = await readControllerUtility.findTextTitleWithUrl(nextPageLink)
+                // This works but I want to reduce API hits so will replace it with static chapter
+                // var nextPageTitle = await readControllerUtility.findTextTitleWithUrl(nextPageLink)
+                var nextPageTitle = 'Next Chapter'
 
-                bookmark.nextChapterTitle = nextPageTitle ?? 'Next Chapter'
-                bookmark.nextChapterUrl = nextPageLink
-                bookmark.modifiedDate = Date.now()
-                bookmark.nextChapterCheckedOn = bookmark.modifiedDate
+                await readControllerUtility.updateBookmarkWithNextChapterInfo(bookmark, nextPageTitle, nextPageLink)
+                numOfBookmarksUpdated++
             }
-            await bookmark.save()
-            numOfBookmarksUpdated++
         }
         return res.status(200).send(`${numOfBookmarksUpdated}`)
     } catch (error) {

@@ -50,6 +50,8 @@ async function loadReadPage(req, res) {
     var webtoonImages = findWebtoonImages(loadedCheerio)
     var nextPageLink = readControllerUtility.findNextPageLink(data.links, loadedCheerio, req.query.url)
 
+    await readControllerUtility.updateNextChapterBookmarkIfNeeded(req, req.query.bookmark, nextPageLink)
+
     res.render(path.join(__dirname, 'view/read'), {
         title: `${data.title || 'Unknown'} - Aung Moe`,
         description: `${data.title}`,
