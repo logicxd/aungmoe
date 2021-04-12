@@ -1,7 +1,12 @@
 var mongoose = require('mongoose')
 var path = require('path');
 var appDir = path.dirname(require.main.filename);
-var secrets = require(path.join(appDir, 'config/secrets.json'))
+var secrets = {}
+try {
+    secrets = require(path.join(appDir, 'config/secrets.json'))    
+} catch (error) {
+    // Do nothing. Server should handle loading of the configs
+}
 
 module.exports = {
     connectIfNeeded: function() {
