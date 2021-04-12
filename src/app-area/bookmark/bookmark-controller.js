@@ -26,41 +26,42 @@ router.get('/', async function (req, res) {
         return res.redirect(`/login?redirectUrl=${route}`)
     }
 
-    // let bookmarks = BookmarkModel.find()
+    let bookmarks = [{
+        imageUrl: 'https://kissmanga.org/mangaimage/al925871.jpg',
+        title: 'Some Book Title',
+        lastReadTitle: 'Chapter 123',
+        lastReadUrl: 'https://www.google.com',
+        nextChapterTitle: 'Chapter 124',
+        nextChapterUrl: 'https://www.google.com'
+    }, {
+        imageUrl: 'https://kissmanga.org/mangaimage/al925871.jpg',
+        title: 'Some Book Title',
+        lastReadTitle: 'Chapter 123',
+        lastReadUrl: 'https://www.google.com',
+        // nextChapterTitle: 'Chapter 124',
+        // nextChapterUrl: 'https://www.google.com'
+    }, {
+        imageUrl: 'https://kissmanga.org/mangaimage/al925871.jpg',
+        title: 'Some Book Title',
+        lastReadTitle: 'Chapter 123',
+        lastReadUrl: 'https://www.google.com',
+        nextChapterTitle: 'Chapter 124',
+        nextChapterUrl: 'https://www.google.com'
+    }]
 
-    // try {
-
-    // } catch (error) {
-
-    // }
+    try {
+        bookmarks = await BookmarkModel.find({ user: req.user }).sort({modifiedDate: 'desc'}).lean()
+        console.log(bookmarks)
+    } catch (error) {
+        console.error(error)
+    }
 
     return res.render(path.join(__dirname, 'view/bookmark'), {
         title: 'Bookmark - Aung Moe',
         description: 'Bookmark',
         css: [`${route}/css/bookmark.css`],
         js: [`${route}/js/bookmark.js`],
-        bookmarks: [{
-            img: 'https://kissmanga.org/mangaimage/al925871.jpg',
-            title: 'Some Book Title',
-            lastReadTitle: 'Chapter 123',
-            lastReadUrl: 'https://www.google.com',
-            nextChapterTitle: 'Chapter 124',
-            nextChapterUrl: 'https://www.google.com'
-        }, {
-            img: 'https://kissmanga.org/mangaimage/al925871.jpg',
-            title: 'Some Book Title',
-            lastReadTitle: 'Chapter 123',
-            lastReadUrl: 'https://www.google.com',
-            // nextChapterTitle: 'Chapter 124',
-            // nextChapterUrl: 'https://www.google.com'
-        }, {
-            img: 'https://kissmanga.org/mangaimage/al925871.jpg',
-            title: 'Some Book Title',
-            lastReadTitle: 'Chapter 123',
-            lastReadUrl: 'https://www.google.com',
-            nextChapterTitle: 'Chapter 124',
-            nextChapterUrl: 'https://www.google.com'
-        }]
+        bookmarks: bookmarks
     })
 })
 
