@@ -162,7 +162,12 @@ function pageDown() {
 }
 
 function changePage(url) {
-    window.location.href = `?url=${url}`;
+    let href = `?url=${url}`
+    const bookmarkId = $('#read-bookmark-id').val()
+    if (bookmarkId) {
+        href += `&bookmark=${bookmarkId}`
+    }
+    window.location.href = href;
 }
 
 function autoscrollIfEnabled() {

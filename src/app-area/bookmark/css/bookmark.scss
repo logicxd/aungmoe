@@ -1,0 +1,69 @@
+@import '../../../global/css/layouts/main';
+
+.bookmark {
+
+    .card {
+        .card-image img {
+            max-width: 100%;
+            height: auto;
+            width: 100px;
+        }
+
+        .card-title {
+            font-size: 16px;
+        }
+
+        .card-content {
+            padding: 16px;
+            padding-top: 8px;
+        }
+
+        @media only screen and (min-width: 601px) {
+            .card-title {
+                font-size: 20px;
+            }
+        }
+            
+        @media only screen and (min-width: 993px) {
+            .card-title {
+                font-size: 24px;
+            }
+        }    
+    }
+
+    a {
+        color: $my-cyan-color;
+        -webkit-transition: color .1s ease-in;   
+        transition: color .1s ease-in;    
+    }
+
+    a:hover {
+        color: $my-cyan-color-darker;
+    }
+
+    .bookmark-content-row {
+        @extend .row; 
+        // padding: 0px;
+        margin-bottom: 10px;
+    }
+    
+}
+
+.modal.bottom-sheet {
+    max-height: 60%;
+}
+
+#bookmark-loading-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(16, 16, 16, 0.5);
+    z-index: 2;
+
+    // Center
+    display: none;
+    align-items: center;
+    justify-content: center
+}

@@ -1,5 +1,62 @@
+/* #region  Imports */
+var rp = require('request-promise');
+var unfluff = require('unfluff');
+var cheerio = require('cheerio');
+var BookmarkModel = require('../../database/model/Bookmark')
+/* #endregion */
+
+/* #region  Bookmark */
+async function updateBookmarkIfNeeded(req, bookmarkId, lastReadTitle, lastReadUrl, nextPageLink) {
+    try {
+        if (!req.isAuthenticated() || !bookmarkId) { return }
+
+        let bookmark = await BookmarkModel.findById(bookmarkId)
+        if (!bookmark) {
+            return
+        }
+
+        // This works but I want to reduce API hits so will replace it with static chapter
+        // const nextPageTitle = await findTextTitleWithUrl(nextPageLink)
+        const nextPageTitle = 'Next Chapter'
+        await updateBookmark(bookmark, lastReadTitle, lastReadUrl, nextPageTitle, nextPageLink)
+    } catch (error) {
+        console.error(error)
+    }
+}
+
+async function updateBookmark(bookmark, lastReadTitle, lastReadUrl, nextPageTitle, nextPageLink) {
+    bookmark.lastReadTitle = lastReadTitle
+    bookmark.lastReadUrl = lastReadUrl
+    bookmark.nextChapterTitle = nextPageTitle ?? 'Next Chapter'
+    bookmark.nextChapterUrl = nextPageLink
+    bookmark.modifiedDate = Date.now()
+    bookmark.nextChapterCheckedOn = bookmark.modifiedDate
+    await bookmark.save()
+}
+
+async function updateBookmarkWithNextChapterInfo(bookmark, nextPageTitle, nextPageLink) {
+    bookmark.nextChapterTitle = nextPageTitle ?? 'Next Chapter'
+    bookmark.nextChapterUrl = nextPageLink
+    bookmark.modifiedDate = Date.now()
+    bookmark.nextChapterCheckedOn = bookmark.modifiedDate
+    await bookmark.save()
+}
+/* #endregion */
 
 /* #region  Title */
+async function findTextTitleWithUrl(url) {
+    try {
+        var html = await rp(url)
+        var loadedCheerio = cheerio.load(html)
+        var data = unfluff(html);
+        var textTitles = findTextTitle(data.title, loadedCheerio);
+        return textTitles.length > 0 ? textTitles[0] : null
+    } catch (error) {
+        console.log(error);
+        return null
+    }
+}
+
 /**
  * Tries to find title and alternative titles or chapters
  * @param {string} unfluffTitle title parsed using unfluff
@@ -63,6 +120,19 @@ function getAlternativeTitleString(textTitles) {
 /* #endregion */
 
 /* #region  Next Page URL*/
+async function findNextPageLinkWithUrl(url) {
+    try {
+        var html = await rp(url)
+        var loadedCheerio = cheerio.load(html)
+        var data = unfluff(html);
+        var nextPageLink = findNextPageLink(data.links, loadedCheerio, url)
+        return nextPageLink
+    } catch (error) {
+        console.log(error);
+        return null
+    }
+}
+
 /**
  * Attempts to find the "Next" page link for the given website
  * @param {string[]} unfluffLinks array of links found using unfluff
@@ -168,7 +238,11 @@ function isAbsoluteLink(link) {
 /* #endregion */
 
 module.exports = {
+    updateBookmarkIfNeeded: updateBookmarkIfNeeded,
+    updateBookmarkWithNextChapterInfo,
+    findTextTitleWithUrl,
     findTextTitle,
+    findNextPageLinkWithUrl,
     findNextPageLink,
     getAlternativeTitleString,
 }

@@ -1,0 +1,41 @@
+<main>
+    <div class="login-container">
+        <form action="/login" method="post">
+            <h2 class="row center header">Login</h2>
+            <div class="row center">
+                (Currently only available for beta users, email me for access)
+            </div>
+            <div class="row-m-b-0">
+                <div class="col s12 m6 l4 offset-m3 offset-l4">
+                    <div class="input-field">
+                        <i class="material-icons prefix">account_circle</i>
+                        <input id="username-field" name="username" class="validate" type="text" required
+                            aria-required="true">
+                        <label for="username-field" data-error="Invalid">Username</label>
+                    </div>
+                </div>
+            </div>
+            <div class="row-m-b-0">
+                <div class="col s12 m6 l4 offset-m3 offset-l4">
+                    <div class="input-field">
+                        <i class="material-icons prefix">lock</i>
+                        <input id="password-field" name="password" class="validate" type="password" required
+                            aria-required="true">
+                        <label for="password-field" data-error="Invalid">Password</label>
+                    </div>
+                </div>
+            </div>
+            <div style="display: none;">
+                <label>Redirect URL:</label>
+                <input type="hidden" name="redirectUrl" value="{{redirectUrl}}" />
+            </div>
+            <div class="row">
+                <div class="col s12 m6 l4 offset-m3 offset-l4">
+                    <button class="btn waves-effect waves-light col s12" type="submit" name="action">
+                        Submit
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</main>

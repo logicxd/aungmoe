@@ -3,6 +3,7 @@ var express = require('express');
 var router = express.Router();
 var path = require('path');
 var utility = require('../utility')
+var passport = require('passport')
 
 var route = 'index'
 utility.setupRouterPaths(router, __dirname, route)
@@ -114,6 +115,27 @@ router.get('/', function (req, res) {
             ]
         }
     });
+});
+
+router.get('/login', async function (req, res) {
+    if (req.isAuthenticated()) {
+        console.log(`authenticated, ${req.user}`)
+        return res.redirect('/')
+    } else {
+        return res.render(path.join(__dirname, 'view/login'), {
+            title: 'Login - Aung Moe',
+            description: 'Login',
+            css: [`${route}/css/login.css`],
+            redirectUrl: req.query.redirectUrl
+        })
+    }
+})
+
+router.post('/login', passport.authenticate('local', { failureRedirect: '/login', failureFlash: true }), function(req, res) {
+    if (req.body.redirectUrl) {
+        return res.redirect(req.body.redirectUrl)
+    }
+    return res.redirect('/');
 });
 
 module.exports = router;

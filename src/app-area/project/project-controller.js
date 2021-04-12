@@ -7,12 +7,12 @@ var path = require('path');
 var utility = require('../utility')
 /* #endregion */
 
-var route = 'project'
+var route = 'projects'
 utility.setupRouterPaths(router, __dirname)
 
 router.get('/', async function (req, res) {
     return res.render(path.join(__dirname, 'view/project'), {
-        title: 'Project - Aung Moe',
+        title: 'Projects - Aung Moe',
         description: 'List of projects',
         css: [`${route}/css/project.css`],
         projects: listOfProjects()
@@ -21,10 +21,15 @@ router.get('/', async function (req, res) {
 
 function listOfProjects() {
     return [{
+        title: 'Bookmark',
+        url: '/bookmark',
+        dateString: '2021',
+        category: 'MongoDB, Authentication'
+    }, {
         title: 'Combine Email Bills Using Gmail API',
         url: 'https://github.com/logicxd/Combine-Email-Bills-Using-Gmail-API',
         dateString: '2021',
-        category: 'Node.js, Gmail, Nodemailer, Job Scheduler'
+        category: 'Gmail, Nodemailer, Job Scheduler, Node.js'
         // github: 'asdf',
         // image: 'https://www.logolynx.com/images/logolynx/6d/6d7a4ee07338032263b8d6c8679f13ae.jpeg',
         // year: '2021',
@@ -33,22 +38,22 @@ function listOfProjects() {
         title: 'Webtoon Reading Tool',
         url: '/read-webtoon',
         dateString: '2021',
-        category: 'Scripting'
+        category: 'Cheerio.js, Unfluff.js'
     }, {
         title: 'Novel Reading Tool',
         url: '/read-novel',
         dateString: '2019',
-        category: 'Scripting'
+        category: 'Cheerio.js, Unfluff.js'
     }, {
         title: 'Make a Blog with Markdown Using NodeJS',
         url: 'https://github.com/logicxd/blog-nodejs',
         dateString: '2018',
-        category: 'Blog, Markdown, Syntax Highlighting'
+        category: 'Markdown, Syntax Highlighting'
     }, {
         title: 'My Personal Blog',
         url: '/blog',
         dateString: '2018',
-        category: 'Blog'
+        category: 'Node.js'
     }]
 }
 
