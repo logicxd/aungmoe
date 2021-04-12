@@ -238,7 +238,7 @@ function isAbsoluteLink(link) {
 /* #endregion */
 
 module.exports = {
-    updateBookmarkIfNeeded: updateBookmarkIfNeeded,
+    updateBookmarkIfNeeded,
     updateBookmarkWithNextChapterInfo,
     findTextTitleWithUrl,
     findTextTitle,

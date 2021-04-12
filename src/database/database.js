@@ -23,7 +23,9 @@ module.exports = {
         db.on('error', console.error.bind(console, 'MongoDB connection error:'));
     },
     urlValidator: function(val) {
-        urlRegex = /(http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-/]))?/;
+        // null inputs are OK
+        if (!val || val === '') { return true }
+        let urlRegex = /(http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-/]))?/;
         return urlRegex.test(val);
     }
 }
