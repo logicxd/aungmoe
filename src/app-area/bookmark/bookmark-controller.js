@@ -50,7 +50,7 @@ router.get('/', async function (req, res) {
     }]
 
     try {
-        bookmarks = await BookmarkModel.find({ user: req.user }).sort({modifiedDate: 'desc'}).lean()
+        bookmarks = await BookmarkModel.find({ user: req.user }).sort({ modifiedDate: 'desc' }).lean()
         bookmarks = bookmarks.map(x => {
             x.lastReadUrl = `/read-${x.type}?url=${x.lastReadUrl}`
             if (x.nextChapterUrl) {
@@ -91,6 +91,7 @@ router.post('/', [
     if (!errors.isEmpty()) {
         return res.status(400).json({ errors: errors.array() });
     }
+
     try {
         const bookmark = await BookmarkModel.findOne({ user: req.user, title: req.body.title })
         if (bookmark) {
@@ -116,7 +117,38 @@ router.post('/', [
             lastReadUrl: req.body.url,
             type: req.body.type
         })
-        return res.status(200).end()
+        return res.status(204).end()
+    } catch (error) {
+        console.error(error)
+        return res.status(500).send('Unhandled exception')
+    }
+})
+
+router.patch('/check-updates', async (req, res) => {
+    if (!req.isAuthenticated()) {
+        return res.status(403).send("You're not signed in, please sign in again.")
+    }
+
+    try {
+        let bookmarks = await BookmarkModel.find({ user: req.user, nextChapterUrl: null })
+        let numOfBookmarksUpdated = 0
+        for (let bookmark of bookmarks) {
+            var html = await rp(bookmark.lastReadUrl)
+            var loadedCheerio = cheerio.load(html)
+            var data = unfluff(html);
+            var nextPageLink = readControllerUtility.findNextPageLink(data.links, loadedCheerio, req.query.url)
+            if (nextPageLink) {
+                var nextPageTitle = await findTitle(nextPageLink)
+
+                bookmark.nextChapterTitle = nextPageTitle ?? 'Next Chapter'
+                bookmark.nextChapterUrl = nextPageLink
+                bookmark.modifiedDate = Date.now()
+                bookmark.nextChapterCheckedOn = bookmark.modifiedDate
+            }
+            await bookmark.save()
+            numOfBookmarksUpdated++
+        }
+        return res.status(200).send(`${numOfBookmarksUpdated}`)
     } catch (error) {
         console.error(error)
         return res.status(500).send('Unhandled exception')

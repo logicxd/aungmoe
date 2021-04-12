@@ -5,6 +5,41 @@ $(document).ready(function () {
 
 /* #region  Button Listners */
 
+$('#bookmark-check-updates-button').click(() => {
+    $('#bookmark-check-updates-button').addClass('disabled')
+    $('#bookmark-check-updates-button').html('Checking Updates <i class="fas fa-circle-notch fa-spin"></i>')
+    $.ajax({
+        method: 'PATCH',
+        url: 'bookmark/check-updates',
+        success: function (res) {
+            let numOfBookmarksUpdated = parseInt(res.responseText)
+            if (numOfBookmarksUpdated > 0) {
+                M.toast({
+                    html: `${numOfBookmarksUpdated} bookmarks updated!`,
+                    classes: 'green lighten-1',
+                    displayLength: 2000,
+                    completeCallback: () => {
+                        location.reload()
+                    }
+                })
+            } else {
+                M.toast({
+                    html: `No new updates 😭`,
+                    classes: 'green lighten-1',
+                    displayLength: 2000
+                })
+            }
+        },
+        error: function (error) {
+            console.error(error.responseText)
+            M.toast({ html: error.responseText, classes: 'red lighten-1' })
+        }
+    }).always(() => {
+        $('#bookmark-check-updates-button').html('Check Updates')
+        $('#bookmark-check-updates-button').removeClass('disabled')
+    })
+})
+
 // Button that opens the modal
 $('#bookmark-add-button').click(() => {
     var element = document.getElementById("bookmark-modal-add");
@@ -31,20 +66,21 @@ $('#bookmark-modal-add-button').click(() => {
             'url': $('#bookmark-modal-add-url').val(),
             'type': contentType
         },
-        success: function(res) {
+        success: function (res) {
             M.toast({
-                html: "Added bookmark!", 
+                html: "Added bookmark!",
                 classes: 'green lighten-1',
                 displayLength: 2000,
                 completeCallback: () => {
                     location.reload()
-            }})
+                }
+            })
         },
-        error: function(error) {
+        error: function (error) {
             console.error(error.responseText)
-            M.toast({html: error.responseText, classes: 'red lighten-1'})
+            M.toast({ html: error.responseText, classes: 'red lighten-1' })
         }
-    }).always(()=> {
+    }).always(() => {
         $('#bookmark-loading-screen').css('display', 'none')
     })
 })
