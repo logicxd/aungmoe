@@ -46,8 +46,7 @@ app.use(session({
     rolling: true,
     cookie: {
         sameSite: "strict",
-        maxAge: 60 * 60 * 1000,
-        secure: process.env.SESSION_SECRET ? true : false
+        maxAge: 60 * 60 * 1000
     }
 }))
 app.use(passport.initialize());
