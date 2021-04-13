@@ -42,10 +42,12 @@ app.use(cookieParser())
 app.use(session({ 
     secret: process.env.SESSION_SECRET || secrets.SESSION_SECRET, 
     saveUninitialized: false,
-    resave: false,
+    resave: true,
+    rolling: true,
     cookie: {
         sameSite: "strict",
-        maxAge: 31536000    // 1 year :D
+        maxAge: 60 * 60 * 1000,
+        secure: process.env.SESSION_SECRET ? true : false
     }
 }))
 app.use(passport.initialize());

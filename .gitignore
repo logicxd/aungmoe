@@ -10,6 +10,3 @@ config/*
 
 # Visual Studio
 .vs/
-
-# Logs
-newrelic_agent.log
