@@ -9,7 +9,7 @@ var path = require('path');
 var logger = require('morgan');
 var passport = require('passport')
 var cookieParser = require('cookie-parser')
-var session = require('express-session')
+var cookieSession = require('cookie-session')
 var appDir = path.dirname(require.main.filename);
 var database = require('./src/database/database')
 var secrets = {}
@@ -39,15 +39,11 @@ app.set('views', path.join(__dirname, 'src/global/view'))
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }))
 app.use(cookieParser())
-app.use(session({ 
-    secret: process.env.SESSION_SECRET || secrets.SESSION_SECRET, 
-    saveUninitialized: false,
-    resave: true,
-    rolling: true,
-    cookie: {
-        sameSite: "strict",
-        maxAge: 60 * 60 * 1000
-    }
+app.use(cookieSession({
+    name: 'aungmoe-session',
+    keys: [process.env.SESSION_SECRET || secrets.SESSION_SECRET],
+    sameSite: "strict",
+    maxAge:  30 * 24 * 60 * 60 * 1000   // 30 days
 }))
 app.use(passport.initialize());
 app.use(passport.session());
