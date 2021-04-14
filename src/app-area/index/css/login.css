@@ -6601,7 +6601,8 @@ header .nav-wrapper a {
   margin-bottom: 100px;
   position: relative; }
   .login-container #login-form {
-    visibility: hidden; }
+    visibility: hidden;
+    overflow: hidden; }
   .login-container #login-loading-screen {
     width: 100px;
     height: 100px;
