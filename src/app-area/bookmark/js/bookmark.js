@@ -17,7 +17,7 @@ $('#bookmark-check-updates-button').click(() => {
                 M.toast({
                     html: `${numOfBookmarksUpdated} bookmarks updated!`,
                     classes: 'green lighten-1',
-                    displayLength: 2000,
+                    displayLength: 4000,
                     completeCallback: () => {
                         location.reload()
                     }
@@ -26,7 +26,7 @@ $('#bookmark-check-updates-button').click(() => {
                 M.toast({
                     html: `No new updates 😭`,
                     classes: 'green lighten-1',
-                    displayLength: 2000
+                    displayLength: 4000
                 })
                 $('#bookmark-check-updates-button').removeClass('disabled')
             }

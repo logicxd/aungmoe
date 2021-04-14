@@ -120,14 +120,27 @@ router.get('/', function (req, res) {
 router.get('/login', async function (req, res) {
     if (req.isAuthenticated()) {
         console.log(`authenticated, ${req.user}`)
-        return res.redirect('/')
+        if (req.query.redirectUrl) {
+            return res.redirect(req.query.redirectUrl)
+        } else {
+            return res.redirect('/')
+        }
     } else {
         return res.render(path.join(__dirname, 'view/login'), {
             title: 'Login - Aung Moe',
             description: 'Login',
             css: [`${route}/css/login.css`],
+            js: [`${route}/js/login.js`],
             redirectUrl: req.query.redirectUrl
         })
+    }
+})
+
+router.get('/login/validate', async function (req, res) {
+    if (req.isAuthenticated()) {
+        return res.status(200).end()
+    } else {
+        return res.status(403).end()
     }
 })
 
