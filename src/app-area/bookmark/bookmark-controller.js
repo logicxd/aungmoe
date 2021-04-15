@@ -134,7 +134,7 @@ router.patch('/check-updates', async (req, res) => {
     }
 
     try {
-        let bookmarks = await BookmarkModel.find({ user: req.user, nextChapterUrl: null })
+        let bookmarks = await BookmarkModel.find({ user: req.user, nextChapterUrl: { "$in": [null, ""] } })
         let numOfBookmarksUpdated = 0
         for (let bookmark of bookmarks) {
             var nextPageLink = await readControllerUtility.findNextPageLinkWithUrl(bookmark.lastReadUrl)
