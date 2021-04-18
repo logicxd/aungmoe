@@ -3,8 +3,7 @@ $(document).ready(function () {
     $('.modal').modal();
 });
 
-/* #region  Button Listners */
-
+/* #region  "Check Updates" button */
 $('#bookmark-check-updates-button').click(() => {
     $('#bookmark-check-updates-button').addClass('disabled')
     $('#bookmark-check-updates-button').html('Checking Updates <i class="fas fa-circle-notch fa-spin"></i>')
@@ -40,32 +39,45 @@ $('#bookmark-check-updates-button').click(() => {
         $('#bookmark-check-updates-button').html('Check Updates')
     })
 })
+/* #endregion */
 
+/* #region  "Add" button */
 // Button that opens the modal
 $('#bookmark-add-button').click(() => {
-    var element = document.getElementById("bookmark-modal-add");
+    var element = document.getElementById("bookmark-info-modal");
     M.Modal.getInstance(element).open();
 })
+/* #endregion */
 
+/* #region  "Edit"-able elements click listener*/
+$('.bookmark-edit-element').click(element => {
+    console.log(element)
+
+    // var element = document.getElementById("bookmark-info-modal");
+    // M.Modal.getInstance(element).open();
+})
+/* #endregion */
+
+/* #region  Modal related buttons */
 // Button ON the modal that adds the content
-$('#bookmark-modal-add-button').click(() => {
+$('#bookmark-info-modal-button').click(() => {
     let contentType = ''
-    if ($('#bookmark-modal-add-radio-webtoon').is(':checked')) {
+    if ($('#bookmark-info-modal-radio-webtoon').is(':checked')) {
         contentType = 'webtoon'
-    } else if ($('#bookmark-modal-add-radio-novel').is(':checked')) {
+    } else if ($('#bookmark-info-modal-radio-novel').is(':checked')) {
         contentType = 'novel'
     }
 
     // Display loading screen 
-    $('#bookmark-modal-add-button').addClass('disabled')
+    $('#bookmark-info-modal-button').addClass('disabled')
     $('#bookmark-loading-screen').css('display', 'flex')
     $.ajax({
         method: 'POST',
         url: 'bookmark',
         data: {
-            'title': $('#bookmark-modal-add-title').val(),
-            'imageUrl': $('#bookmark-modal-add-image').val(),
-            'url': $('#bookmark-modal-add-url').val(),
+            'title': $('#bookmark-info-modal-title').val(),
+            'imageUrl': $('#bookmark-info-modal-image').val(),
+            'url': $('#bookmark-info-modal-url').val(),
             'type': contentType
         },
         success: function (res) {
@@ -81,51 +93,50 @@ $('#bookmark-modal-add-button').click(() => {
         error: function (error) {
             console.error(error.responseText)
             M.toast({ html: error.responseText, classes: 'red lighten-1' })
-            $('#bookmark-modal-add-button').removeClass('disabled')
+            $('#bookmark-info-modal-button').removeClass('disabled')
         }
     }).always(() => {
         $('#bookmark-loading-screen').css('display', 'none')
     })
 })
 
-$('#bookmark-modal-add-title').keyup(() => {
+$('#bookmark-info-modal-title').keyup(() => {
     checkIfFormIsReadyToSubmit()
 })
 
-$('#bookmark-modal-add-image').keyup(() => {
+$('#bookmark-info-modal-image').keyup(() => {
     checkIfFormIsReadyToSubmit()
 })
 
-$('#bookmark-modal-add-url').keyup(() => {
+$('#bookmark-info-modal-url').keyup(() => {
     checkIfFormIsReadyToSubmit()
 })
-
 /* #endregion */
 
 /* #region  Helper Methods */
 function checkIfFormIsReadyToSubmit() {
     if (hasValidInputs()) {
-        $('#bookmark-modal-add-button').removeClass('disabled')
+        $('#bookmark-info-modal-button').removeClass('disabled')
     } else {
-        $('#bookmark-modal-add-button').addClass('disabled')
+        $('#bookmark-info-modal-button').addClass('disabled')
     }
 }
 
 function hasValidInputs() {
     // Check that inputs have some text in them
-    if (!$('#bookmark-modal-add-title').val()) {
+    if (!$('#bookmark-info-modal-title').val()) {
         return false
     }
-    if (!$('#bookmark-modal-add-image').val()) {
+    if (!$('#bookmark-info-modal-image').val()) {
         return false
     }
-    if (!$('#bookmark-modal-add-url').val()) {
+    if (!$('#bookmark-info-modal-url').val()) {
         return false
     }
 
     // Check that URLs are valid
-    let validUrl = isValidHttpUrl($('#bookmark-modal-add-image').val())
-    validUrl = validUrl && isValidHttpUrl($('#bookmark-modal-add-url').val())
+    let validUrl = isValidHttpUrl($('#bookmark-info-modal-image').val())
+    validUrl = validUrl && isValidHttpUrl($('#bookmark-info-modal-url').val())
 
     return validUrl
 }

@@ -6,31 +6,21 @@
     </div>
     {{#each bookmarks}}
     <div class="row bookmark">
+        <input class="bookmark-id" type="hidden" value="{{this.id}}"/>
         <div class="card horizontal bookmark-card">
+            {{!-- <a id="bookmark-edit-button" class="btn-floating waves-effect waves-light btn-small"><i class="material-icons">edit</i></a> --}}
             <div class="card-image">
-                <img class="bookmark-image" src="{{this.imageUrl}}" />
+                <img class="bookmark-image bookmark-edit-element" src="{{this.imageUrl}}" />
             </div>
             <div class="card-stacked">
                 <div class="card-content">
-                    <span class="card-title">{{this.title}}</span>
+                    <span class="card-title bookmark-edit-element">{{this.title}}</span>
                     <div class="bookmark-content-row">
                         Last: <a href="{{this.lastReadUrl}}">{{this.lastReadTitle}}</a>
-                        {{!-- <div class="col s12 m2">
-                            Last:
-                        </div>
-                        <div class="col s12 m10">
-                            <a href="{{this.lastReadUrl}}">{{this.lastReadTitle}}</a>
-                        </div> --}}
                     </div>
                     {{#if this.nextChapterUrl}}
                     <div class="bookmark-content-row">
                         Next: <a href="{{this.nextChapterUrl}}">{{this.nextChapterTitle}}</a>
-                        {{!-- <div class="col s12 m2">
-                            Next:
-                        </div>
-                        <div class="col s12 m10">
-                            <a href="{{this.nextChapterUrl}}">{{this.nextChapterTitle}}</a>
-                        </div> --}}
                     </div>
                     {{/if}}
                 </div>
@@ -41,47 +31,49 @@
 </main>
 
 <!-- Add Modal -->
-<div id="bookmark-modal-add" class="modal bottom-sheet modal-fixed-footer">
+<div id="bookmark-info-modal" class="modal bottom-sheet modal-fixed-footer">
     <div class="modal-content">
         <h4>Add Bookmark</h4>
         <div class="row m-b-0">
             <div class="input-field col s12">
-                <input id="bookmark-modal-add-title" type="text" class="validate" required aria-required="true">
-                <label for="bookmark-modal-add-title" data-error="Invalid">Title</label>
+                <input id="bookmark-info-modal-title" type="text" class="validate" required aria-required="true">
+                <label for="bookmark-info-modal-title" data-error="Invalid">Title</label>
                 <span class="helper-text" data-error="Please enter a title"></span>
             </div>
         </div>
         <div class="row m-b-0">
             <label class="input-field col s12">
-                <input id="bookmark-modal-add-image" type="url" class="validate" required aria-required="true">
-                <label for="bookmark-modal-add-image" data-error="Invalid">Image</label>
+                <input id="bookmark-info-modal-image" type="url" class="validate" required aria-required="true">
+                <label for="bookmark-info-modal-image" data-error="Invalid">Image</label>
                 <span class="helper-text" data-error="Please enter a image URL"></span>
             </label>
         </div>
         <div class="row m-b-0">
             <label class="input-field col s12">
-                <input id="bookmark-modal-add-url" type="url" class="validate" required aria-required="true">
-                <label for="bookmark-modal-add-url" data-error="Invalid">URL</label>
+                <input id="bookmark-info-modal-url" type="url" class="validate" required aria-required="true">
+                <label for="bookmark-info-modal-url" data-error="Invalid">URL</label>
                 <span class="helper-text" data-error="Please enter the content URL"></span>
             </label>
         </div>
         <div class="row m-b-0">
             <div class="col s6">
                 <label>
-                    <input id="bookmark-modal-add-radio-webtoon" name="bookmark-modal-add-content-type-group" type="radio" checked />
+                    <input id="bookmark-info-modal-radio-webtoon" name="bookmark-info-modal-content-type-group"
+                        type="radio" checked />
                     <span>Webtoon</span>
                 </label>
             </div>
             <div class="col s6">
                 <label>
-                    <input id="bookmark-modal-add-radio-novel" name="bookmark-modal-add-content-type-group" type="radio" />
+                    <input id="bookmark-info-modal-radio-novel" name="bookmark-info-modal-content-type-group"
+                        type="radio" />
                     <span>Novel</span>
                 </label>
             </div>
         </div>
     </div>
     <div class="modal-footer">
-        <a id="bookmark-modal-add-button" class="waves-effect btn disabled">Add</a>
+        <a id="bookmark-info-modal-button" class="waves-effect btn disabled">Add</a>
     </div>
 
     <!-- Loading screen -->

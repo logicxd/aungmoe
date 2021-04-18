@@ -6596,6 +6596,13 @@ header .nav-wrapper a {
 .page-footer .footer-copyright {
   font-size: 0.8em; }
 
+.bookmark #bookmark-edit-button {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  width: 32px;
+  height: 32px; }
+
 .bookmark .card .card-image img {
   max-width: 100%;
   height: auto;
