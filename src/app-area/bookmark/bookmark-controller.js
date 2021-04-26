@@ -29,9 +29,9 @@ router.get('/', async function (req, res) {
         bookmarks = await BookmarkModel.find({ user: req.user }).sort({ modifiedDate: 'desc' }).lean()
         bookmarks = bookmarks.map(x => {
             x.id = x._id.toString()
-            x.lastReadUrl = `/read-${x.type}?url=${x.lastReadUrl}&bookmark=${x._id.toString()}`
+            x.lastReadUrlFormatted = `/read-${x.type}?url=${x.lastReadUrl}&bookmark=${x._id.toString()}`
             if (x.nextChapterUrl) {
-                x.nextChapterUrl = `/read-${x.type}?url=${x.nextChapterUrl}&bookmark=${x._id.toString()}`
+                x.nextChapterUrlFormatted = `/read-${x.type}?url=${x.nextChapterUrl}&bookmark=${x._id.toString()}`
             }
             return x
         })
@@ -50,18 +50,7 @@ router.get('/', async function (req, res) {
 /* #endregion */
 
 /* #region  POST /bookmark */
-router.post('/', [
-    body('title').trim().notEmpty(),
-    body('imageUrl').isURL(),
-    body('url').isURL(),
-    body('type').toLowerCase().custom(value => {
-        const validEnums = ['webtoon', 'novel']
-        if (validEnums.includes(value)) {
-            return true
-        }
-        throw new Error(`type must be one of [${validEnums}]`)
-    })
-], async function (req, res) {
+router.post('/', requiredBookmarkValidators(), async function (req, res) {
     if (!req.isAuthenticated()) {
         return res.status(403).send("You're not signed in, please sign in again.")
     }
@@ -111,6 +100,58 @@ router.post('/', [
 })
 /* #endregion */
 
+/* #region  PUT /bookmark */
+router.put('/', [
+    body('bookmarkId').notEmpty(),
+    ...requiredBookmarkValidators()
+], async function (req, res) {
+    if (!req.isAuthenticated()) {
+        return res.status(403).send("You're not signed in, please sign in again.")
+    }
+
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+    }
+
+    try {
+        let bookmark = await BookmarkModel.findById(req.body.bookmarkId)
+        if (!bookmark || bookmark.user._id.toString() !== req.user.id) {
+            return res.status(403).send('Unauthorized access')
+        }
+
+        const websiteUrl = (new URL(req.body.url)).origin
+        let website = await WebsiteModel.findOne({ url: websiteUrl })
+        if (!website) {
+            website = await WebsiteModel.create({ url: websiteUrl })
+        }
+
+        let lastReadTitle = await readControllerUtility.findTextTitleWithUrl(req.body.url) ?? req.body.url
+
+        bookmark.website = website
+        bookmark.title = req.body.title
+        bookmark.imageUrl = req.body.imageUrl
+        bookmark.lastReadTitle = lastReadTitle,
+        bookmark.lastReadUrl = req.body.url, 
+        bookmark.type = req.body.type
+        await bookmark.save()
+
+        let nextPageLink = await readControllerUtility.findNextPageLinkWithUrl(req.body.url)
+        if (nextPageLink) {
+            // This works but I want to reduce API hits so will replace it with static chapter
+            // var nextPageTitle = await readControllerUtility.findTextTitleWithUrl(nextPageLink)
+            var nextPageTitle = 'Next Chapter'
+            await readControllerUtility.updateBookmarkWithNextChapterInfo(bookmark, nextPageTitle, nextPageLink)
+        }
+
+        return res.status(204).end()
+    } catch (error) {
+        console.error(error)
+        return res.status(500).send('Unhandled exception')
+    }
+})
+/* #endregion */
+
 /* #region  PATCH /bookmark/check-updates */
 router.patch('/check-updates', async (req, res) => {
     if (!req.isAuthenticated()) {
@@ -140,6 +181,21 @@ router.patch('/check-updates', async (req, res) => {
 /* #endregion */
 
 /* #region  Helper Methods */
+
+function requiredBookmarkValidators() {
+    return [
+        body('title').trim().notEmpty(),
+        body('imageUrl').isURL(),
+        body('url').isURL(),
+        body('type').toLowerCase().custom(value => {
+            const validEnums = ['webtoon', 'novel']
+            if (validEnums.includes(value)) {
+                return true
+            }
+            throw new Error(`type must be one of [${validEnums}]`)
+        })
+    ]
+}
 
 // p_createUser()
 // function p_createUser() {
