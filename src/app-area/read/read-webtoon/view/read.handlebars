@@ -37,9 +37,15 @@
         <p class="center" id="end-of-page">This is the end of the page</p>
         <div class="row">
             <div class="center">
+                {{#if bookmark }}
+                <button class="btn waves-effect waves-light" onclick="window.location.href='/bookmark'">Bookmarks
+                    <i class="material-icons left">bookmarks</i>
+                </button>
+                {{else}}
                 <button class="btn waves-effect waves-light" onclick="window.location.href='/read-webtoon'">Home
                     <i class="material-icons left">home</i>
                 </button>
+                {{/if}}
                 {{#if nextPageLink }}
                 <button id="next-page-button" class="btn waves-effect waves-light" onclick="nextPageClicked('{{ nextPageLink }}')">Next
                     <i class="material-icons right">arrow_forward</i>
@@ -70,6 +76,9 @@
             <li><a class="btn-floating tooltipped blue" data-tooltip="Open link in new tab" data-position="left" onclick="window.open('{{ currentPageLink }}', '_blank');"><i class="material-icons">launch</i></a></li>
             {{#if nextPageLink }}
             <li><a class="btn-floating tooltipped orange" data-tooltip="Next page" data-position="left" onclick="nextPageClicked('{{ nextPageLink }}')"><i class="material-icons">arrow_forward</i></a></li>
+            {{/if}}
+            {{#if bookmark }}
+            <li><a class="btn-floating tooltipped indigo" data-tooltip="Bookmarks" data-position="left" onclick="window.location.href='/bookmark'"><i class="material-icons">bookmarks</i></a></li>
             {{/if}}
             <li><a id="floating-settings-button" class="btn-floating tooltipped" data-tooltip="Settings" data-position="left"><i class="material-icons">mode_edit</i></a></li>
         </ul>
