@@ -104,6 +104,7 @@ global.css = {
     animate_css: 'https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.5.2/animate.min.css'
 }
 global.js = {
+    noSleep: 'js/NoSleep.min.js'
 }
 global.configs = {
     domainUrl: 'http://www.aungmoe.com',

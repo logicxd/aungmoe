@@ -21,6 +21,7 @@ function initializeValuesOnLoad() {
     global.currentParagraph = 0;
     global.isAutoScrolling = false;
     global.windowHeight = document.documentElement.clientHeight;
+    global.noSleep = new NoSleep()
     autoscrollIfEnabled();
     updateStateOfControlsBarPlayPauseButton();
 }
@@ -50,7 +51,7 @@ $('#controls-bar-play-pause').click(() => {
     if (global.isAutoScrolling) {
         stopAutoscroll();
     } else {
-        global.isAutoScrolling = true; 
+        global.isAutoScrolling = true;
         autoscrollIfEnabled();
     }
     updateStateOfControlsBarPlayPauseButton();
@@ -180,6 +181,9 @@ function autoscrollIfEnabled() {
         autoscrollTTS();
     }
     updateStateOfControlsBarPlayPauseButton();
+    if (global.isAutoScrolling && !global.noSleep.enabled) {
+        global.noSleep.enable();
+    }
 }
 
 function stopAutoscroll() {
@@ -190,6 +194,7 @@ function stopAutoscroll() {
     window.speechSynthesis.cancel();
     clearTimeout(global.timer);
     updateStateOfControlsBarPlayPauseButton();
+    global.noSleep.disable();
 }
 
 function autoscrollRead() {
@@ -302,6 +307,7 @@ function changeCurrentParagraph(newParagraph) {
         global.currentParagraph = newParagraph;
         autoscrollIfEnabled();
     } else if (newParagraph > 0) {
+        stopAutoscroll();
         if (localStorage.getItem('autoloadNext') === 'true') {
             $('#nextpage-preloader').show();
             clearTimeout(global.timer);
