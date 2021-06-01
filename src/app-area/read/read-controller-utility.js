@@ -86,13 +86,14 @@ function findTextTitle(unfluffTitle, loadedCheerio) {
             });
         }
         // Determine text title
-        titleCandidates.forEach(title => {
-            var useTitle = title.length >= textTitles[0].length;
-            useTitle &= title.toLowerCase().includes('chapter');
+        for (let title of titleCandidates) {
+            var useTitle = title.toLowerCase().includes('chapter')
+            useTitle |= /\d/.test(title)
             if (useTitle) {
-                textTitles[0] = title;
+                textTitles[0] = title
+                break
             }
-        });
+        }
         subTitleSet.delete(textTitles[0]);
         subTitleSet.forEach(subTitle => {
             textTitles.push(subTitle);
