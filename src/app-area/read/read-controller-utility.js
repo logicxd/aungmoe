@@ -87,8 +87,7 @@ function findTextTitle(unfluffTitle, loadedCheerio) {
         }
         // Determine text title
         for (let title of titleCandidates) {
-            var useTitle = title.toLowerCase().includes('chapter')
-            useTitle |= /\d/.test(title)
+            var useTitle = /\d/.test(title)
             if (useTitle) {
                 textTitles[0] = title
                 break
