@@ -64,9 +64,9 @@ router.get('/', function (req, res) {
                 }
             ],
             projects: [
-                { 
-                    image: "https://user-images.githubusercontent.com/12219300/43773157-a362492e-99f9-11e8-8836-15771b6dfd99.gif", 
-                    title: "Wumpus World AI", 
+                {
+                    image: "https://user-images.githubusercontent.com/12219300/43773157-a362492e-99f9-11e8-8836-15771b6dfd99.gif",
+                    title: "Wumpus World AI",
                     skills: [
                         {
                             image: `${route}/media/skills/java.svg`,
@@ -78,9 +78,9 @@ router.get('/', function (req, res) {
                     github: "https://github.com/logicxd/Wumpus-World-AI",
                     website: null
                 },
-                { 
-                    image: "https://cloud.githubusercontent.com/assets/12219300/19020428/63fcaca2-885d-11e6-99db-660d4264d120.gif", 
-                    title: "QuartoAI", 
+                {
+                    image: "https://cloud.githubusercontent.com/assets/12219300/19020428/63fcaca2-885d-11e6-99db-660d4264d120.gif",
+                    title: "QuartoAI",
                     skills: [
                         {
                             image: `${route}/media/skills/objective-c.svg`,
@@ -92,9 +92,9 @@ router.get('/', function (req, res) {
                     github: "https://github.com/logicxd/QuartoAI",
                     website: null
                 },
-                { 
-                    image: "https://user-images.githubusercontent.com/12219300/43773844-eed81c38-99fb-11e8-8e17-0e1e47adf6d3.gif", 
-                    title: "Church Web Application", 
+                {
+                    image: "https://user-images.githubusercontent.com/12219300/43773844-eed81c38-99fb-11e8-8e17-0e1e47adf6d3.gif",
+                    title: "Church Web Application",
                     skills: [
                         {
                             image: `${route}/media/skills/javascript.svg`,
@@ -117,6 +117,7 @@ router.get('/', function (req, res) {
     });
 });
 
+/* #region  Login */
 router.get('/login', async function (req, res) {
     if (req.isAuthenticated()) {
         console.log(`authenticated, ${req.user}`)
@@ -144,11 +145,29 @@ router.get('/login/validate', async function (req, res) {
     }
 })
 
-router.post('/login', passport.authenticate('local', { failureRedirect: '/login', failureFlash: true }), function(req, res) {
+router.post('/login', passport.authenticate('local', { failureRedirect: '/login', failureFlash: true }), function (req, res) {
     if (req.body.redirectUrl) {
         return res.redirect(req.body.redirectUrl)
     }
     return res.redirect('/');
 });
+
+// var UserModel = require('../../database/model/User')
+// p_createUser()
+// function p_createUser() {
+//     // Create an instance of model SomeModel
+//     var user = new UserModel({ username: 'test', fullName: 'Demo User' });
+
+//     UserModel.register(user, 'test', err => {
+//         if (err) {
+//             console.error(err.message)
+//             return
+//         }
+//         console.log('user registered')
+//         // saved!    
+//     })
+// }
+
+/* #endregion */
 
 module.exports = router;

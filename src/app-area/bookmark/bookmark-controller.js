@@ -197,21 +197,6 @@ function requiredBookmarkValidators() {
     ]
 }
 
-// p_createUser()
-// function p_createUser() {
-//     // Create an instance of model SomeModel
-//     var user = new UserModel({ username: 'test12345', fullName: 'David' });
-
-//     UserModel.register(user, 'uniquepass', err => {
-//         if (err) {
-//             console.error(err.message)
-//             return
-//         }
-//         console.log('user registered')
-//         // saved!    
-//     })
-// }
-
 /* #endregion */
 
 module.exports = router
