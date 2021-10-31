@@ -38,11 +38,22 @@ function loadSetupPage(req, res) {
 async function loadReadPage(req, res) {
     var html = '';
     try {
-        html = await rp(req.query.url)
+        html = await rp({
+            url: req.query.url,
+            headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/38.0.2125.111 Safari/537.36'
+            },
+            json: true
+        })
         loadedCheerio = cheerio.load(html)
     } catch (error) {
         console.log(error);
-        html = '';
+        res.render('error', {
+            title: '400 - Aung Moe',
+            description: 'Something went wrong!',
+            css: ['/css/default.css']
+        });
+        return
     }
 
     var data = unfluff(html);
