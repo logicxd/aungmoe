@@ -16,8 +16,8 @@ utility.setupRouterPaths(router, __dirname)
 router.get('/', function (req, res) {
     return res.render(path.join(__dirname, `view/${route}`), {
         title: 'Randomize Order - Aung Moe',
-        description: 'Re-order list of items in a random order',
-        css: ['/css/default.css'],
+        description: 'Re-arrange a list of items in a random order',
+        css: [`${route}/css/${route}.css`],
         js: [`${route}/js/${route}.js`]
     })
 })

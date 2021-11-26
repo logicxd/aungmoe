@@ -1,0 +1,12 @@
+@import '../../../global/css/layouts/main';
+
+.randomize-order-remove-icon-container { 
+    height: 84px; 
+    display: flex; 
+    align-items: center;
+}
+
+.randomize-order-remove-icon {
+    cursor: pointer;
+    color: #c62828;
+}
