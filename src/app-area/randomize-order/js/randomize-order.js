@@ -14,9 +14,6 @@ let items = [
     { value: "", color: null },
     { value: "", color: null },
     { value: "", color: null },
-    { value: "", color: null },
-    { value: "", color: null },
-    { value: "", color: null },
 ]
 /* #endregion */
 
@@ -39,17 +36,25 @@ $('#randomize-order-button-add').click(() => {
 
 function removeItem(index) {
     let foundIndex = items.findIndex(element => element.index == index)
-    if (foundIndex == -1) { return; }
+    if (foundIndex == -1) { return }
 
     saveItemValues()
     items.splice(foundIndex, 1)
     reloadEditView()
 }
+
+$('#randomize-order-button-randomize').click(() => {
+    saveItemValues()
+    let validItems = items.filter(item => item.value != null && item.value.length > 0)
+    if (validItems.length == 0) { return }
+
+    $('#randomize-order-input-list-items').hide()
+})
 /* #endregion */
 
 /* #region Helper */
 function saveItemValues() {
-    $('.randomize-order-component-item').each((index, element) => {
+    $('.randomize-order-component-input-item').each((index, element) => {
         let item = items[index]
         item.value = $(element).find('.randomize-order-item-value')[0].value
     })
@@ -94,14 +99,32 @@ function makeLabelsDontOverlap() {
 /* #region Template */
 // Templating idea: https://stackoverflow.com/a/39065147 
 const InputItem = ({ index, value, color }) => `
-    <div class="row m-b-0 randomize-order-component-item">
+    <div class="row m-b-0 randomize-order-component-input-item">
         <div class="input-field col s11">
             <i class="material-icons prefix" style="color: ${color}">casino</i>
             <input class="randomize-order-item-value" id="randomize-order-input-text-${index}" type="text" value="${value}">
             <label for="randomize-order-input-text-${index}">Item ${index + 1}</label>
         </div>
         <div class="col s1 randomize-order-remove-icon-container">
-            <a id="randomize-order-remove-icon-${index}" onclick="removeItem(${index})">
+            <a onclick="removeItem(${index})">
+                <i class="material-icons randomize-order-remove-icon">remove_circle</i>
+            </a>
+        </div>
+    </div>
+`;
+
+const ResultItem = ({ index, value, color }) => `
+    <div class="row m-b-0 randomize-order-component-input-item">
+        <div class="col s1">
+            1.
+        </div>
+        <div class="input-field col s10">
+            <i class="material-icons prefix" style="color: ${color}">casino</i>
+            <input class="randomize-order-item-value" id="randomize-order-input-text-${index}" type="text" value="${value}">
+            <label for="randomize-order-input-text-${index}">Item ${index + 1}</label>
+        </div>
+        <div class="col s1 randomize-order-remove-icon-container">
+            <a onclick="removeItem(${index})">
                 <i class="material-icons randomize-order-remove-icon">remove_circle</i>
             </a>
         </div>
