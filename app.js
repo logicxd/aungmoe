@@ -35,7 +35,7 @@ app.set('view engine', 'handlebars');
 app.set('views', path.join(__dirname, 'src/global/view'))
 /* #endregion */
 
-/* #region  Config Express Routes (must be set before registering routers) */
+/* #region Config Express Routes (must be set before registering routers) */
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }))
 app.use(cookieParser())
@@ -57,6 +57,7 @@ app.use('/read-novel', require('./src/app-area/read/read-novel/read-novel-contro
 app.use('/read-webtoon', require('./src/app-area/read/read-webtoon/read-webtoon-controller'));
 app.use('/projects', require('./src/app-area/project/project-controller'));
 app.use('/bookmark', require('./src/app-area/bookmark/bookmark-controller'));
+app.use('/randomize-order', require('./src/app-area/randomize-order/randomize-order-controller'));
 /* #endregion */
 
 /* #region Connect other services */
