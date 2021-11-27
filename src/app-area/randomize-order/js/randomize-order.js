@@ -15,6 +15,8 @@ let items = [
     { value: "", color: null },
     { value: "", color: null },
 ]
+
+let reloadCount = 0
 /* #endregion */
 
 /* #region Initial Load */
@@ -29,7 +31,7 @@ $('#randomize-order-button-add').click(() => {
     let newIndex = items.length
     let newItem = { index: newIndex, value: "", color: colorForItem(newIndex) }
     let newElement = InputItem(newItem)
-    $('.randomize-order-input-list-items').append(newElement)
+    $('#randomize-order-input-list-items').append(newElement)
     makeLabelsDontOverlap()
     items.push(newItem)
 })
@@ -48,8 +50,48 @@ $('#randomize-order-button-randomize').click(() => {
     let validItems = items.filter(item => item.value != null && item.value.length > 0)
     if (validItems.length == 0) { return }
 
-    $('#randomize-order-input-list-items').hide()
+    items = validItems
+    reloadResultView()
 })
+
+$('#randomize-order-button-rerandomize').click(() => {
+    reloadResultView()
+})
+
+$('#randomize-order-button-reset').click(() => {
+    reloadCount = 0
+    reloadEditView()
+})
+/* #endregion */
+
+/* #region Reload Views */
+function reloadEditView() {
+    items.forEach((item, index) => {
+        item.index = index
+        item.color = colorForItem(index)
+    })
+    $('#randomize-order-input-list-items').html(items.map(InputItem).join(''));
+    makeLabelsDontOverlap()
+    $('#randomize-order-result').hide()
+    $('#randomize-order-setup').show()
+}
+
+function reloadResultView() {
+    $('#randomize-order-result-number-of-times').html(`Reload count: ${++reloadCount}`)
+    $('#randomize-order-result-last-randomized-datetime').html(`Time: ${new Date().toLocaleTimeString()}`)
+
+    shuffleArray(items)
+    for (let i = 0; i < items.length; ++i) {
+        items[i].index = i
+        items[i].opacity = (i == 0 ? 1 : 0.5)
+    }
+
+    $('#randomize-order-result-list-items').html(items.map(ResultItem).join(''));
+    makeLabelsDontOverlap()
+    initializeAllChips()
+    $('#randomize-order-setup').hide()
+    $('#randomize-order-result').show()
+}
 /* #endregion */
 
 /* #region Helper */
@@ -58,15 +100,6 @@ function saveItemValues() {
         let item = items[index]
         item.value = $(element).find('.randomize-order-item-value')[0].value
     })
-}
-
-function reloadEditView() {
-    items.forEach((item, index) => {
-        item.index = index
-        item.color = colorForItem(index)
-    })
-    $('.randomize-order-input-list-items').html(items.map(InputItem).join(''));
-    makeLabelsDontOverlap()
 }
 
 function colorForItem(itemIndex) {
@@ -94,6 +127,11 @@ function shuffleArray(array) {
 function makeLabelsDontOverlap() {
     M.updateTextFields();
 }
+
+function initializeAllChips() {
+    var elems = document.querySelectorAll('.chips');
+    M.Chips.init(elems);
+}
 /* #endregion */
 
 /* #region Template */
@@ -113,20 +151,13 @@ const InputItem = ({ index, value, color }) => `
     </div>
 `;
 
-const ResultItem = ({ index, value, color }) => `
-    <div class="row m-b-0 randomize-order-component-input-item">
-        <div class="col s1">
-            1.
-        </div>
-        <div class="input-field col s10">
-            <i class="material-icons prefix" style="color: ${color}">casino</i>
-            <input class="randomize-order-item-value" id="randomize-order-input-text-${index}" type="text" value="${value}">
-            <label for="randomize-order-input-text-${index}">Item ${index + 1}</label>
-        </div>
-        <div class="col s1 randomize-order-remove-icon-container">
-            <a onclick="removeItem(${index})">
-                <i class="material-icons randomize-order-remove-icon">remove_circle</i>
-            </a>
+const ResultItem = ({ index, value, color, opacity }) => `
+    <div class="row">
+        <div class="randomize-order-result-item-container">
+            <i class="material-icons prefix randomize-order-result-item-icon" style="color: ${color}; opacity: ${opacity}">casino</i>
+            <div class="chip randomize-order-result-item" style="background-color: ${color}; opacity: ${opacity}">
+                ${index + 1} - ${value}
+            </div>
         </div>
     </div>
 `;

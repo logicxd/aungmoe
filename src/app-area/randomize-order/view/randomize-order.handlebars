@@ -4,16 +4,34 @@
         Re-arrange a list of items in a random order.
     </p>
     <p class="divider"></p>
-    {{!-- This gets populated from JavaScript --}}
-    <div class="randomize-order-input-list-items"></div>
-    <div class="randomize-order-result-list-items"></div>
-    <div class="row">
-        <button id="randomize-order-button-add" class="waves-effect waves-light btn">Add
-            <i class="material-icons left">add</i>
-        </button>
-        <button id="randomize-order-button-randomize" class="waves-effect waves-light btn right">Randomize
-            <i class="material-icons right">casino</i>
-        </button>
+    <div id="randomize-order-setup">
+        {{!-- This gets populated from JavaScript --}}
+        <div id="randomize-order-input-list-items"></div>
+        <div class="row">
+            <button id="randomize-order-button-add" class="waves-effect waves-light btn">Add
+                <i class="material-icons left">add</i>
+            </button>
+            <button id="randomize-order-button-randomize" class="waves-effect waves-light btn right">Randomize
+                <i class="material-icons right">casino</i>
+            </button>
+        </div>
     </div>
+    <div id="randomize-order-result" style="display: none;">
+        <div id="randomize-order-result-number-of-times">
+            Reload count: 1
+        </div>
+        <div id="randomize-order-result-last-randomized-datetime">
+            Time: 10:12:40 PM
+        </div>
+        {{!-- This gets populated from JavaScript --}}
+        <div id="randomize-order-result-list-items"></div>
+        <div class="row">
+            <button id="randomize-order-button-rerandomize" class="waves-effect waves-light btn">Randomize
+                <i class="material-icons left">casino</i>
+            </button>
+            <button id="randomize-order-button-reset" class="waves-effect waves-light btn right">Reset
+                <i class="material-icons right">delete</i>
+            </button>
+        </div>
     </div>
 </main>
