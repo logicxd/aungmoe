@@ -147,12 +147,12 @@ function initializeAllChips() {
 // Templating idea: https://stackoverflow.com/a/39065147 
 const InputItem = ({ index, value, color }) => `
     <div class="row m-b-0 randomize-order-component-input-item">
-        <div class="input-field col s11">
+        <div class="input-field col s10">
             <i class="material-icons prefix" style="color: ${color}">casino</i>
             <input class="randomize-order-item-value" id="randomize-order-input-text-${index}" type="text" value="${value}">
             <label for="randomize-order-input-text-${index}">Item ${index + 1}</label>
         </div>
-        <div class="col s1 randomize-order-remove-icon-container">
+        <div class="col s2 randomize-order-remove-icon-container">
             <a onclick="removeItem(${index})">
                 <i class="material-icons randomize-order-remove-icon">remove_circle</i>
             </a>
