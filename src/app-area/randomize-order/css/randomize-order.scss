@@ -1,0 +1,34 @@
+@import '../../../global/css/layouts/main';
+
+/* #region Set up page */
+.randomize-order-remove-icon-container { 
+    height: 84px; 
+    display: flex; 
+    align-items: center;
+}
+
+.randomize-order-remove-icon {
+    cursor: pointer;
+    color: #c62828;
+}
+/* #endregion */
+
+/* #region Result page */
+.randomize-order-result-item-container {
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-end;
+}
+
+.randomize-order-result-item-icon {
+    font-size: 3rem;
+    color: inherit;             // Should be set in code dynamically
+}
+
+.randomize-order-result-item {
+    color: white;
+    margin-left: 12px;
+    font-size: 16px;
+    background-color: inherit;  // Should be set in code dynamically
+}
+/* #endregion */

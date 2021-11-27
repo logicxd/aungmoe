@@ -15,8 +15,10 @@ var BookmarkModel = require('../../database/model/Bookmark')
 var WebsiteModel = require('../../database/model/Website')
 /* #endregion */
 
+/* #region  Set up routes */
 var route = 'bookmark'
 utility.setupRouterPaths(router, __dirname)
+/* #endregion */
 
 /* #region  GET /bookmark */
 router.get('/', async function (req, res) {
@@ -132,8 +134,8 @@ router.put('/', [
         bookmark.title = req.body.title
         bookmark.imageUrl = req.body.imageUrl
         bookmark.lastReadTitle = lastReadTitle,
-        bookmark.lastReadUrl = req.body.url, 
-        bookmark.type = req.body.type
+            bookmark.lastReadUrl = req.body.url,
+            bookmark.type = req.body.type
         await bookmark.save()
 
         let nextPageLink = await readControllerUtility.findNextPageLinkWithUrl(req.body.url)
