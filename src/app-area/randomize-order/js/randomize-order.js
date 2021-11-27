@@ -62,6 +62,15 @@ $('#randomize-order-button-reset').click(() => {
     reloadCount = 0
     reloadEditView()
 })
+
+function selectedItem(selectedIndex) {
+    for (let i = 0; i < items.length; ++i) {
+        items[i].opacity = (i == selectedIndex ? 1 : 0.5)
+    }
+
+    $('#randomize-order-result-list-items').html(items.map(ResultItem).join(''));
+    initializeAllChips()
+}
 /* #endregion */
 
 /* #region Reload Views */
@@ -70,6 +79,7 @@ function reloadEditView() {
         item.index = index
         item.color = colorForItem(index)
     })
+    
     $('#randomize-order-input-list-items').html(items.map(InputItem).join(''));
     makeLabelsDontOverlap()
     $('#randomize-order-result').hide()
@@ -87,7 +97,6 @@ function reloadResultView() {
     }
 
     $('#randomize-order-result-list-items').html(items.map(ResultItem).join(''));
-    makeLabelsDontOverlap()
     initializeAllChips()
     $('#randomize-order-setup').hide()
     $('#randomize-order-result').show()
@@ -154,9 +163,15 @@ const InputItem = ({ index, value, color }) => `
 const ResultItem = ({ index, value, color, opacity }) => `
     <div class="row">
         <div class="randomize-order-result-item-container">
-            <i class="material-icons prefix randomize-order-result-item-icon" style="color: ${color}; opacity: ${opacity}">casino</i>
-            <div class="chip randomize-order-result-item" style="background-color: ${color}; opacity: ${opacity}">
-                ${index + 1} - ${value}
+            <i class="material-icons prefix randomize-order-result-item-icon" 
+                style="color: ${color}; opacity: ${opacity}"
+                onclick="selectedItem(${index})">
+                    casino
+            </i>
+            <div class="chip randomize-order-result-item" 
+                style="background-color: ${color}; opacity: ${opacity}"
+                onclick="selectedItem(${index})">
+                    ${index + 1} - ${value}
             </div>
         </div>
     </div>
