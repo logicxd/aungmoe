@@ -20,7 +20,13 @@ router.get('/', async function (req, res) {
 })
 
 function listOfProjects() {
-    return [{
+    return [
+    {
+        title: 'Randomize Order',
+        url: '/randomize-order',
+        dateString: '2021',
+        category: 'Tool'
+    }, {
         title: 'Bookmark',
         url: '/bookmark',
         dateString: '2021',
