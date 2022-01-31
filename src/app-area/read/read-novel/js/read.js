@@ -14,7 +14,8 @@ $(document).ready(function () {
     $('.fixed-action-btn').floatingActionButton({
         hoverEnabled: false
     });
-    $('.tooltipped').tooltip();
+    $('.tooltipped').tooltip()
+    enableKeydownEvents()
 });
  
 function initializeValuesOnLoad() {
@@ -316,4 +317,24 @@ function changeCurrentParagraph(newParagraph) {
             }, 3000);
         }
     }
+}
+
+function enableKeydownEvents() { 
+    $(document).bind("keydown", function(e) {
+        var key = e.originalEvent.code 
+        switch (key) {
+            case 'ArrowRight':
+                const nextPageUrl = $('#next-page-url').val()
+                if (nextPageUrl) {
+                    nextPageClicked(nextPageUrl)
+                }
+                break
+            case 'ArrowLeft':
+                history.back()
+                break
+            default:
+                // No-op
+                break
+        }
+    })
 }

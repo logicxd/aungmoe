@@ -6,6 +6,7 @@ $(document).ready(function () {
         hoverEnabled: false
     });
     $('.tooltipped').tooltip();
+    enableKeydownEvents()
 });
 
 function initializeConfigValues() {

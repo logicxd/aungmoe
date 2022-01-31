@@ -29,4 +29,24 @@ function isTapToScrollEnabled() {
 function setConfigWebtoonUrl(url) {
     localStorage.setItem('config-webtoon-url', url);
 }
+
+function enableKeydownEvents() { 
+    $(document).bind("keydown", function(e) {
+        var key = e.originalEvent.code 
+        switch (key) {
+            case 'ArrowRight':
+                const nextPageUrl = $('#next-page-url').val()
+                if (nextPageUrl) {
+                    nextPageClicked(nextPageUrl)
+                }
+                break
+            case 'ArrowLeft':
+                history.back()
+                break
+            default:
+                // No-op
+                break
+        }
+    })
+}
 /* #endregion */

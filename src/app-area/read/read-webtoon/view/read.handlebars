@@ -75,6 +75,7 @@
             <li><a class="btn-floating tooltipped green" data-tooltip="Scroll to top" data-position="left" href="#scroll-to-top"><i class="material-icons" style="pointer-events:none;">publish</i></a></li>
             <li><a class="btn-floating tooltipped blue" data-tooltip="Open link in new tab" data-position="left" onclick="window.open('{{ currentPageLink }}', '_blank');"><i class="material-icons">launch</i></a></li>
             {{#if nextPageLink }}
+            <input id="next-page-url" type="hidden" value="{{ nextPageLink }}">
             <li><a class="btn-floating tooltipped orange" data-tooltip="Next page" data-position="left" onclick="nextPageClicked('{{ nextPageLink }}')"><i class="material-icons">arrow_forward</i></a></li>
             {{/if}}
             {{#if bookmark }}

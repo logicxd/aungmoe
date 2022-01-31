@@ -38,6 +38,7 @@
                 </button>
                 {{/if}}
                 {{#if nextPageLink }}
+                <input id="next-page-url" type="hidden" value="{{ nextPageLink }}">
                 <button id="next-page-button" class="btn waves-effect waves-light" onclick="nextPageClicked('{{ nextPageLink }}')">Next
                     <i class="material-icons right">arrow_forward</i>
                 </button>
