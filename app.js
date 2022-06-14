@@ -106,7 +106,8 @@ global.css = {
     animate_css: 'https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.5.2/animate.min.css'
 }
 global.js = {
-    noSleep: 'js/NoSleep.min.js'
+    noSleep: 'js/NoSleep.min.js',
+    googleMaps: 'http://maps.google.com/maps/api/js?key=AIzaSyB8JnVCl9titkDmd_l2PM7SewOsw0qXgt8'    // Key has to be public
 }
 global.configs = {
     domainUrl: 'http://www.aungmoe.com',

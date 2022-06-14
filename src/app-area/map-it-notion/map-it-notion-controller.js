@@ -101,7 +101,7 @@ router.get('/:id', async function (req, res) {
         title: `Map It Notion - ${notionMap.title}`,
         description: 'Map Notion database onto Google Maps',
         css: [`/${route}/css/map-it-notion.css`],
-        js: [`/${route}/js/map-it-notion.js`],
+        js: [global.js.googleMaps, `/${route}/js/map-it-notion.js`, `/${route}/js/map-it-notion-detail.js`, `/${route}/js/map-it-notion-map.js`],
         notionLocations: notionLocations
     })
 })
