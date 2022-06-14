@@ -19,3 +19,81 @@
         {{/each}}
     </ul>
 </main>
+
+<!-- Modal -->
+<div id="notion-map-info-modal" class="modal bottom-sheet modal-fixed-footer">
+    <div class="modal-content">
+        <h4>Add Notion Database</h4>
+        <input id="notion-map-info-modal-id" type="hidden"/>
+        <div class="row m-b-0">
+            <div class="input-field col s12">
+                <input id="notion-map-info-modal-title" type="text" class="validate" required aria-required="true">
+                <label for="notion-map-info-modal-title" data-error="Invalid">Title</label>
+                <span class="helper-text" data-error="Please enter a title"></span>
+            </div>
+        </div>
+        <div class="row m-b-0">
+            <div class="input-field col s12">
+                <input id="notion-map-info-modal-secretKey" type="text" class="validate" required aria-required="true">
+                <label for="notion-map-info-modal-secretKey" data-error="Invalid">Secret Key</label>
+                <span class="helper-text" data-error="Please enter the Secret Key"></span>
+            </div>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <a id="notion-map-info-modal-button" class="waves-effect btn disabled">Add</a>
+    </div>
+
+    <!-- Loading screen -->
+    <div id="loading-screen">
+        <div class="preloader-wrapper active ">
+            <div class="spinner-layer spinner-blue">
+                <div class="circle-clipper left">
+                    <div class="circle"></div>
+                </div>
+                <div class="gap-patch">
+                    <div class="circle"></div>
+                </div>
+                <div class="circle-clipper right">
+                    <div class="circle"></div>
+                </div>
+            </div>
+
+            <div class="spinner-layer spinner-red">
+                <div class="circle-clipper left">
+                    <div class="circle"></div>
+                </div>
+                <div class="gap-patch">
+                    <div class="circle"></div>
+                </div>
+                <div class="circle-clipper right">
+                    <div class="circle"></div>
+                </div>
+            </div>
+
+            <div class="spinner-layer spinner-yellow">
+                <div class="circle-clipper left">
+                    <div class="circle"></div>
+                </div>
+                <div class="gap-patch">
+                    <div class="circle"></div>
+                </div>
+                <div class="circle-clipper right">
+                    <div class="circle"></div>
+                </div>
+            </div>
+
+            <div class="spinner-layer spinner-green">
+                <div class="circle-clipper left">
+                    <div class="circle"></div>
+                </div>
+                <div class="gap-patch">
+                    <div class="circle"></div>
+                </div>
+                <div class="circle-clipper right">
+                    <div class="circle"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
