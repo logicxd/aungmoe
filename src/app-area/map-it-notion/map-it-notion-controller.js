@@ -10,6 +10,7 @@ var { body, validationResult } = require('express-validator');
 // Text parser
 var UserModel = require('../../database/model/User')
 var NotionMapModel = require('../../database/model/NotionMap')
+var mongoose = require('mongoose');
 /* #endregion */
 
 /* #region  Set up routes */
@@ -69,6 +70,40 @@ router.post('/', requiredNotionMapValidators(), async function (req, res) {
         console.error(error)
         return res.status(500).send('Unhandled exception')
     }
+})
+/* #endregion */
+
+/* #region  GET /map-it-notion/{id} */
+router.get('/:id', async function (req, res) {
+    let id = req.params['id']
+
+    let notionMap = {}
+    let notionLocations = []
+    try {
+        let notionMap = await NotionMapModel.findById(new mongoose.Types.ObjectId(id))
+
+        if (!notionMap) {
+            throw `Notion map not found with id ${id}`
+        }
+
+    } catch (error) {
+        console.error(error)
+        res.status(404)
+        return res.render(path.join(__dirname, 'view/map-it-notion-unknown-page'), {
+            title: 'Map It Notion - Not Found',
+            description: 'Map not found!',
+            css: [`/${route}/css/map-it-notion.css`],
+            js: [`/${route}/js/map-it-notion.js`]
+        });
+    }
+    
+    return res.render(path.join(__dirname, 'view/map-it-notion-detail'), {
+        title: `Map It Notion - ${notionMap.title}`,
+        description: 'Map Notion database onto Google Maps',
+        css: [`/${route}/css/map-it-notion.css`],
+        js: [`/${route}/js/map-it-notion.js`],
+        notionLocations: notionLocations
+    })
 })
 /* #endregion */
 
