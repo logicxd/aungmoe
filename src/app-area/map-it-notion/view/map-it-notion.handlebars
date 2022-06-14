@@ -1,3 +1,21 @@
 <main class="container">
     <h2>Map It Notion</h2>
+    <p class="row">
+        Connect your Notion database to get a Google Maps with all the locations as pins! 
+        Useful to create a personalized Map with all your location markers
+    </p>
+    <div class="row">
+        <a id="notion-map-add-button" class="waves-effect waves-light btn-small">Add</a>
+    </div>
+    <ul class="notion-map-list">
+        {{#each notionMaps}}
+        <li>
+            <h4 class="m-t-0">
+                <a class="notion-map-link" href="{{this.url}}">
+                    {{this.title}}
+                </a>
+            </h4>
+        </li>
+        {{/each}}
+    </ul>
 </main>
