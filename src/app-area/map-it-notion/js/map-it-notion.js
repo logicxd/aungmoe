@@ -32,28 +32,28 @@ function addNotionMap() {
     displayLoadingScreen()
     $('#notion-map-info-modal-button').addClass('disabled')
     
-    // $.ajax({
-    //     method: 'POST',
-    //     url: 'bookmark',
-    //     data: data,
-    //     success: function (res) {
-    //         M.toast({
-    //             html: 'Added Notion Database!',
-    //             classes: 'green lighten-1',
-    //             displayLength: 2000,
-    //             completeCallback: () => {
-    //                 location.reload()
-    //             }
-    //         })
-    //     },
-    //     error: function (error) {
-    //         console.error(error.responseText)
-    //         M.toast({ html: error.responseText, classes: 'red lighten-1' })
-    //         $('#bookmark-info-modal-button').removeClass('disabled')
-    //     }
-    // }).always(() => {
-    //     removeLoadingScreen()
-    // })
+    $.ajax({
+        method: 'POST',
+        url: 'map-it-notion',
+        data: data,
+        success: function (res) {
+            M.toast({
+                html: 'Added Notion Database!',
+                classes: 'green lighten-1',
+                displayLength: 2000,
+                completeCallback: () => {
+                    location.reload()
+                }
+            })
+        },
+        error: function (error) {
+            console.error(error.responseText)
+            M.toast({ html: error.responseText, classes: 'red lighten-1' })
+            $('#notion-map-info-modal-button').removeClass('disabled')
+        }
+    }).always(() => {
+        removeLoadingScreen()
+    })
 }
 
 $('#notion-map-info-modal-title').keyup(() => {

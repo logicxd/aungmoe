@@ -18,6 +18,11 @@ var NotionMapSchema = new Schema({
         type: Date,
         required: true,
         default: Date.now
+    },
+    modifiedDate: {
+        type: Date,
+        required: true,
+        default: Date.now
     }
 });
 
