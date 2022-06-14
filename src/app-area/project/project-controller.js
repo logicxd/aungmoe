@@ -22,6 +22,12 @@ router.get('/', async function (req, res) {
 function listOfProjects() {
     return [
     {
+        title: 'Map It Notion',
+        url: '/map-it-notion',
+        dateString: '2022',
+        category: 'Notion, Google Maps, Yelp'
+    },
+    {
         title: 'Randomize Order',
         url: '/randomize-order',
         dateString: '2021',
