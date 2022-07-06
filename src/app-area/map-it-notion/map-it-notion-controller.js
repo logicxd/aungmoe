@@ -64,6 +64,7 @@ router.post('/', requiredNotionMapValidators(), async function (req, res) {
         let notionMap = await NotionMapModel.create({
             user: req.user,
             title: req.body.title,
+            databaseId: req.body.databaseId,
             secretKey: req.body.secretKey
         })
         return res.status(204).end()
@@ -119,7 +120,7 @@ router.get('/render/:id', async function (req, res) {
         if (!notionMap) {
             throw `Notion map not found with id ${id}`
         }
-        fetchDataFromTable(notionMap.secretKey)
+        fetchDataFromTable(notionMap.databaseId, notionMap.secretKey)
 
     } catch (error) {
         console.error(error)
@@ -157,11 +158,10 @@ function requiredNotionMapValidators() {
 
 /* #region  Notion API */
 
-function fetchDataFromTable(apiKey) {
-    
+function fetchDataFromTable(databaseId, apiKey) {
     const options = {
         method: 'POST',
-        url: 'https://api.notion.com/v1/databases/{database_id}/query',
+        url: `https://api.notion.com/v1/databases/${databaseId}/query`,
         headers: {
             'Authorization': `Bearer ${apiKey}`,
             'Accept': 'application/json',

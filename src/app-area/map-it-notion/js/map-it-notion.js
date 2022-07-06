@@ -26,6 +26,7 @@ $('#notion-map-info-modal-button').click(() => {
 function addNotionMap() {
     let data = {
         'title': $('#notion-map-info-modal-title').val(),
+        'databaseId': $('#notion-map-info-modal-databaseId').val(),
         'secretKey': $('#notion-map-info-modal-secretKey').val()
     }
 
@@ -67,6 +68,7 @@ $('#notion-map-info-modal-secretKey').keyup(() => {
 function clearInfoModal() {
     $('#notion-map-info-modal-id').val("")
     $('#notion-map-info-modal-title').val("")
+    $('#notion-map-info-modal-databaseId').val("")
     $('#notion-map-info-modal-secretKey').val("")
 }
 /* #endregion */
@@ -94,6 +96,9 @@ function hasValidInputs() {
         return false
     }
     if (!$('#notion-map-info-modal-secretKey').val()) {
+        return false
+    }
+    if (!$('#notion-map-info-modal-databaseId').val()) {
         return false
     }
     return true

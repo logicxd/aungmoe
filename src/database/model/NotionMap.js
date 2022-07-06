@@ -13,6 +13,7 @@ var NotionMapSchema = new Schema({
         required: true,
         default: 'Untitled'
     },
+    databaseId: String,
     secretKey: String,
     createdDate: {
         type: Date,
