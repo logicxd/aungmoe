@@ -5,6 +5,7 @@ var express = require('express');
 var router = express.Router();
 var path = require('path');
 var utility = require('../utility')
+var axios = require('axios')
 var { body, validationResult } = require('express-validator');
 
 // Text parser
@@ -115,10 +116,10 @@ router.get('/render/:id', async function (req, res) {
     let notionLocations = []
     try {
         let notionMap = await NotionMapModel.findById(new mongoose.Types.ObjectId(id))
-
         if (!notionMap) {
             throw `Notion map not found with id ${id}`
         }
+        fetchDataFromTable(notionMap.secretKey)
 
     } catch (error) {
         console.error(error)
@@ -151,6 +152,34 @@ function requiredNotionMapValidators() {
     ]
 }
 
+/* #endregion */
+
+
+/* #region  Notion API */
+
+function fetchDataFromTable(apiKey) {
+    
+    const options = {
+        method: 'POST',
+        url: 'https://api.notion.com/v1/databases/{database_id}/query',
+        headers: {
+            'Authorization': `Bearer ${apiKey}`,
+            'Accept': 'application/json',
+            'Notion-Version': '2022-02-22',
+            'Content-Type': 'application/json'
+        },
+        data: {page_size: 100}
+    }
+
+    axios
+        .request(options)
+        .then(response => {
+            console.log(response.data)
+        })
+        .catch(error => {
+            console.error(error)
+        })
+}
 /* #endregion */
 
 module.exports = router
