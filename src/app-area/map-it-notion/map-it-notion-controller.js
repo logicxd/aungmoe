@@ -80,7 +80,6 @@ router.get('/:id', async function (req, res) {
     let id = req.params['id']
 
     let notionMap = {}
-    let notionLocations = []
     try {
         let notionMap = await NotionMapModel.findById(new mongoose.Types.ObjectId(id))
 
@@ -104,7 +103,7 @@ router.get('/:id', async function (req, res) {
         description: 'Map Notion database onto Google Maps',
         css: [`/${route}/css/map-it-notion.css`],
         js: [global.js.googleMaps, `/${route}/js/map-it-notion.js`, `/${route}/js/map-it-notion-detail.js`, `/${route}/js/map-it-notion-map.js`],
-        notionLocations: notionLocations
+        id: id
     })
 })
 /* #endregion */
@@ -114,14 +113,11 @@ router.get('/render/:id', async function (req, res) {
     let id = req.params['id']
 
     let notionMap = {}
-    let notionLocations = []
     try {
         let notionMap = await NotionMapModel.findById(new mongoose.Types.ObjectId(id))
         if (!notionMap) {
             throw `Notion map not found with id ${id}`
         }
-        fetchDataFromTable(notionMap.databaseId, notionMap.secretKey)
-
     } catch (error) {
         console.error(error)
         res.status(404)
@@ -139,12 +135,36 @@ router.get('/render/:id', async function (req, res) {
         description: 'Map Notion database onto Google Maps',
         css: [`/${route}/css/map-it-notion.css`],
         js: [global.js.googleMaps, `/${route}/js/map-it-notion.js`, `/${route}/js/map-it-notion-detail.js`, `/${route}/js/map-it-notion-map.js`],
-        notionLocations: notionLocations
+        id: id
     })
 })
 /* #endregion */
 
+/* #region  GET /map-it-notion/map-data/{id} */
+router.get('/map-data/:id', async function (req, res) {
+    let id = req.params['id']
+    let mapObjects = await mapDataForId(id)
+    return res.send(mapObjects)
+})
+/* #endregion */
+
 /* #region  Helper Methods */
+
+async function mapDataForId(id) {
+    try {
+        let notionMap = await NotionMapModel.findById(new mongoose.Types.ObjectId(id))
+        if (!notionMap) {
+            throw `Notion map not found with id ${id}`
+        }
+    
+        let notionResponse = await notionFetchDataFromTable(notionMap.databaseId, notionMap.secretKey)
+        let notionLocations = notionExtractDataForMap(notionResponse.data)
+        return notionLocations
+    } catch (error) {
+        console.error(`Error fetching map-data for notion: ${error}`)
+        return []
+    }
+}
 
 function requiredNotionMapValidators() {
     return [
@@ -158,7 +178,7 @@ function requiredNotionMapValidators() {
 
 /* #region  Notion API */
 
-function fetchDataFromTable(databaseId, apiKey) {
+async function notionFetchDataFromTable(databaseId, apiKey) {
     const options = {
         method: 'POST',
         url: `https://api.notion.com/v1/databases/${databaseId}/query`,
@@ -171,15 +191,33 @@ function fetchDataFromTable(databaseId, apiKey) {
         data: {page_size: 100}
     }
 
-    axios
-        .request(options)
-        .then(response => {
-            console.log(response.data)
-        })
-        .catch(error => {
-            console.error(error)
-        })
+    let res = await axios(options)
+    return res
 }
+
+function notionExtractDataForMap(data) {
+    let mapObjects = [] 
+    for (let result of data.results) { 
+        let properties = result.properties
+        let mapObject = {
+            latitude: properties.Latitude.number,
+            longitude: properties.Longitude.number
+        }
+
+        if (properties.Name.title.length > 0) {
+            mapObject.title = properties.Name.title[0].plain_text
+            mapObject.info = mapObject.title
+        }
+
+        if (mapObject.latitude == null || mapObject.longitude == null) {
+            continue
+        }
+
+        mapObjects.push(mapObject)
+    }
+    return mapObjects
+}
+
 /* #endregion */
 
 module.exports = router
