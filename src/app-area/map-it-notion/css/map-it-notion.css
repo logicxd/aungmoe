@@ -6629,3 +6629,14 @@ header .nav-wrapper a {
   display: none;
   align-items: center;
   justify-content: center; }
+
+.fill-to-parent {
+  display: flex;
+  min-height: 80vh;
+  flex-direction: column;
+  width: 100%; }
+
+.fill-to-screen {
+  display: flex;
+  height: 600px;
+  width: 600px; }

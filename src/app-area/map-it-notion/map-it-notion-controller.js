@@ -107,6 +107,41 @@ router.get('/:id', async function (req, res) {
 })
 /* #endregion */
 
+/* #region  GET /map-it-notion/render/{id} */
+router.get('/render/:id', async function (req, res) {
+    let id = req.params['id']
+
+    let notionMap = {}
+    let notionLocations = []
+    try {
+        let notionMap = await NotionMapModel.findById(new mongoose.Types.ObjectId(id))
+
+        if (!notionMap) {
+            throw `Notion map not found with id ${id}`
+        }
+
+    } catch (error) {
+        console.error(error)
+        res.status(404)
+        return res.render(path.join(__dirname, 'view/map-it-notion-unknown-page'), {
+            title: 'Map It Notion - Not Found',
+            description: 'Map not found!',
+            css: [`/${route}/css/map-it-notion.css`],
+            js: [`/${route}/js/map-it-notion.js`]
+        });
+    }
+    
+    return res.render(path.join(__dirname, 'view/map-it-notion-render'), {
+        title: `Map It Notion - ${notionMap.title}`,
+        layout: "empty-template",
+        description: 'Map Notion database onto Google Maps',
+        css: [`/${route}/css/map-it-notion.css`],
+        js: [global.js.googleMaps, `/${route}/js/map-it-notion.js`, `/${route}/js/map-it-notion-detail.js`, `/${route}/js/map-it-notion-map.js`],
+        notionLocations: notionLocations
+    })
+})
+/* #endregion */
+
 /* #region  Helper Methods */
 
 function requiredNotionMapValidators() {

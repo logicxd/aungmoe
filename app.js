@@ -22,9 +22,9 @@ try {
 
 /* #region View Engine Setup to handlebars and set up view paths */
 var hbs = exphbs.create({
-    layoutsDir: path.join(__dirname, 'src/'),
+    layoutsDir: path.join(__dirname, 'src/global/view/layout/'),
     // partialsDir: path.join(__dirname, 'src/global/view/partial/'),
-    defaultLayout: 'global/view/layout/template',
+    defaultLayout: 'template',
     helpers: {
         // These are helper functions that can be used inside handlebar
         foo: function () { return 'FOO!'; }
