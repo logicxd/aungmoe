@@ -22,9 +22,9 @@ try {
 
 /* #region View Engine Setup to handlebars and set up view paths */
 var hbs = exphbs.create({
-    layoutsDir: path.join(__dirname, 'src/'),
+    layoutsDir: path.join(__dirname, 'src/global/view/layout/'),
     // partialsDir: path.join(__dirname, 'src/global/view/partial/'),
-    defaultLayout: 'global/view/layout/template',
+    defaultLayout: 'template',
     helpers: {
         // These are helper functions that can be used inside handlebar
         foo: function () { return 'FOO!'; }
@@ -58,6 +58,7 @@ app.use('/read-webtoon', require('./src/app-area/read/read-webtoon/read-webtoon-
 app.use('/projects', require('./src/app-area/project/project-controller'));
 app.use('/bookmark', require('./src/app-area/bookmark/bookmark-controller'));
 app.use('/randomize-order', require('./src/app-area/randomize-order/randomize-order-controller'));
+app.use('/map-it-notion', require('./src/app-area/map-it-notion/map-it-notion-controller'));
 /* #endregion */
 
 /* #region Connect other services */
@@ -105,7 +106,8 @@ global.css = {
     animate_css: 'https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.5.2/animate.min.css'
 }
 global.js = {
-    noSleep: 'js/NoSleep.min.js'
+    noSleep: 'js/NoSleep.min.js',
+    googleMaps: 'http://maps.google.com/maps/api/js?key=AIzaSyB8JnVCl9titkDmd_l2PM7SewOsw0qXgt8'    // Key has to be public
 }
 global.configs = {
     domainUrl: 'http://www.aungmoe.com',

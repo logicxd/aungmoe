@@ -25,6 +25,7 @@
   },
   "homepage": "https://github.com/logicxd/DavidMoe#readme",
   "dependencies": {
+    "axios": "^0.27.2",
     "cheerio": "^1.0.0-rc.3",
     "cookie-parser": "^1.4.5",
     "cookie-session": "^1.4.0",
