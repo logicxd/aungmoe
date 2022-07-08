@@ -157,8 +157,9 @@ async function mapDataForId(id) {
             throw `Notion map not found with id ${id}`
         }
     
-        let notionResponse = await notionFetchDataFromTable(notionMap.databaseId, notionMap.secretKey)
+        let notionResponse = await notionFetchDataFromTable(notionMap.secretKey, notionMap.databaseId)
         let notionLocations = notionExtractDataForMap(notionResponse.data)
+        let yelpData = await yelpFetchBusinessFromId("", "north-india-restaurant-san-francisco")
         return notionLocations
     } catch (error) {
         console.error(`Error fetching map-data for notion: ${error}`)
@@ -178,7 +179,7 @@ function requiredNotionMapValidators() {
 
 /* #region  Notion API */
 
-async function notionFetchDataFromTable(databaseId, apiKey) {
+async function notionFetchDataFromTable(apiKey, databaseId) {
     const options = {
         method: 'POST',
         url: `https://api.notion.com/v1/databases/${databaseId}/query`,
@@ -216,6 +217,32 @@ function notionExtractDataForMap(data) {
         mapObjects.push(mapObject)
     }
     return mapObjects
+}
+
+/* #endregion */
+
+/* #region  Yelp API */
+
+async function yelpFetchBusinessFromId(apiKey, businessId) {
+    const options = {
+        method: 'GET',
+        url: `https://api.yelp.com/v3/businesses/${businessId}`,
+        headers: {
+            'Authorization': `Bearer ${apiKey}`,
+            'Accept': 'application/json'
+        }
+    }
+
+    let res = await axios(options)
+    return res
+}
+
+function yelpExtractDataForMap(data) {
+    let yelpObject = {
+        latitude: data.coordinates.latitude,
+        longitude: data.coordinates.longitude
+    }
+    return yelpObject
 }
 
 /* #endregion */
