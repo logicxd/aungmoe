@@ -22,37 +22,41 @@ function renderMap() {
 
     //  placeMarkerOnMap(buildings, map);
 
-    fetchMapData(mapObjects => {
+    fetchMapData(locations => {
         // Display a map on the page
         const map = new google.maps.Map(mapEl, { mapTypeId: 'roadmap' });
-        placeMarkerOnMap(mapObjects, map);
+        placeMarkerOnMap(locations, map);
     })
 }
 
-function placeMarkerOnMap(buildings, map) {
+function placeMarkerOnMap(locations, map) {
     // Loop through our array of buildings & place each one on the map  
     const bounds = new google.maps.LatLngBounds();
-    buildings.forEach((building) => {
-        const position = { lat: building.latitude, lng: building.longitude }
+    for (let location of locations) {
+        if (location.latitude == null || location.longitude == null) {
+            continue
+        }
+
+        const position = { lat: location.latitude, lng: location.longitude }
         // Stretch our bounds to the newly found marker position
         bounds.extend(position);
 
         const marker = new google.maps.Marker({
             position: position,
             map: map,
-            title: building.title
+            title: location.title
         });
 
         const infoWindow = new google.maps.InfoWindow();
         // Allow each marker to have an info window
         google.maps.event.addListener(marker, 'click', () => {
-            infoWindow.setContent(building.info);
+            infoWindow.setContent(location.info);
             infoWindow.open(map, marker);
         })
 
         // Automatically center the map fitting all markers on the screen
         map.fitBounds(bounds);
-    })
+    }
 }
 
 function fetchMapData(completion) {

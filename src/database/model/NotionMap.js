@@ -8,13 +8,6 @@ var NotionMapSchema = new Schema({
         ref: 'User',
         required: true
     },
-    title: {
-        type: String,
-        required: true,
-        default: 'Untitled'
-    },
-    databaseId: String,
-    secretKey: String,
     createdDate: {
         type: Date,
         required: true,
@@ -24,6 +17,18 @@ var NotionMapSchema = new Schema({
         type: Date,
         required: true,
         default: Date.now
+    },
+    title: {
+        type: String,
+        required: true,
+        default: 'Untitled'
+    },
+    databaseId: String,
+    secretKey: String,
+    buildings: {
+        type: Schema.Types.Array,
+        required: true,
+        default: []
     }
 });
 

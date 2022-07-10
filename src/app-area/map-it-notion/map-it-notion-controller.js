@@ -7,6 +7,14 @@ var path = require('path');
 var utility = require('../utility')
 var axios = require('axios')
 var { body, validationResult } = require('express-validator');
+var appDir = path.dirname(require.main.filename);
+var secrets = {}
+try {
+    secrets = require(path.join(appDir, 'config/secrets.json'))    
+} catch (error) {
+    // Do nothing. Server should handle loading of the configs
+}
+let yelpAPI = process.env.YELP_API || secrets.YELP_API
 
 // Text parser
 var UserModel = require('../../database/model/User')
@@ -157,9 +165,15 @@ async function mapDataForId(id) {
             throw `Notion map not found with id ${id}`
         }
     
-        let notionResponse = await notionFetchDataFromTable(notionMap.databaseId, notionMap.secretKey)
-        let notionLocations = notionExtractDataForMap(notionResponse.data)
-        return notionLocations
+        let fetchFromNotion = false
+        if (fetchFromNotion) {
+            let notionRawResponse = await notionFetchDataFromTable(notionMap.secretKey, notionMap.databaseId)
+            let locations = notionExtractLocations(notionRawResponse.data)
+            await getCoordinatesFromYelp(locations)
+            notionMap.buildings = locations 
+            await notionMap.save()
+        }
+        return notionMap.buildings
     } catch (error) {
         console.error(`Error fetching map-data for notion: ${error}`)
         return []
@@ -178,7 +192,7 @@ function requiredNotionMapValidators() {
 
 /* #region  Notion API */
 
-async function notionFetchDataFromTable(databaseId, apiKey) {
+async function notionFetchDataFromTable(apiKey, databaseId) {
     const options = {
         method: 'POST',
         url: `https://api.notion.com/v1/databases/${databaseId}/query`,
@@ -195,27 +209,78 @@ async function notionFetchDataFromTable(databaseId, apiKey) {
     return res
 }
 
-function notionExtractDataForMap(data) {
+function notionExtractLocations(data) {
     let mapObjects = [] 
     for (let result of data.results) { 
         let properties = result.properties
+
         let mapObject = {
             latitude: properties.Latitude.number,
             longitude: properties.Longitude.number
         }
 
-        if (properties.Name.title.length > 0) {
+        if (properties.Name.title != null && properties.Name.title.length > 0) {
             mapObject.title = properties.Name.title[0].plain_text
             mapObject.info = mapObject.title
         }
 
-        if (mapObject.latitude == null || mapObject.longitude == null) {
-            continue
+        if (properties.Yelp.url != null && properties.Yelp.url.length > 0) {
+            try {
+                let url = new URL(properties.Yelp.url)
+                let path = url.pathname
+                let pathSplit = path.split('/')
+                let id = pathSplit[pathSplit.length - 1]
+                mapObject.yelp = url
+                mapObject.yelpId = id
+            } catch (error) {
+                // Invalid URL
+                console.log(`Invalid yelp url: ${properties.Yelp.url}`)
+            }
         }
 
         mapObjects.push(mapObject)
     }
     return mapObjects
+}
+
+/* #endregion */
+
+/* #region  Yelp API */
+
+async function getCoordinatesFromYelp(locations) {
+    for (let location of locations) {
+
+        if (location.yelpId == null || location.yelpId.length == 0) {
+            continue
+        }
+
+        let yelpRawResponse = await yelpFetchBusinessFromId(location.yelpId)
+        let yelpObject = yelpExtractDataForMap(yelpRawResponse.data)
+        location.latitude = yelpObject.latitude
+        location.longitude = yelpObject.longitude
+    }
+}
+
+async function yelpFetchBusinessFromId(businessId) {
+    const options = {
+        method: 'GET',
+        url: `https://api.yelp.com/v3/businesses/${businessId}`,
+        headers: {
+            'Authorization': `Bearer ${yelpAPI}`,
+            'Accept': 'application/json'
+        }
+    }
+    
+    let res = await axios(options)
+    return res
+}
+
+function yelpExtractDataForMap(data) {
+    let yelpObject = {
+        latitude: data.coordinates.latitude,
+        longitude: data.coordinates.longitude
+    }
+    return yelpObject
 }
 
 /* #endregion */

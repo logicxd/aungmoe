@@ -6638,5 +6638,5 @@ header .nav-wrapper a {
 
 .fill-to-screen {
   display: flex;
-  height: 600px;
-  width: 600px; }
+  min-width: 100vw;
+  min-height: 100vh; }
