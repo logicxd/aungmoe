@@ -156,6 +156,31 @@ router.get('/map-data/:id', async function (req, res) {
 })
 /* #endregion */
 
+/* #region  PUT /map-it-notion/map-data/{id}/refresh?forceUpdate=false */
+
+/// Updates everything in the database by fetching from Notion
+router.put('/map-data/:id/refresh', async function (req, res) {
+    try {
+        let id = req.params['id']
+        let forceUpdate = req.query.forceUpdate === 'true'
+
+        let notionMap = await NotionMapModel.findById(new mongoose.Types.ObjectId(id))
+        if (!notionMap) {
+            throw `Notion map not found with id ${id}`
+        }
+
+        let notionRawResponse = await notionFetchDataFromTable(notionMap.secretKey, notionMap.databaseId)
+        let locations = notionExtractLocations(notionRawResponse.data)
+        await getCoordinatesFromYelpIfNeeded(locations, forceUpdate)
+        notionMap.buildings = locations
+        await notionMap.save()
+        return res.send(locations)
+    } catch (error) {
+        return res.send([])
+    }
+})
+/* #endregion */
+
 /* #region  Helper Methods */
 
 async function mapDataForId(id) {
@@ -163,15 +188,6 @@ async function mapDataForId(id) {
         let notionMap = await NotionMapModel.findById(new mongoose.Types.ObjectId(id))
         if (!notionMap) {
             throw `Notion map not found with id ${id}`
-        }
-    
-        let fetchFromNotion = false
-        if (fetchFromNotion) {
-            let notionRawResponse = await notionFetchDataFromTable(notionMap.secretKey, notionMap.databaseId)
-            let locations = notionExtractLocations(notionRawResponse.data)
-            await getCoordinatesFromYelp(locations)
-            notionMap.buildings = locations 
-            await notionMap.save()
         }
         return notionMap.buildings
     } catch (error) {
@@ -188,7 +204,6 @@ function requiredNotionMapValidators() {
 }
 
 /* #endregion */
-
 
 /* #region  Notion API */
 
@@ -247,9 +262,15 @@ function notionExtractLocations(data) {
 
 /* #region  Yelp API */
 
-async function getCoordinatesFromYelp(locations) {
+async function getCoordinatesFromYelpIfNeeded(locations, forceUpdate) {
     for (let location of locations) {
 
+        // Skip: coordinates are already known
+        if (!forceUpdate && location.latitude != null && location.longitude != null) {
+            continue
+        }
+
+        // Skip: No yelp info
         if (location.yelpId == null || location.yelpId.length == 0) {
             continue
         }
