@@ -55,6 +55,18 @@
         </div>
     </div>
 
+    {{!-- Controls bar --}}
+    <div id="fixed-controls-bar-container" class="btn-floating hide"> 
+        <a id="controls-bar-fast-rewind" class="fixed-controls-bar-button btn">
+            <i id="controls-bar-fast-rewind-icon" class="material-icons">fast_rewind</i>
+        </a>
+        <a id="controls-bar-play-pause" class="fixed-controls-bar-button btn">
+            <i id="controls-bar-play-pause-icon" class="material-icons">play_arrow</i>
+        </a>
+        <a id="controls-bar-fast-forward" class="fixed-controls-bar-button btn">
+            <i id="controls-bar-fast-forward-icon" class="material-icons">fast_forward</i>
+        </a>
+    </div>
     {{!-- Floating Settings Button --}}
     <div id="fixed-controls-bar-container" class="btn-floating hide"> 
         <a id="controls-bar-fast-rewind" class="fixed-controls-bar-button btn">
@@ -103,6 +115,16 @@
                 <input id="config-webtoon-tap-to-scroll" type="checkbox"/>
                 <span>Enable Tap-to-scroll</span>
             </label>
+        </div>
+        <div class="row">
+            <label class="col s6">
+                <input id="config-webtoon-autoscroll" type="checkbox"/>
+                <span>Automatically scroll with text to speech</span>
+            </label>
+            <div class="range-field col s6">
+                <label for="config-webtoon-autoscroll-rate">Autoscroll Rate</label>
+                <input id="config-webtoon-autoscroll-rate" value="3" type="range" min="1" max="7">
+            </div>
         </div>
     </div>
     <div class="modal-footer">

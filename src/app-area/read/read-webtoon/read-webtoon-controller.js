@@ -66,7 +66,7 @@ async function loadReadPage(req, res) {
     res.render(path.join(__dirname, 'view/read'), {
         title: `${data.title || 'Unknown'} - Aung Moe`,
         description: `${data.title}`,
-        css: [`${route}/css/read.css`],
+        css: [`${route}/css/read.css`, global.css.animate_css],
         js: [`${route}/js/read-utility.js`, `${route}/js/read.js`],
         textTitle: textTitles[0],
         textAlternativeTitles: readControllerUtility.getAlternativeTitleString(textTitles),
