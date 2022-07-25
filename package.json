@@ -44,7 +44,7 @@
     "mongoose": "^5.12.3",
     "morgan": "^1.9.1",
     "node-gyp": "^5.0.7",
-    "node-sass": "^5.0.0",
+    "node-sass": "^7.0.0",
     "npm": "^6.14.6",
     "passport": "^0.4.1",
     "passport-local-mongoose": "^6.1.0",
