@@ -20,6 +20,7 @@ $(document).ready(function () {
 function initializeValuesOnLoad() {
     global.isAutoScrolling = false;
     global.windowHeight = document.documentElement.clientHeight;
+    global.noSleep = new NoSleep()
     autoscrollIfEnabled();
 }
 /* #endregion */
@@ -29,6 +30,7 @@ $('.tap-to-scroll').click(() => {
     var isEnabled = isTapToScrollEnabled()
     if (isEnabled) {
         pageDown()
+        autoscrollIfEnabled() // Resets scroll timer
     }
 })
 
@@ -62,7 +64,7 @@ function pageDown() {
     $('html, body').animate({
         scrollTop: `+=${scrollByAmount}`
     }, 200);
-    autoscrollIfEnabled();
+    autoscrollIfEnabled()
 }
 
 function pageUp() {
@@ -70,13 +72,13 @@ function pageUp() {
     $('html, body').animate({
         scrollTop: `-=${scrollByAmount}`
     }, 200);
+    autoscrollIfEnabled()   // Resets scroll timer
 }
 /* #endregion */
 
 /* #region  Controls Bar Buttons */
 $('#controls-bar-fast-rewind').click(() => {
     $('#controls-bar-fast-rewind-icon').animateCss('shift-left', null);
-    stopAutoscroll();
     pageUp()
 });
 
@@ -92,7 +94,6 @@ $('#controls-bar-play-pause').click(() => {
 
 $('#controls-bar-fast-forward').click(() => {
     $('#controls-bar-fast-forward-icon').animateCss('shift-right', null);
-    stopAutoscroll();
     pageDown()
 });
 
@@ -120,12 +121,16 @@ function autoscrollIfEnabled() {
         autoscroll();
     }
     updateStateOfControlsBarPlayPauseButton();
+    if (global.isAutoScrolling && !global.noSleep.enabled) {
+        global.noSleep.enable();
+    }
 }
 
 function stopAutoscroll() {
     global.isAutoScrolling = false;
     clearTimeout(global.timer);
     updateStateOfControlsBarPlayPauseButton();
+    global.noSleep.disable();
 }
 
 function autoscroll() {
