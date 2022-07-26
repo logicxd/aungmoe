@@ -20,6 +20,7 @@ $(document).ready(function () {
 function initializeValuesOnLoad() {
     global.isAutoScrolling = false;
     global.windowHeight = document.documentElement.clientHeight;
+    global.noSleep = new NoSleep()
     autoscrollIfEnabled();
 }
 /* #endregion */
@@ -120,12 +121,16 @@ function autoscrollIfEnabled() {
         autoscroll();
     }
     updateStateOfControlsBarPlayPauseButton();
+    if (global.isAutoScrolling && !global.noSleep.enabled) {
+        global.noSleep.enable();
+    }
 }
 
 function stopAutoscroll() {
     global.isAutoScrolling = false;
     clearTimeout(global.timer);
     updateStateOfControlsBarPlayPauseButton();
+    global.noSleep.disable();
 }
 
 function autoscroll() {

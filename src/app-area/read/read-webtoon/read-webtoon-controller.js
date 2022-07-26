@@ -67,7 +67,7 @@ async function loadReadPage(req, res) {
         title: `${data.title || 'Unknown'} - Aung Moe`,
         description: `${data.title}`,
         css: [`${route}/css/read.css`, global.css.animate_css],
-        js: [`${route}/js/read-utility.js`, `${route}/js/read.js`],
+        js: [`${route}/js/read-utility.js`, `${route}/js/read.js`, global.js.noSleep],
         textTitle: textTitles[0],
         textAlternativeTitles: readControllerUtility.getAlternativeTitleString(textTitles),
         webtoonImages: webtoonImages,
