@@ -30,6 +30,7 @@ $('.tap-to-scroll').click(() => {
     var isEnabled = isTapToScrollEnabled()
     if (isEnabled) {
         pageDown()
+        autoscrollIfEnabled() // Resets scroll timer
     }
 })
 
@@ -63,7 +64,7 @@ function pageDown() {
     $('html, body').animate({
         scrollTop: `+=${scrollByAmount}`
     }, 200);
-    autoscrollIfEnabled();
+    autoscrollIfEnabled()
 }
 
 function pageUp() {
@@ -71,13 +72,13 @@ function pageUp() {
     $('html, body').animate({
         scrollTop: `-=${scrollByAmount}`
     }, 200);
+    autoscrollIfEnabled()   // Resets scroll timer
 }
 /* #endregion */
 
 /* #region  Controls Bar Buttons */
 $('#controls-bar-fast-rewind').click(() => {
     $('#controls-bar-fast-rewind-icon').animateCss('shift-left', null);
-    stopAutoscroll();
     pageUp()
 });
 
@@ -93,7 +94,6 @@ $('#controls-bar-play-pause').click(() => {
 
 $('#controls-bar-fast-forward').click(() => {
     $('#controls-bar-fast-forward-icon').animateCss('shift-right', null);
-    stopAutoscroll();
     pageDown()
 });
 
