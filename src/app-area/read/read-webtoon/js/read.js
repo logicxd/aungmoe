@@ -64,7 +64,17 @@ function pageDown() {
     $('html, body').animate({
         scrollTop: `+=${scrollByAmount}`
     }, 200);
-    autoscrollIfEnabled()
+    if (isEndOfPage()) {
+        stopAutoscroll()
+    } else {
+        autoscrollIfEnabled()
+    }
+}
+
+function isEndOfPage() {
+    let currentScroll = window.innerHeight + window.scrollY
+    let totalHeight = document.body.offsetHeight
+    return currentScroll + 5 >= totalHeight
 }
 
 function pageUp() {
