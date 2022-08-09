@@ -11,7 +11,7 @@
     "start": "node app.js",
     "start-forever": "forever start --minUptime 5000 --spinSleepTime 5000 app.js",
     "nodemon": "nodemon app.js",
-    "watch-scss": "don't use this: node-sass -w --recursive src/ -o src/",
+    "watch-scss": "don't use this, use `npm run scss`. Archive: node-sass -w --recursive src/ -o src/",
     "scss": "node-sass --recursive src/ -o src/"
   },
   "repository": {
