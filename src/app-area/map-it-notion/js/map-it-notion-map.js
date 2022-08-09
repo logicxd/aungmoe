@@ -1,7 +1,5 @@
 
 function renderMap() {
-    const mapEl = $('#notion-map-google-map-render').get(0);
-
     //  // Display a map on the page
     //  const map = new google.maps.Map(mapEl, { mapTypeId: 'roadmap' });
 
@@ -23,10 +21,15 @@ function renderMap() {
     //  placeMarkerOnMap(buildings, map);
 
     fetchMapData(locations => {
-        // Display a map on the page
-        const map = new google.maps.Map(mapEl, { mapTypeId: 'roadmap' });
-        placeMarkerOnMap(locations, map);
+        placeMarkerOnMapWithLocations(locations)
     })
+}
+
+// Display a map on the page
+function placeMarkerOnMapWithLocations(locations) {
+    const mapEl = $('#notion-map-google-map-render').get(0);
+    const map = new google.maps.Map(mapEl, { mapTypeId: 'roadmap' });
+    placeMarkerOnMap(locations, map);
 }
 
 function placeMarkerOnMap(locations, map) {
@@ -72,3 +75,54 @@ function fetchMapData(completion) {
         }
     })
 }
+
+/* #region   Refresh button click*/
+
+$('#notion-map-render-refresh-button').click(() => {
+    $('#notion-map-render-refresh-button').addClass('disabled')
+    $('#notion-map-render-refresh-button').html('Checking Updates <i class="fas fa-circle-notch fa-spin"></i>')
+    let mapId = $('#notion-map-id').val()
+    $.ajax({
+        method: 'PUT',
+        url: `/map-it-notion/map-data/${mapId}/refresh?forceUpdate=false`,
+        success: function (res) {
+            if (res === null) { return }
+
+            // M.toast({
+            //     html: `Updated Locations`,
+            //     classes: 'green lighten-1',
+            //     displayLength: 3000,
+            //     completeCallback: () => {
+            //         location.reload()
+            //     }
+            // })
+
+            // let numOfBookmarksUpdated = parseInt(res)
+            // if (numOfBookmarksUpdated > 0) {
+            //     M.toast({
+            //         html: `${numOfBookmarksUpdated} bookmarks updated!`,
+            //         classes: 'green lighten-1',
+            //         displayLength: 4000,
+            //         completeCallback: () => {
+            //             location.reload()
+            //         }
+            //     })
+            // } else {
+            //     M.toast({
+            //         html: `No new updates 😭`,
+            //         classes: 'green lighten-1',
+            //         displayLength: 4000
+            //     })
+            //     $('#notion-map-render-refresh-button').removeClass('disabled')
+            // }
+        },
+        error: function (error) {
+            console.error(error.responseText)
+            M.toast({ html: error.responseText, classes: 'red lighten-1' })
+            $('#notion-map-render-refresh-button').removeClass('disabled')
+        }
+    }).always(() => {
+        location.reload()
+    })
+})
+/* #endregion */

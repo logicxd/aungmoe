@@ -6636,7 +6636,17 @@ header .nav-wrapper a {
   flex-direction: column;
   width: 100%; }
 
-.fill-to-screen {
+html, body {
+  height: 100%;
+  margin: 0; }
+
+.box {
   display: flex;
-  min-width: 100vw;
-  min-height: 100vh; }
+  flex-flow: column;
+  height: 100%; }
+  .box .full-row {
+    border: 1px dotted grey; }
+  .box .full-row.header {
+    flex: 0 1 40px; }
+  .box .full-row.content {
+    flex: 1 1 auto; }

@@ -55,8 +55,26 @@
     width: 100%;
 }
 
-.fill-to-screen {
+// https://stackoverflow.com/a/24979148
+html, body {
+    height: 100%;
+    margin: 0;
+}
+
+.box {
     display: flex;
-    min-width: 100vw;
-    min-height: 100vh;
+    flex-flow: column;
+    height: 100%;
+
+    .full-row {
+        border: 1px dotted grey;
+    }
+
+    .full-row.header {
+        flex: 0 1 40px;
+    }
+
+    .full-row.content {
+        flex: 1 1 auto;
+    }
 }
