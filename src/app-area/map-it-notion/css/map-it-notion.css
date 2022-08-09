@@ -6644,8 +6644,6 @@ html, body {
   display: flex;
   flex-flow: column;
   height: 100%; }
-  .box .full-row {
-    border: 1px dotted grey; }
   .box .full-row.header {
     flex: 0 1 40px; }
   .box .full-row.content {
