@@ -44,15 +44,15 @@
     "mongoose": "^5.12.3",
     "morgan": "^1.9.1",
     "node-gyp": "^5.0.7",
-    "node-sass": "^5.0.0",
     "npm": "^6.14.6",
     "passport": "^0.4.1",
     "passport-local-mongoose": "^6.1.0",
     "request": "^2.88.0",
     "request-promise": "^4.2.5",
+    "sass": "^1.54.4",
     "unfluff": "^3.2.0"
   },
   "devDependencies": {
-    "nodemon": "^1.19.3"
+    "nodemon": "^1.19.4"
   }
 }
