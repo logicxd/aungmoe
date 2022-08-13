@@ -231,7 +231,8 @@ function notionExtractLocations(data) {
 
         let mapObject = {
             latitude: properties.Latitude.number,
-            longitude: properties.Longitude.number
+            longitude: properties.Longitude.number,
+            lastEdited: Date(properties['Last Edited'].last_edited_time)
         }
 
         if (properties.Name.title != null && properties.Name.title.length > 0) {
