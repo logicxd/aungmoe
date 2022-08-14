@@ -13,3 +13,8 @@
     "YELP_API": ""
 }
 ```
+
+## Updating Packages
+
+* Check packages: `npx npm-check`
+* Update packages: `npx npm-check -u`
