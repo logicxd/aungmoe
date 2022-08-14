@@ -8,7 +8,7 @@
             "type": "node",
             "request": "launch",
             "name": "nodemon",
-            "runtimeExecutable": "nodemon",
+            "runtimeExecutable": "nodemon", // You may need to run `npm install --global nodemon`
             "program": "${workspaceFolder}/app.js",
             "restart": true,
             "console": "integratedTerminal",

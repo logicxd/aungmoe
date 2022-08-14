@@ -130,7 +130,7 @@ var md = require('markdown-it')({
         if (lang && hljs.getLanguage(lang)) {
             try {
                 return '<pre class="hljs"><code>' +
-                    hljs.highlight(lang, str, true).value +
+                    hljs.highlight(str, { language: lang, ignoreIllegals: true}).value +
                     '</code></pre>';
             } catch (__) {}
         }
@@ -172,7 +172,7 @@ var md = require('markdown-it')({
         if (lang && hljs.getLanguage(lang)) {
             try {
                 return '<pre class="hljs"><code>' +
-                    hljs.highlight(lang, str, true).value +
+                    hljs.highlight(str, { language: lang, ignoreIllegals: true}).value +
                     '</code></pre>';
             } catch (__) { }
         }

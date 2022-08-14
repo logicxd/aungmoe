@@ -23,7 +23,7 @@ $shift-pixel: 8px;
     left: 50%;
     bottom: 23px; 
     margin: 0 auto;
-    margin-left: -($fixed-play-btn-width / 2);
+    margin-left: -(calc($fixed-play-btn-width / 2));
     z-index: 1;
 
     border-radius: 18px;
