@@ -14,7 +14,7 @@ module.exports = {
             return
         }
         let mongoDB = process.env.MONGODB_BOOKMARK_CONNECTION_STRING || secrets.MONGODB_BOOKMARK_CONNECTION_STRING
-        mongoose.connect(mongoDB, { useNewUrlParser: true, useUnifiedTopology: true, useCreateIndex: true });
+        mongoose.connect(mongoDB, { useNewUrlParser: true, useUnifiedTopology: true });
     
         //Get the default connection
         var db = mongoose.connection;

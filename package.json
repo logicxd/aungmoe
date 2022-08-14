@@ -37,7 +37,7 @@
     "markdown-it-emoji": "^2.0.2",
     "markdown-it-meta": "0.0.1",
     "moment": "^2.29.4",
-    "mongoose": "^5.12.3",
+    "mongoose": "^6.5.2",
     "morgan": "^1.9.1",
     "node-gyp": "^9.1.0",
     "passport": "^0.5.3",
