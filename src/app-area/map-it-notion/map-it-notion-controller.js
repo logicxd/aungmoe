@@ -6,6 +6,7 @@ var router = express.Router();
 var path = require('path');
 var utility = require('../utility')
 var axios = require('axios')
+var moment = require('moment');
 var { body, validationResult } = require('express-validator');
 var appDir = path.dirname(require.main.filename);
 var secrets = {}
@@ -152,7 +153,7 @@ router.get('/render/:id', async function (req, res) {
 router.get('/map-data/:id', async function (req, res) {
     let id = req.params['id']
     let mapObjects = await mapDataForId(id)
-    return res.send(mapObjects)
+    return res.send(Object.values(mapObjects))
 })
 /* #endregion */
 
@@ -171,14 +172,39 @@ router.put('/map-data/:id/refresh', async function (req, res) {
 
         let notionRawResponse = await notionFetchDataFromTable(notionMap.secretKey, notionMap.databaseId)
         let locations = notionExtractLocations(notionRawResponse.data)
-        await getCoordinatesFromYelpIfNeeded(locations, forceUpdate)
-        notionMap.buildings = locations
+        let locationsSinceLastSynced = getLocationsSinceLastSynced(locations, notionMap.lastSyncedDate)
+        await getCoordinatesFromYelpIfNeeded(locationsSinceLastSynced, forceUpdate) // TODO: need to save location coordinates back to Notion
+        notionMap.buildings = updatedNotionMapBuildings(notionMap.buildings, locationsSinceLastSynced)
+        notionMap.markModified('buildings')
+        notionMap.lastSyncedDate = new Date()
         await notionMap.save()
-        return res.send(locations)
+        return res.send(Object.values(locations))
     } catch (error) {
         return res.send([])
     }
 })
+
+function getLocationsSinceLastSynced(locations, lastSyncedDate) {
+    let lastSynced = moment(lastSyncedDate)
+    if (!lastSynced.isValid()) { return locations }
+
+    let newLocations = {}
+    for (let [key, location] of Object.entries(locations)) {
+        let date = moment(location.lastEdited)
+        if (date.isValid() && date.isAfter(lastSynced)) {
+            newLocations[location.id] = location
+        }
+    }
+    return newLocations
+}
+
+function updatedNotionMapBuildings(notionMapBuildings, locationsSinceLastSynced) {
+    for (let [key, location] of Object.entries(locationsSinceLastSynced)) {
+        notionMapBuildings[key] = location
+    }
+    return notionMapBuildings
+}
+
 /* #endregion */
 
 /* #region  Helper Methods */
@@ -225,13 +251,15 @@ async function notionFetchDataFromTable(apiKey, databaseId) {
 }
 
 function notionExtractLocations(data) {
-    let mapObjects = [] 
+    let mapObjects = {}
     for (let result of data.results) { 
         let properties = result.properties
 
         let mapObject = {
+            id: result.id,
             latitude: properties.Latitude.number,
-            longitude: properties.Longitude.number
+            longitude: properties.Longitude.number,
+            lastEdited: new Date(result.last_edited_time)
         }
 
         if (properties.Name.title != null && properties.Name.title.length > 0) {
@@ -253,7 +281,7 @@ function notionExtractLocations(data) {
             }
         }
 
-        mapObjects.push(mapObject)
+        mapObjects[result.id] = mapObject
     }
     return mapObjects
 }
@@ -263,8 +291,7 @@ function notionExtractLocations(data) {
 /* #region  Yelp API */
 
 async function getCoordinatesFromYelpIfNeeded(locations, forceUpdate) {
-    for (let location of locations) {
-
+    for (let [key, location] of Object.entries(locations)) {
         // Skip: coordinates are already known
         if (!forceUpdate && location.latitude != null && location.longitude != null) {
             continue
