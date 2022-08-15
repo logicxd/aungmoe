@@ -13,7 +13,7 @@ var NotionMapSchema = new Schema({
         required: true,
         default: Date.now
     },
-    modifiedDate: {
+    lastSyncedDate: {
         type: Date,
         required: true,
         default: Date.now
@@ -25,11 +25,7 @@ var NotionMapSchema = new Schema({
     },
     databaseId: String,
     secretKey: String,
-    buildings: {
-        type: Schema.Types.Array,
-        required: true,
-        default: []
-    }
+    buildings: Object   // TODO: in future, we can use a subdocument for strongly typed fields
 });
 
 // Compile model from schema
