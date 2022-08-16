@@ -240,7 +240,7 @@ async function notionFetchDataFromTable(apiKey, databaseId) {
         headers: {
             'Authorization': `Bearer ${apiKey}`,
             'Accept': 'application/json',
-            'Notion-Version': '2022-02-22',
+            'Notion-Version': '2022-02-22', // Don't upgrade to 2022-06-28. It doesn't seem like it's a stable change
             'Content-Type': 'application/json'
         },
         data: {page_size: 100}
