@@ -36,6 +36,7 @@
     "markdown-it": "^13.0.1",
     "markdown-it-emoji": "^2.0.2",
     "markdown-it-meta": "0.0.1",
+    "minimist": "^1.2.6",
     "moment": "^2.29.4",
     "mongoose": "^6.5.2",
     "morgan": "^1.9.1",
