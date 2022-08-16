@@ -171,7 +171,7 @@ router.put('/map-data/:id/refresh', async function (req, res) {
         }
 
         let notionRawResponse = await notionFetchDataFromTable(notionMap.secretKey, notionMap.databaseId)
-        let locations = notionExtractLocations(notionRawResponse.data)
+        let locations = await notionExtractLocations(notionMap.secretKey, notionRawResponse.data)
         let locationsSinceLastSynced = getLocationsSinceLastSynced(locations, notionMap.lastSyncedDate)
         await getCoordinatesFromYelpIfNeeded(locationsSinceLastSynced, forceUpdate) // TODO: need to save location coordinates back to Notion
         notionMap.buildings = updatedNotionMapBuildings(notionMap.buildings, locationsSinceLastSynced)
@@ -240,20 +240,21 @@ async function notionFetchDataFromTable(apiKey, databaseId) {
         headers: {
             'Authorization': `Bearer ${apiKey}`,
             'Accept': 'application/json',
-            'Notion-Version': '2022-02-22',
+            'Notion-Version': '2022-06-28',
             'Content-Type': 'application/json'
         },
-        data: {page_size: 100}
+        data: {page_size: 100}  // TODO: need to handle pagination
     }
 
     let res = await axios(options)
     return res
 }
 
-function notionExtractLocations(data) {
+async function notionExtractLocations(apiKey, data) {
     let mapObjects = {}
     for (let result of data.results) { 
         let properties = result.properties
+        properties = await notionFetchLocationProperties(apiKey, result.id, properties)
 
         let mapObject = {
             id: result.id,
@@ -262,8 +263,8 @@ function notionExtractLocations(data) {
             lastEdited: new Date(result.last_edited_time)
         }
 
-        if (properties.Name.title != null && properties.Name.title.length > 0) {
-            mapObject.title = properties.Name.title[0].plain_text
+        if (properties.Name != null) {
+            mapObject.title = properties.Name.plain_text
             mapObject.info = mapObject.title
         }
 
@@ -284,6 +285,41 @@ function notionExtractLocations(data) {
         mapObjects[result.id] = mapObject
     }
     return mapObjects
+}
+
+async function notionFetchLocationProperties(apiKey, pageId, properties) {
+    let propertyKeysToFetch = ["Name", "Latitude", "Longitude", "Yelp"]
+    let propertiesWithValues = {}
+    for (let key of propertyKeysToFetch) {
+        let propertyId = properties[key].id
+        let result = await notionFetchProperty(apiKey, pageId, propertyId)
+        if (key === "Name") {
+            let results = result.data.results
+            if (results != null && results.length > 0) {
+                propertiesWithValues[key] = results[0].title
+                
+            }
+        } else {
+            propertiesWithValues[key] = result.data;
+        }
+    }
+    return propertiesWithValues
+}
+
+async function notionFetchProperty(apiKey, pageId, propertyId) {
+    const options = {
+        method: 'GET',
+        url: `https://api.notion.com/v1/pages/${pageId}/properties/${propertyId}`,
+        headers: {
+            'Authorization': `Bearer ${apiKey}`,
+            'Accept': 'application/json',
+            'Notion-Version': '2022-06-28',
+            'Content-Type': 'application/json'
+        }
+    }
+
+    let res = await axios(options)
+    return res
 }
 
 /* #endregion */
