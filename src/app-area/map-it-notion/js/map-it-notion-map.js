@@ -56,10 +56,9 @@ function placeMarkerOnMap(locations, map) {
             infoWindow.setContent(location.info);
             infoWindow.open(map, marker);
         })
-
-        // Automatically center the map fitting all markers on the screen
-        map.fitBounds(bounds);
     }
+    // Automatically center the map fitting all markers on the screen
+    map.fitBounds(bounds);
 }
 
 function fetchMapData(completion) {
