@@ -7,7 +7,7 @@ var path = require('path');
 var utility = require('../utility')
 var axios = require('axios')
 var moment = require('moment');
-var { body, validationResult } = require('express-validator');
+var { body, param, validationResult } = require('express-validator');
 var appDir = path.dirname(require.main.filename);
 var secrets = {}
 try {
@@ -111,7 +111,7 @@ router.get('/:id', async function (req, res) {
         title: `Map It Notion - ${notionMap.title}`,
         description: 'Map Notion database onto Google Maps',
         css: [`/${route}/css/map-it-notion.css`],
-        js: [global.js.googleMaps, `/${route}/js/map-it-notion.js`, `/${route}/js/map-it-notion-detail.js`, `/${route}/js/map-it-notion-map.js`],
+        js: [global.js.googleMaps, global.js.axios, `/${route}/js/map-it-notion.js`, `/${route}/js/map-it-notion-detail.js`, `/${route}/js/map-it-notion-map.js`],
         id: id
     })
 })
@@ -120,6 +120,7 @@ router.get('/:id', async function (req, res) {
 /* #region  GET /map-it-notion/render/{id} */
 router.get('/render/:id', async function (req, res) {
     let id = req.params['id']
+    if (!mongoose.Types.ObjectId.isValid(id)) { return res.send(false) }
 
     let notionMap = {}
     try {
@@ -143,7 +144,7 @@ router.get('/render/:id', async function (req, res) {
         layout: "empty-template",
         description: 'Map Notion database onto Google Maps',
         css: [`/${route}/css/map-it-notion.css`],
-        js: [global.js.googleMaps, `/${route}/js/map-it-notion.js`, `/${route}/js/map-it-notion-detail.js`, `/${route}/js/map-it-notion-map.js`],
+        js: [global.js.googleMaps, global.js.axios, `/${route}/js/map-it-notion.js`, `/${route}/js/map-it-notion-detail.js`, `/${route}/js/map-it-notion-map.js`],
         id: id
     })
 })
@@ -174,6 +175,7 @@ router.put('/map-data/:id/refresh', async function (req, res) {
         let locations = notionExtractLocations(notionRawResponse.data)
         let locationsSinceLastSynced = getLocationsSinceLastSynced(locations, notionMap.lastSyncedDate)
         await getCoordinatesFromYelpIfNeeded(locationsSinceLastSynced, forceUpdate) // TODO: need to save location coordinates back to Notion
+        await updateNotionCoordinates(notionMap.secretKey, locationsSinceLastSynced)
         notionMap.buildings = updatedNotionMapBuildings(notionMap.buildings, locationsSinceLastSynced)
         notionMap.markModified('buildings')
         notionMap.lastSyncedDate = new Date()
@@ -204,6 +206,58 @@ function updatedNotionMapBuildings(notionMapBuildings, locationsSinceLastSynced)
     }
     return notionMapBuildings
 }
+
+async function updateNotionCoordinates(apiKey, locationsSinceLastSynced) {
+    for (let [key, location] of Object.entries(locationsSinceLastSynced)) {
+        if (location.latitude != null && location.longitude != null) {
+            await notionUpdateCoordinates(apiKey, location.id, location.latitude, location.longitude)
+        }
+    }
+}
+
+/* #endregion */
+
+/* #region  PUT /map-it-notion/map-data/{id}/bounds */
+
+/// Updates everything in the database by fetching from Notion
+router.put('/map-data/:id/bounds', async function (req, res) {
+    try {
+        let id = req.params['id']
+        let mapBounds = req.body
+
+        let notionMap = await NotionMapModel.findById(new mongoose.Types.ObjectId(id))
+        if (!notionMap) {
+            throw `Notion map not found with id ${id}`
+        }
+
+        notionMap.mapBounds = mapBounds
+        notionMap.markModified('mapBounds')
+        await notionMap.save()
+        return res.send(true)
+    } catch (error) {
+        return res.send(false)
+    }
+})
+
+/* #endregion */
+
+/* #region  GET /map-it-notion/map-data/{id}/bounds */
+
+/// Updates everything in the database by fetching from Notion
+router.get('/map-data/:id/bounds', async function (req, res) {
+    try {
+        let id = req.params['id']
+
+        let notionMap = await NotionMapModel.findById(new mongoose.Types.ObjectId(id))
+        if (!notionMap) {
+            throw `Notion map not found with id ${id}`
+        }
+
+        return res.send(notionMap.mapBounds)
+    } catch (error) {
+        return res.send(null)
+    }
+})
 
 /* #endregion */
 
@@ -240,10 +294,10 @@ async function notionFetchDataFromTable(apiKey, databaseId) {
         headers: {
             'Authorization': `Bearer ${apiKey}`,
             'Accept': 'application/json',
-            'Notion-Version': '2022-02-22',
+            'Notion-Version': '2022-02-22', // Don't upgrade to 2022-06-28. It doesn't seem like it's a stable change
             'Content-Type': 'application/json'
         },
-        data: {page_size: 100}
+        data: {page_size: 100}  // TODO: handle pagination
     }
 
     let res = await axios(options)
@@ -284,6 +338,32 @@ function notionExtractLocations(data) {
         mapObjects[result.id] = mapObject
     }
     return mapObjects
+}
+
+async function notionUpdateCoordinates(apiKey, pageId, latitude, longitude) {
+    const options = {
+        method: 'PATCH',
+        url: `https://api.notion.com/v1/pages/${pageId}`,
+        headers: {
+            'Authorization': `Bearer ${apiKey}`,
+            'Accept': 'application/json',
+            'Notion-Version': '2022-02-22', // Don't upgrade to 2022-06-28. It doesn't seem like it's a stable change
+            'Content-Type': 'application/json'
+        },
+        data: {
+            "properties": {
+                "Latitude": {
+                    "number": latitude
+                },
+                "Longitude": {
+                    "number": longitude
+                }
+            }
+        }
+    }
+
+    let res = await axios(options)
+    return res
 }
 
 /* #endregion */

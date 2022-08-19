@@ -1,3 +1,5 @@
-$(document).ready(() => {
-    renderMap()
-})
+$(() => ready())
+
+async function ready() {
+    await renderMap()
+}

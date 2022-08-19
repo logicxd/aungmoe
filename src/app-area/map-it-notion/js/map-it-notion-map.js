@@ -1,40 +1,25 @@
-
-function renderMap() {
-    //  // Display a map on the page
-    //  const map = new google.maps.Map(mapEl, { mapTypeId: 'roadmap' });
-
-    //  const buildings = [
-    //      {
-    //          title: 'London Eye, London',
-    //          latitude: 51.503454,
-    //          longitude: -0.119562,
-    //          info: 'carousel'
-    //      },
-    //      {
-    //          title: 'Palace of Westminster, London',
-    //          latitude: 51.499633,
-    //          longitude: -0.124755,
-    //          info: 'palace'
-    //      }
-    //  ];
-
-    //  placeMarkerOnMap(buildings, map);
-
-    fetchMapData(locations => {
-        placeMarkerOnMapWithLocations(locations)
-    })
+async function renderMap() {
+    let locations = await fetchMapData()
+    let bounds = await getMapBounds()
+    placeMarkerOnMapWithLocations(locations, bounds)
 }
 
 // Display a map on the page
-function placeMarkerOnMapWithLocations(locations) {
+function placeMarkerOnMapWithLocations(locations, bounds) {
     const mapEl = $('#notion-map-google-map-render').get(0);
     const map = new google.maps.Map(mapEl, { mapTypeId: 'roadmap' });
-    placeMarkerOnMap(locations, map);
+    placeMarkerOnMap(locations, map, bounds);
+
+    google.maps.event.addListener(map, 'idle', function(event) {
+        console.log(`  Map Bonds: ${JSON.stringify(this.getBounds().toJSON())}`)
+        console.log(`  Zoom: ${this.getZoom()}`)
+        updateMapBounds(this.getBounds().toJSON())
+    });
 }
 
-function placeMarkerOnMap(locations, map) {
+function placeMarkerOnMap(locations, map, bounds) {
     // Loop through our array of buildings & place each one on the map  
-    const bounds = new google.maps.LatLngBounds();
+    const localBounds = new google.maps.LatLngBounds();
     for (let location of locations) {
         if (location.latitude == null || location.longitude == null) {
             continue
@@ -42,7 +27,7 @@ function placeMarkerOnMap(locations, map) {
 
         const position = { lat: location.latitude, lng: location.longitude }
         // Stretch our bounds to the newly found marker position
-        bounds.extend(position);
+        localBounds.extend(position);
 
         const marker = new google.maps.Marker({
             position: position,
@@ -56,24 +41,30 @@ function placeMarkerOnMap(locations, map) {
             infoWindow.setContent(location.info);
             infoWindow.open(map, marker);
         })
+    }
 
-        // Automatically center the map fitting all markers on the screen
-        map.fitBounds(bounds);
+    // Automatically center the map fitting all markers on the screen
+    if (bounds != null) {
+        map.fitBounds(bounds, 0)
+    } else {
+        map.fitBounds(localBounds)
     }
 }
 
-function fetchMapData(completion) {
-    let mapId = $('#notion-map-id').val();
-    $.ajax({
+async function fetchMapData(completion) {
+    let mapId = $('#notion-map-id').val()
+    const options = {
         method: 'GET',
-        url: `/map-it-notion/map-data/${mapId}`,
-        success: function (res) {
-            completion(res)
-        },
-        error: function (error) {
-            console.error(error.responseText)
-        }
-    })
+        url: `/map-it-notion/map-data/${mapId}`
+    }
+
+    let res = await axios(options)
+    if (res.status == 200) {
+        return res.data
+    } else { 
+        console.error(`Error fetching map data ${res.statusText}`)
+        return []
+    }
 }
 
 /* #region   Refresh button click*/
@@ -125,4 +116,50 @@ $('#notion-map-render-refresh-button').click(() => {
         location.reload()
     })
 })
+/* #endregion */
+
+/* #region   Update Map Bounds*/
+
+async function updateMapBounds(bounds) { 
+    let mapId = $('#notion-map-id').val()
+    const options = {
+        method: 'PUT',
+        url: `/map-it-notion/map-data/${mapId}/bounds`,
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        },
+        data: bounds
+    }
+
+    let res = await axios(options)
+    if (res.status == 200) {
+        console.log("Updated map bounds")
+    } else { 
+        console.error(`Error updating map bounds ${res.statusText}`)
+    }
+}
+/* #endregion */
+
+/* #region   Get Map Bounds*/
+
+async function getMapBounds(bounds) { 
+    let mapId = $('#notion-map-id').val()
+    const options = {
+        method: 'GET',
+        url: `/map-it-notion/map-data/${mapId}/bounds`,
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        }
+    }
+
+    let res = await axios(options)
+    if (res.status == 200) {
+        return res.data
+    } else { 
+        console.error(`Error fetching map bounds ${res.statusText}`)
+        return null
+    }
+}
 /* #endregion */
