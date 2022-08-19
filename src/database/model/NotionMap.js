@@ -25,7 +25,8 @@ var NotionMapSchema = new Schema({
     },
     databaseId: String,
     secretKey: String,
-    buildings: Object   // TODO: in future, we can use a subdocument for strongly typed fields
+    buildings: Object,   // TODO: in future, we can use a subdocument for strongly typed fields
+    mapBounds: Object
 });
 
 // Compile model from schema

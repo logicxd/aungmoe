@@ -107,7 +107,8 @@ global.css = {
 }
 global.js = {
     noSleep: 'js/NoSleep.min.js',
-    googleMaps: 'http://maps.google.com/maps/api/js?key=AIzaSyB8JnVCl9titkDmd_l2PM7SewOsw0qXgt8'    // Key has to be public
+    googleMaps: 'http://maps.google.com/maps/api/js?key=AIzaSyB8JnVCl9titkDmd_l2PM7SewOsw0qXgt8',    // Key has to be public
+    axios: 'https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js'
 }
 global.configs = {
     domainUrl: 'http://www.aungmoe.com',
