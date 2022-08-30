@@ -384,8 +384,7 @@ async function getCoordinatesFromYelpIfNeeded(locations, forceUpdate) {
 
         let yelpRawResponse = await yelpFetchBusinessFromId(location.yelpId)
         let yelpObject = yelpExtractDataForMap(yelpRawResponse.data)
-        location.latitude = yelpObject.latitude
-        location.longitude = yelpObject.longitude
+        yelpMapYelpDataIntoLocation(yelpObject, location)
     }
 }
 
@@ -405,10 +404,23 @@ async function yelpFetchBusinessFromId(businessId) {
 
 function yelpExtractDataForMap(data) {
     let yelpObject = {
+        name: data.name,
+        city: data.location.city,
         latitude: data.coordinates.latitude,
-        longitude: data.coordinates.longitude
+        longitude: data.coordinates.longitude,
+        categories: data.categories.map(x => x.title),
+        price: data.price ?? null
     }
     return yelpObject
+}
+
+function yelpMapYelpDataIntoLocation(yelpObject, location) {
+    location.name = yelpObject.name
+    location.city = yelpObject.city
+    location.latitude = yelpObject.latitude
+    location.longitude = yelpObject.longitude
+    location.categories = yelpObject.categories
+    location.price = yelpObject.price
 }
 
 /* #endregion */
