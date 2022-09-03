@@ -18,3 +18,7 @@
 
 * Check packages: `npx npm-check`
 * Update packages: `npx npm-check -u`
+
+## Deploy Instructions
+
+* Follow https://fly.io/docs/hands-on/install-flyctl/ 
