@@ -8,14 +8,7 @@ var utility = require('../utility')
 var axios = require('axios')
 var moment = require('moment');
 var { body, param, validationResult } = require('express-validator');
-var appDir = path.dirname(require.main.filename);
-var secrets = {}
-try {
-    secrets = require(path.join(appDir, 'config/secrets.json'))    
-} catch (error) {
-    // Do nothing. Server should handle loading of the configs
-}
-let yelpAPI = process.env.YELP_API || secrets.YELP_API
+let yelpAPI = process.env.YELP_API
 
 // Text parser
 var UserModel = require('../../database/model/User')

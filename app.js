@@ -1,4 +1,5 @@
 "use strict";
+require('dotenv').config()
 const PORT = process.env.PORT || 8081;
 
 /* #region  Imports */
@@ -10,14 +11,7 @@ var logger = require('morgan');
 var passport = require('passport')
 var cookieParser = require('cookie-parser')
 var cookieSession = require('cookie-session')
-var appDir = path.dirname(require.main.filename);
 var database = require('./src/database/database')
-var secrets = {}
-try {
-    secrets = require(path.join(appDir, 'config/secrets.json'))    
-} catch (error) {
-    // Do nothing. Server should handle loading of the configs
-}
 /* #endregion */
 
 /* #region View Engine Setup to handlebars and set up view paths */
@@ -41,7 +35,7 @@ app.use(express.urlencoded({ extended: true }))
 app.use(cookieParser())
 app.use(cookieSession({
     name: 'aungmoe-session',
-    keys: [process.env.SESSION_SECRET || secrets.SESSION_SECRET],
+    keys: [process.env.SESSION_SECRET],
     sameSite: "strict",
     maxAge:  30 * 24 * 60 * 60 * 1000   // 30 days
 }))
