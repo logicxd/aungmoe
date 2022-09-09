@@ -5,7 +5,7 @@
   "main": "app.js",
   "engines": {
     "npm": ">=8.15.x",
-    "node": ">=v18.7.x"
+    "node": ">=v17.0.0 <18.0.0"
   },
   "scripts": {
     "start": "node app.js",
@@ -28,6 +28,7 @@
     "cheerio": "^1.0.0-rc.3",
     "cookie-parser": "^1.4.6",
     "cookie-session": "^2.0.0",
+    "dotenv": "^16.0.2",
     "express": "^4.18.1",
     "express-handlebars": "^6.0.6",
     "express-validator": "^6.14.2",
@@ -36,6 +37,7 @@
     "markdown-it": "^13.0.1",
     "markdown-it-emoji": "^2.0.2",
     "markdown-it-meta": "0.0.1",
+    "minimist": "^1.2.6",
     "moment": "^2.29.4",
     "mongoose": "^6.5.2",
     "morgan": "^1.9.1",
