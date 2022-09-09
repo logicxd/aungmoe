@@ -168,7 +168,7 @@ router.put('/map-data/:id/refresh', async function (req, res) {
         let locations = notionExtractLocations(notionRawResponse.data)
         let locationsSinceLastSynced = getLocationsSinceLastSynced(locations, notionMap.lastSyncedDate)
         await getCoordinatesFromYelpIfNeeded(locationsSinceLastSynced, forceUpdate) // TODO: need to save location coordinates back to Notion
-        await updateNotionCoordinates(notionMap.secretKey, locationsSinceLastSynced)
+        await updateNotionWithLatestInfo(notionMap.secretKey, locationsSinceLastSynced)
         notionMap.buildings = updatedNotionMapBuildings(notionMap.buildings, locationsSinceLastSynced)
         notionMap.markModified('buildings')
         notionMap.lastSyncedDate = new Date()
@@ -200,10 +200,11 @@ function updatedNotionMapBuildings(notionMapBuildings, locationsSinceLastSynced)
     return notionMapBuildings
 }
 
-async function updateNotionCoordinates(apiKey, locationsSinceLastSynced) {
+async function updateNotionWithLatestInfo(apiKey, locationsSinceLastSynced) {
     for (let [key, location] of Object.entries(locationsSinceLastSynced)) {
         if (location.latitude != null && location.longitude != null) {
-            await notionUpdateCoordinates(apiKey, location.id, location.latitude, location.longitude)
+            await notionUpdateWithLocation(apiKey, location) 
+            // await notionUpdateCoordinates(apiKey, location.id, location.latitude, location.longitude)
         }
     }
 }
@@ -352,6 +353,50 @@ async function notionUpdateCoordinates(apiKey, pageId, latitude, longitude) {
                     "number": longitude
                 }
             }
+        }
+    }
+
+    let res = await axios(options)
+    return res
+}
+
+async function notionUpdateWithLocation(apiKey, location) {
+    let properties = {}
+    
+    if (location.latitude != null) {
+        properties.Latitude = { "number": location.latitude }
+    }
+    if (location.longitude != null) {
+        properties.Longitude = { "number": location.longitude }
+    }
+
+    if (location.name != null) {
+        properties.Name = {
+            "title": [{
+                "text": {
+                    "content": location.name
+                }
+            }]
+        }
+    }
+
+    if (location.city != null) {
+        properties.City.select = {
+            "name": location.city
+        }
+    }
+
+    const options = {
+        method: 'PATCH',
+        url: `https://api.notion.com/v1/pages/${location.id}`,
+        headers: {
+            'Authorization': `Bearer ${apiKey}`,
+            'Accept': 'application/json',
+            'Notion-Version': '2022-02-22', // Don't upgrade to 2022-06-28. It doesn't seem like it's a stable change
+            'Content-Type': 'application/json'
+        },
+        data: {
+            "properties": properties
         }
     }
 
