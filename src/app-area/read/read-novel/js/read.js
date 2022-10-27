@@ -144,6 +144,7 @@ function updateStateOfValues() {
     var autoscrollTTS = $('#autoscroll-text-to-speech').is(':checked');
     $('#words-per-minute').prop('disabled', !autoscrollRead);
     $('#text-to-speech-rate').prop('disabled', !autoscrollTTS);
+    $('#text-to-speech-voice-select').prop('disabled', !autoscrollTTS);
     $('#autoload-next').prop('disabled', !autoscrollRead && !autoscrollTTS);
 }
 
@@ -273,7 +274,7 @@ function loadTextToSpeechLanguage() {
 
 function getEnglishSpeechSynthesisVoices() {
     var availableVoices = window.speechSynthesis.getVoices();
-    var englishVoices = availableVoices.filter(e => e.lang === 'en-US')
+    var englishVoices = availableVoices.filter(e => e.lang.includes('en'))
     return englishVoices
 }
 
