@@ -1,3 +1,4 @@
+/* #region  Initialize */
 var global = {
     currentParagraph: 0,
     isAutoScrolling: false,
@@ -17,7 +18,7 @@ $(document).ready(function () {
     $('.tooltipped').tooltip()
     enableKeydownEvents()
 });
- 
+
 function initializeValuesOnLoad() {
     global.currentParagraph = 0;
     global.isAutoScrolling = false;
@@ -26,52 +27,28 @@ function initializeValuesOnLoad() {
     autoscrollIfEnabled();
     updateStateOfControlsBarPlayPauseButton();
 }
+/* #endregion */
 
-/// Button events
+/* #region  Setup Page */
 
 $('#submit').click(() => {
     var settings = saveSettings();
     changePage(settings.url);
 });
 
-$('#apply').click(() => {
-    var settings = saveSettings();
-    if (settings.urlChanged) {
-        changePage(settings.url);
-    }
-    autoscrollIfEnabled();
-});
+/* #endregion */
 
-$('#controls-bar-fast-rewind').click(() => {
-    $('#controls-bar-fast-rewind-icon').animateCss('shift-left', null);
-    stopAutoscroll();
-    changeCurrentParagraph(global.currentParagraph-1);
-});
-
-$('#controls-bar-play-pause').click(() => {
-    if (global.isAutoScrolling) {
-        stopAutoscroll();
-    } else {
-        global.isAutoScrolling = true;
-        autoscrollIfEnabled();
-    }
-    updateStateOfControlsBarPlayPauseButton();
-});
-
-$('#controls-bar-fast-forward').click(() => {
-    $('#controls-bar-fast-forward-icon').animateCss('shift-right', null);
-    stopAutoscroll();
-    changeCurrentParagraph(global.currentParagraph+1);
-});
-
-$('.tap-to-scroll').click(() => {
-    stopAutoscroll();
-    pageDown();
-});
+/* #region  Settings Modal */
 
 $('#floating-settings-button').click(() => {
     stopAutoscroll();
 });
+
+function openModal() {
+    updateDefaultValues();
+    var element = document.getElementById("settings-modal");
+    M.Modal.getInstance(element).open();
+}
 
 $('#autoscroll-read').click(() => {
     $('#autoscroll-text-to-speech').prop('checked', false);
@@ -83,18 +60,17 @@ $('#autoscroll-text-to-speech').click(() => {
     updateStateOfValues();
 });
 
-function nextPageClicked(url) {
-    localStorage.setItem('currentPageLink', url);
-    changePage(url);
-}
+$('#apply').click(() => {
+    var settings = saveSettings();
+    if (settings.urlChanged) {
+        changePage(settings.url);
+    }
+    autoscrollIfEnabled();
+});
 
-function openModal() {
-    updateDefaultValues();
-    var element = document.getElementById("settings-modal");
-    M.Modal.getInstance(element).open();
-}
+/* #endregion */
 
-/// Helper
+/* #region  Settings Persist */
 
 function saveSettings() {
     var currentUrl = localStorage.getItem('currentPageLink');
@@ -141,6 +117,37 @@ function updateStateOfValues() {
     $('#autoload-next').prop('disabled', !autoscrollRead && !autoscrollTTS);
 }
 
+/* #endregion */
+
+/* #region  Auto Scroll Button Events */
+
+$('#controls-bar-fast-rewind').click(() => {
+    $('#controls-bar-fast-rewind-icon').animateCss('shift-left', null);
+    stopAutoscroll();
+    changeCurrentParagraph(global.currentParagraph - 1);
+});
+
+$('#controls-bar-play-pause').click(() => {
+    if (global.isAutoScrolling) {
+        stopAutoscroll();
+    } else {
+        global.isAutoScrolling = true;
+        autoscrollIfEnabled();
+    }
+    updateStateOfControlsBarPlayPauseButton();
+});
+
+$('#controls-bar-fast-forward').click(() => {
+    $('#controls-bar-fast-forward-icon').animateCss('shift-right', null);
+    stopAutoscroll();
+    changeCurrentParagraph(global.currentParagraph + 1);
+});
+
+$('.tap-to-scroll').click(() => {
+    stopAutoscroll();
+    pageDown();
+});
+
 function updateStateOfControlsBarPlayPauseButton() {
     const icon = $('#controls-bar-play-pause-icon');
     if (global.isAutoScrolling && icon.text() !== 'pause') {
@@ -148,7 +155,7 @@ function updateStateOfControlsBarPlayPauseButton() {
             icon.text('pause');
             icon.animateCss('rotateIn', null);
         });
-    } else if (!global.isAutoScrolling && icon.text() !== 'play_arrow'){
+    } else if (!global.isAutoScrolling && icon.text() !== 'play_arrow') {
         icon.animateCss('rotateOut', () => {
             icon.text('play_arrow');
             icon.animateCss('rotateIn', null);
@@ -156,21 +163,9 @@ function updateStateOfControlsBarPlayPauseButton() {
     }
 }
 
-function pageDown() {
-    var scrollByAmount = global.windowHeight * 0.90;
-    $('html, body').animate({
-        scrollTop: `+=${scrollByAmount}`
-    }, 400);
-}
+/* #endregion */
 
-function changePage(url) {
-    let href = `?url=${url}`
-    const bookmarkId = $('#read-bookmark-id').val()
-    if (bookmarkId) {
-        href += `&bookmark=${bookmarkId}`
-    }
-    window.location.href = href;
-}
+/* #region  Auto Scroll */
 
 function autoscrollIfEnabled() {
     const read = localStorage.getItem('autoscroll-read') === 'true';
@@ -198,6 +193,7 @@ function stopAutoscroll() {
     global.noSleep.disable();
 }
 
+/* #region  Auto Scroll Read */
 function autoscrollRead() {
     var element = document.getElementById(`text-paragraph-${global.currentParagraph}`);
     if (element) {
@@ -210,24 +206,27 @@ function autoscrollRead() {
             clearTimeout(global.timer);
             global.timer = setTimeout(() => {
                 if (global.isAutoScrolling) {
-                    changeCurrentParagraph(global.currentParagraph+1);
+                    changeCurrentParagraph(global.currentParagraph + 1);
                 }
             }, timeout);
         }
     }
 }
+/* #endregion */
+
+/* #region Text To Speech */
 
 function autoscrollTTS() {
     if (!global.ttsLanguage) {
         loadAndPlayTextToSpeech();
     } else {
-        textToSpeech(); 
+        textToSpeech();
     }
 }
 
 function loadAndPlayTextToSpeech() {
     // list of languages is probably not loaded, wait for it
-    if(window.speechSynthesis.getVoices().length == 0) {
+    if (window.speechSynthesis.getVoices().length == 0) {
         window.speechSynthesis.onvoiceschanged = loadTextToSpeechLanguage();
     }
     else {
@@ -238,20 +237,20 @@ function loadAndPlayTextToSpeech() {
 
 function loadTextToSpeechLanguage() {
     // get all voices that browser offers
-	var available_voices = window.speechSynthesis.getVoices();
+    var available_voices = window.speechSynthesis.getVoices();
 
-	// this will hold an english voice
-	var english_voice = '';
+    // this will hold an english voice
+    var english_voice = '';
 
-	// find voice by language locale "en-US"
-	// if not then select the first voice
-	for(var i=0; i<available_voices.length; i++) {
-		if(available_voices[i].lang === 'en-US') {
-			english_voice = available_voices[i];
-			break;
-		}
-	}
-	if(english_voice === '')
+    // find voice by language locale "en-US"
+    // if not then select the first voice
+    for (var i = 0; i < available_voices.length; i++) {
+        if (available_voices[i].lang === 'en-US') {
+            english_voice = available_voices[i];
+            break;
+        }
+    }
+    if (english_voice === '')
         english_voice = available_voices[0];
     global.ttsLanguage = english_voice;
     textToSpeech();
@@ -271,10 +270,10 @@ function textToSpeech() {
             utter.voice = global.ttsLanguage;
 
             // event after text has been spoken
-            utter.onend = function() {
+            utter.onend = function () {
                 global.utter = null;
                 if (global.isAutoScrolling) {
-                    changeCurrentParagraph(global.currentParagraph+1);
+                    changeCurrentParagraph(global.currentParagraph + 1);
                 }
             }
 
@@ -294,10 +293,30 @@ function getTTSRateForSpeechSynthesisUtterance() {
     return speechSynthesisRate;
 }
 
+/* #endregion */
+
+/* #region  Auto Scroll Events */
+
+function pageDown() {
+    var scrollByAmount = global.windowHeight * 0.90;
+    $('html, body').animate({
+        scrollTop: `+=${scrollByAmount}`
+    }, 400);
+}
+
+function changePage(url) {
+    let href = `?url=${url}`
+    const bookmarkId = $('#read-bookmark-id').val()
+    if (bookmarkId) {
+        href += `&bookmark=${bookmarkId}`
+    }
+    window.location.href = href;
+}
+
 function scrollToElement(element) {
     $(element).addClass('active-paragraph');
     $('html, body').animate({
-        scrollTop: $(element).offset().top - global.windowHeight/2.5
+        scrollTop: $(element).offset().top - global.windowHeight / 2.5
     }, 400);
 }
 
@@ -319,9 +338,20 @@ function changeCurrentParagraph(newParagraph) {
     }
 }
 
-function enableKeydownEvents() { 
-    $(document).bind("keydown", function(e) {
-        var key = e.originalEvent.code 
+/* #endregion */
+
+/* #endregion */
+
+/* #region  Page Navigation */
+
+function nextPageClicked(url) {
+    localStorage.setItem('currentPageLink', url);
+    changePage(url);
+}
+
+function enableKeydownEvents() {
+    $(document).bind("keydown", function (e) {
+        var key = e.originalEvent.code
         switch (key) {
             case 'ArrowRight':
                 const nextPageUrl = $('#next-page-url').val()
@@ -338,3 +368,5 @@ function enableKeydownEvents() {
         }
     })
 }
+
+/* #endregion */
