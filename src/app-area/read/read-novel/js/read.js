@@ -45,9 +45,37 @@ $('#floating-settings-button').click(() => {
 });
 
 function openModal() {
-    updateDefaultValues();
-    var element = document.getElementById("settings-modal");
-    M.Modal.getInstance(element).open();
+    refreshTTSVoiceOptions()
+    updateDefaultValues()
+    var element = document.getElementById("settings-modal")
+    M.Modal.getInstance(element).open()
+}
+
+function refreshTTSVoiceOptions() {
+    let englishVoices = getEnglishSpeechSynthesisVoices()
+    let optionsMap = {}
+    for (let voice of englishVoices) {
+        if (voice.name != null && voice.voiceURI != null) {
+            optionsMap[voice.name] = voice.voiceURI
+        }
+    }
+    var selection = $("#text-to-speech-voice-select")
+    selection.empty() // Remove old options 
+    for (let key in optionsMap) {
+        let value = optionsMap[key]
+        let newOption = $("<option></option>")
+            .attr("value", value)
+            .text(key)
+        selection.append(newOption)
+    }
+
+    let previouslyChosenVoiceURI = localStorage.getItem('selectedVoice')
+    let matchedUserChosenVoice = englishVoices.filter(e => e.voiceURI === previouslyChosenVoiceURI)
+    if (previouslyChosenVoiceURI != null && matchedUserChosenVoice.length > 0) {
+        selection.val(previouslyChosenVoiceURI)
+    }
+
+    $('select').formSelect();
 }
 
 $('#autoscroll-read').click(() => {
@@ -80,7 +108,8 @@ function saveSettings() {
         autoscrollRead: $('#autoscroll-read').is(':checked'),
         wordsPerMinute: $('#words-per-minute').val(),
         autoscrollTTS: $('#autoscroll-text-to-speech').is(':checked'),
-        autoscrollTTSRate: $('#text-to-speech-rate').val()
+        autoscrollTTSRate: $('#text-to-speech-rate').val(),
+        selectedVoice: $("#text-to-speech-voice-select").val()
     };
     settings.urlChanged = currentUrl !== settings.url;
     settings.wordsPerMinute = settings.wordsPerMinute <= 0 ? 270 : settings.wordsPerMinute;
@@ -91,6 +120,7 @@ function saveSettings() {
     localStorage.setItem('wordsPerMinute', settings.wordsPerMinute);
     localStorage.setItem('autoscrollTTS', settings.autoscrollTTS);
     localStorage.setItem('autoscrollTTSRate', settings.autoscrollTTSRate);
+    localStorage.setItem('selectedVoice', settings.selectedVoice)
 
     global.isAutoScrolling = settings.autoscrollRead || settings.autoscrollTTS;
 
@@ -104,7 +134,7 @@ function updateDefaultValues() {
     $('#words-per-minute').val(localStorage.getItem('wordsPerMinute'));
     $('#autoscroll-text-to-speech').prop('checked', localStorage.getItem('autoscrollTTS') === 'true');
     if (localStorage.getItem('autoscrollTTSRate')) {
-        $('#text-to-speech-rate').val(localStorage.getItem('autoscrollTTSRate'));
+        $('#text-to-speech-rate').val(localStorage.getItem('autoscrollTTSRate'))
     }
     updateStateOfValues();
 }
@@ -214,17 +244,9 @@ function autoscrollRead() {
 }
 /* #endregion */
 
-/* #region Text To Speech */
+/* #region  Text To Speech */
 
 function autoscrollTTS() {
-    if (!global.ttsLanguage) {
-        loadAndPlayTextToSpeech();
-    } else {
-        textToSpeech();
-    }
-}
-
-function loadAndPlayTextToSpeech() {
     // list of languages is probably not loaded, wait for it
     if (window.speechSynthesis.getVoices().length == 0) {
         window.speechSynthesis.onvoiceschanged = loadTextToSpeechLanguage();
@@ -236,24 +258,27 @@ function loadAndPlayTextToSpeech() {
 }
 
 function loadTextToSpeechLanguage() {
-    // get all voices that browser offers
-    var available_voices = window.speechSynthesis.getVoices();
+    let userChosenVoiceURI = getUserSelectedVoiceURI()
+    let englishVoices = getEnglishSpeechSynthesisVoices()
 
-    // this will hold an english voice
-    var english_voice = '';
-
-    // find voice by language locale "en-US"
-    // if not then select the first voice
-    for (var i = 0; i < available_voices.length; i++) {
-        if (available_voices[i].lang === 'en-US') {
-            english_voice = available_voices[i];
-            break;
-        }
+    if (englishVoices.length === 0) {
+        return
     }
-    if (english_voice === '')
-        english_voice = available_voices[0];
-    global.ttsLanguage = english_voice;
-    textToSpeech();
+
+    let matchedUserChosenVoice = englishVoices.filter(e => e.voiceURI === userChosenVoiceURI)
+    let selectedVoice = matchedUserChosenVoice.length == 0 ? englishVoices[0] : matchedUserChosenVoice[0]
+    global.ttsLanguage = selectedVoice
+    textToSpeech()
+}
+
+function getEnglishSpeechSynthesisVoices() {
+    var availableVoices = window.speechSynthesis.getVoices();
+    var englishVoices = availableVoices.filter(e => e.lang === 'en-US')
+    return englishVoices
+}
+
+function getUserSelectedVoiceURI() {
+    return localStorage.getItem('selectedVoice')
 }
 
 function textToSpeech() {
