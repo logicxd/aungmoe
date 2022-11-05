@@ -1,3 +1,4 @@
+/* #region  Initialize */
 var global = {
     currentParagraph: 0,
     isAutoScrolling: false,
@@ -17,7 +18,7 @@ $(document).ready(function () {
     $('.tooltipped').tooltip()
     enableKeydownEvents()
 });
- 
+
 function initializeValuesOnLoad() {
     global.currentParagraph = 0;
     global.isAutoScrolling = false;
@@ -26,12 +27,65 @@ function initializeValuesOnLoad() {
     autoscrollIfEnabled();
     updateStateOfControlsBarPlayPauseButton();
 }
+/* #endregion */
 
-/// Button events
+/* #region  Setup Page */
 
 $('#submit').click(() => {
     var settings = saveSettings();
     changePage(settings.url);
+});
+
+/* #endregion */
+
+/* #region  Settings Modal */
+
+$('#floating-settings-button').click(() => {
+    stopAutoscroll();
+});
+
+function openModal() {
+    refreshTTSVoiceOptions()
+    updateDefaultValues()
+    var element = document.getElementById("settings-modal")
+    M.Modal.getInstance(element).open()
+}
+
+function refreshTTSVoiceOptions() {
+    let englishVoices = getEnglishSpeechSynthesisVoices()
+    let optionsMap = {}
+    for (let voice of englishVoices) {
+        if (voice.name != null && voice.voiceURI != null) {
+            optionsMap[voice.name] = voice.voiceURI
+        }
+    }
+    var selection = $("#text-to-speech-voice-select")
+    selection.empty() // Remove old options 
+    for (let key in optionsMap) {
+        let value = optionsMap[key]
+        let newOption = $("<option></option>")
+            .attr("value", value)
+            .text(key)
+        selection.append(newOption)
+    }
+
+    let previouslyChosenVoiceURI = localStorage.getItem('selectedVoice')
+    let matchedUserChosenVoice = englishVoices.filter(e => e.voiceURI === previouslyChosenVoiceURI)
+    if (previouslyChosenVoiceURI != null && matchedUserChosenVoice.length > 0) {
+        selection.val(previouslyChosenVoiceURI)
+    }
+
+    $('select').formSelect();
+}
+
+$('#autoscroll-read').click(() => {
+    $('#autoscroll-text-to-speech').prop('checked', false);
+    updateStateOfValues();
+});
+
+$('#autoscroll-text-to-speech').click(() => {
+    $('#autoscroll-read').prop('checked', false);
+    updateStateOfValues();
 });
 
 $('#apply').click(() => {
@@ -42,10 +96,66 @@ $('#apply').click(() => {
     autoscrollIfEnabled();
 });
 
+/* #endregion */
+
+/* #region  Settings Persist */
+
+function saveSettings() {
+    var currentUrl = localStorage.getItem('currentPageLink');
+    var settings = {
+        url: $('#url').val(),
+        autoloadNext: $('#autoload-next').is(':checked'),
+        autoscrollRead: $('#autoscroll-read').is(':checked'),
+        wordsPerMinute: $('#words-per-minute').val(),
+        autoscrollTTS: $('#autoscroll-text-to-speech').is(':checked'),
+        autoscrollTTSRate: $('#text-to-speech-rate').val(),
+        selectedVoice: $("#text-to-speech-voice-select").val()
+    };
+    settings.urlChanged = currentUrl !== settings.url;
+    settings.wordsPerMinute = settings.wordsPerMinute <= 0 ? 270 : settings.wordsPerMinute;
+
+    localStorage.setItem('currentPageLink', settings.url);
+    localStorage.setItem('autoloadNext', settings.autoloadNext);
+    localStorage.setItem('autoscroll-read', settings.autoscrollRead);
+    localStorage.setItem('wordsPerMinute', settings.wordsPerMinute);
+    localStorage.setItem('autoscrollTTS', settings.autoscrollTTS);
+    localStorage.setItem('autoscrollTTSRate', settings.autoscrollTTSRate);
+    localStorage.setItem('selectedVoice', settings.selectedVoice)
+
+    global.isAutoScrolling = settings.autoscrollRead || settings.autoscrollTTS;
+
+    return settings;
+}
+
+function updateDefaultValues() {
+    var autoloadNext = localStorage.getItem('autoloadNext') === null ? true : localStorage.getItem('autoloadNext') === 'true';
+    $('#autoload-next').prop('checked', autoloadNext);
+    $('#autoscroll-read').prop('checked', localStorage.getItem('autoscroll-read') === 'true');
+    $('#words-per-minute').val(localStorage.getItem('wordsPerMinute'));
+    $('#autoscroll-text-to-speech').prop('checked', localStorage.getItem('autoscrollTTS') === 'true');
+    if (localStorage.getItem('autoscrollTTSRate')) {
+        $('#text-to-speech-rate').val(localStorage.getItem('autoscrollTTSRate'))
+    }
+    updateStateOfValues();
+}
+
+function updateStateOfValues() {
+    var autoscrollRead = $('#autoscroll-read').is(':checked');
+    var autoscrollTTS = $('#autoscroll-text-to-speech').is(':checked');
+    $('#words-per-minute').prop('disabled', !autoscrollRead);
+    $('#text-to-speech-rate').prop('disabled', !autoscrollTTS);
+    $('#text-to-speech-voice-select').prop('disabled', !autoscrollTTS);
+    $('#autoload-next').prop('disabled', !autoscrollRead && !autoscrollTTS);
+}
+
+/* #endregion */
+
+/* #region  Auto Scroll Button Events */
+
 $('#controls-bar-fast-rewind').click(() => {
     $('#controls-bar-fast-rewind-icon').animateCss('shift-left', null);
     stopAutoscroll();
-    changeCurrentParagraph(global.currentParagraph-1);
+    changeCurrentParagraph(global.currentParagraph - 1);
 });
 
 $('#controls-bar-play-pause').click(() => {
@@ -61,85 +171,13 @@ $('#controls-bar-play-pause').click(() => {
 $('#controls-bar-fast-forward').click(() => {
     $('#controls-bar-fast-forward-icon').animateCss('shift-right', null);
     stopAutoscroll();
-    changeCurrentParagraph(global.currentParagraph+1);
+    changeCurrentParagraph(global.currentParagraph + 1);
 });
 
 $('.tap-to-scroll').click(() => {
     stopAutoscroll();
     pageDown();
 });
-
-$('#floating-settings-button').click(() => {
-    stopAutoscroll();
-});
-
-$('#autoscroll-read').click(() => {
-    $('#autoscroll-text-to-speech').prop('checked', false);
-    updateStateOfValues();
-});
-
-$('#autoscroll-text-to-speech').click(() => {
-    $('#autoscroll-read').prop('checked', false);
-    updateStateOfValues();
-});
-
-function nextPageClicked(url) {
-    localStorage.setItem('currentPageLink', url);
-    changePage(url);
-}
-
-function openModal() {
-    updateDefaultValues();
-    var element = document.getElementById("settings-modal");
-    M.Modal.getInstance(element).open();
-}
-
-/// Helper
-
-function saveSettings() {
-    var currentUrl = localStorage.getItem('currentPageLink');
-    var settings = {
-        url: $('#url').val(),
-        autoloadNext: $('#autoload-next').is(':checked'),
-        autoscrollRead: $('#autoscroll-read').is(':checked'),
-        wordsPerMinute: $('#words-per-minute').val(),
-        autoscrollTTS: $('#autoscroll-text-to-speech').is(':checked'),
-        autoscrollTTSRate: $('#text-to-speech-rate').val()
-    };
-    settings.urlChanged = currentUrl !== settings.url;
-    settings.wordsPerMinute = settings.wordsPerMinute <= 0 ? 270 : settings.wordsPerMinute;
-
-    localStorage.setItem('currentPageLink', settings.url);
-    localStorage.setItem('autoloadNext', settings.autoloadNext);
-    localStorage.setItem('autoscroll-read', settings.autoscrollRead);
-    localStorage.setItem('wordsPerMinute', settings.wordsPerMinute);
-    localStorage.setItem('autoscrollTTS', settings.autoscrollTTS);
-    localStorage.setItem('autoscrollTTSRate', settings.autoscrollTTSRate);
-
-    global.isAutoScrolling = settings.autoscrollRead || settings.autoscrollTTS;
-
-    return settings;
-}
-
-function updateDefaultValues() {
-    var autoloadNext = localStorage.getItem('autoloadNext') === null ? true : localStorage.getItem('autoloadNext') === 'true';
-    $('#autoload-next').prop('checked', autoloadNext);
-    $('#autoscroll-read').prop('checked', localStorage.getItem('autoscroll-read') === 'true');
-    $('#words-per-minute').val(localStorage.getItem('wordsPerMinute'));
-    $('#autoscroll-text-to-speech').prop('checked', localStorage.getItem('autoscrollTTS') === 'true');
-    if (localStorage.getItem('autoscrollTTSRate')) {
-        $('#text-to-speech-rate').val(localStorage.getItem('autoscrollTTSRate'));
-    }
-    updateStateOfValues();
-}
-
-function updateStateOfValues() {
-    var autoscrollRead = $('#autoscroll-read').is(':checked');
-    var autoscrollTTS = $('#autoscroll-text-to-speech').is(':checked');
-    $('#words-per-minute').prop('disabled', !autoscrollRead);
-    $('#text-to-speech-rate').prop('disabled', !autoscrollTTS);
-    $('#autoload-next').prop('disabled', !autoscrollRead && !autoscrollTTS);
-}
 
 function updateStateOfControlsBarPlayPauseButton() {
     const icon = $('#controls-bar-play-pause-icon');
@@ -148,7 +186,7 @@ function updateStateOfControlsBarPlayPauseButton() {
             icon.text('pause');
             icon.animateCss('rotateIn', null);
         });
-    } else if (!global.isAutoScrolling && icon.text() !== 'play_arrow'){
+    } else if (!global.isAutoScrolling && icon.text() !== 'play_arrow') {
         icon.animateCss('rotateOut', () => {
             icon.text('play_arrow');
             icon.animateCss('rotateIn', null);
@@ -156,21 +194,9 @@ function updateStateOfControlsBarPlayPauseButton() {
     }
 }
 
-function pageDown() {
-    var scrollByAmount = global.windowHeight * 0.90;
-    $('html, body').animate({
-        scrollTop: `+=${scrollByAmount}`
-    }, 400);
-}
+/* #endregion */
 
-function changePage(url) {
-    let href = `?url=${url}`
-    const bookmarkId = $('#read-bookmark-id').val()
-    if (bookmarkId) {
-        href += `&bookmark=${bookmarkId}`
-    }
-    window.location.href = href;
-}
+/* #region  Auto Scroll */
 
 function autoscrollIfEnabled() {
     const read = localStorage.getItem('autoscroll-read') === 'true';
@@ -198,6 +224,7 @@ function stopAutoscroll() {
     global.noSleep.disable();
 }
 
+/* #region  Auto Scroll Read */
 function autoscrollRead() {
     var element = document.getElementById(`text-paragraph-${global.currentParagraph}`);
     if (element) {
@@ -210,24 +237,19 @@ function autoscrollRead() {
             clearTimeout(global.timer);
             global.timer = setTimeout(() => {
                 if (global.isAutoScrolling) {
-                    changeCurrentParagraph(global.currentParagraph+1);
+                    changeCurrentParagraph(global.currentParagraph + 1);
                 }
             }, timeout);
         }
     }
 }
+/* #endregion */
+
+/* #region  Text To Speech */
 
 function autoscrollTTS() {
-    if (!global.ttsLanguage) {
-        loadAndPlayTextToSpeech();
-    } else {
-        textToSpeech(); 
-    }
-}
-
-function loadAndPlayTextToSpeech() {
     // list of languages is probably not loaded, wait for it
-    if(window.speechSynthesis.getVoices().length == 0) {
+    if (window.speechSynthesis.getVoices().length == 0) {
         window.speechSynthesis.onvoiceschanged = loadTextToSpeechLanguage();
     }
     else {
@@ -237,24 +259,27 @@ function loadAndPlayTextToSpeech() {
 }
 
 function loadTextToSpeechLanguage() {
-    // get all voices that browser offers
-	var available_voices = window.speechSynthesis.getVoices();
+    let userChosenVoiceURI = getUserSelectedVoiceURI()
+    let englishVoices = getEnglishSpeechSynthesisVoices()
 
-	// this will hold an english voice
-	var english_voice = '';
+    if (englishVoices.length === 0) {
+        return
+    }
 
-	// find voice by language locale "en-US"
-	// if not then select the first voice
-	for(var i=0; i<available_voices.length; i++) {
-		if(available_voices[i].lang === 'en-US') {
-			english_voice = available_voices[i];
-			break;
-		}
-	}
-	if(english_voice === '')
-        english_voice = available_voices[0];
-    global.ttsLanguage = english_voice;
-    textToSpeech();
+    let matchedUserChosenVoice = englishVoices.filter(e => e.voiceURI === userChosenVoiceURI)
+    let selectedVoice = matchedUserChosenVoice.length == 0 ? englishVoices[0] : matchedUserChosenVoice[0]
+    global.ttsLanguage = selectedVoice
+    textToSpeech()
+}
+
+function getEnglishSpeechSynthesisVoices() {
+    var availableVoices = window.speechSynthesis.getVoices();
+    var englishVoices = availableVoices.filter(e => e.lang.includes('en'))
+    return englishVoices
+}
+
+function getUserSelectedVoiceURI() {
+    return localStorage.getItem('selectedVoice')
 }
 
 function textToSpeech() {
@@ -271,10 +296,10 @@ function textToSpeech() {
             utter.voice = global.ttsLanguage;
 
             // event after text has been spoken
-            utter.onend = function() {
+            utter.onend = function () {
                 global.utter = null;
                 if (global.isAutoScrolling) {
-                    changeCurrentParagraph(global.currentParagraph+1);
+                    changeCurrentParagraph(global.currentParagraph + 1);
                 }
             }
 
@@ -294,10 +319,30 @@ function getTTSRateForSpeechSynthesisUtterance() {
     return speechSynthesisRate;
 }
 
+/* #endregion */
+
+/* #region  Auto Scroll Events */
+
+function pageDown() {
+    var scrollByAmount = global.windowHeight * 0.90;
+    $('html, body').animate({
+        scrollTop: `+=${scrollByAmount}`
+    }, 400);
+}
+
+function changePage(url) {
+    let href = `?url=${url}`
+    const bookmarkId = $('#read-bookmark-id').val()
+    if (bookmarkId) {
+        href += `&bookmark=${bookmarkId}`
+    }
+    window.location.href = href;
+}
+
 function scrollToElement(element) {
     $(element).addClass('active-paragraph');
     $('html, body').animate({
-        scrollTop: $(element).offset().top - global.windowHeight/2.5
+        scrollTop: $(element).offset().top - global.windowHeight / 2.5
     }, 400);
 }
 
@@ -319,9 +364,20 @@ function changeCurrentParagraph(newParagraph) {
     }
 }
 
-function enableKeydownEvents() { 
-    $(document).bind("keydown", function(e) {
-        var key = e.originalEvent.code 
+/* #endregion */
+
+/* #endregion */
+
+/* #region  Page Navigation */
+
+function nextPageClicked(url) {
+    localStorage.setItem('currentPageLink', url);
+    changePage(url);
+}
+
+function enableKeydownEvents() {
+    $(document).bind("keydown", function (e) {
+        var key = e.originalEvent.code
         switch (key) {
             case 'ArrowRight':
                 const nextPageUrl = $('#next-page-url').val()
@@ -338,3 +394,5 @@ function enableKeydownEvents() {
         }
     })
 }
+
+/* #endregion */
