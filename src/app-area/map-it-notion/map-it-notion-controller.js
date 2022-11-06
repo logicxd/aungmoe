@@ -157,8 +157,6 @@ router.get('/map-data/:id', async function (req, res) {
 router.put('/map-data/:id/refresh', async function (req, res) {
     try {
         let id = req.params['id']
-        let forceUpdate = req.query.forceUpdate === 'true'
-
         let notionMap = await NotionMapModel.findById(new mongoose.Types.ObjectId(id))
         if (!notionMap) {
             throw `Notion map not found with id ${id}`
@@ -167,7 +165,7 @@ router.put('/map-data/:id/refresh', async function (req, res) {
         let notionRawResponse = await notionFetchDataFromTable(notionMap.secretKey, notionMap.databaseId)
         let locations = notionExtractLocations(notionRawResponse.data)
         let locationsSinceLastSynced = getLocationsSinceLastSynced(locations, notionMap.lastSyncedDate)
-        await getCoordinatesFromYelpIfNeeded(locationsSinceLastSynced, forceUpdate) // TODO: need to save location coordinates back to Notion
+        await getCoordinatesFromYelpIfNeeded(locationsSinceLastSynced)
         await updateNotionWithLatestInfo(notionMap.secretKey, locationsSinceLastSynced)
         notionMap.buildings = updatedNotionMapBuildings(notionMap.buildings, locationsSinceLastSynced)
         notionMap.markModified('buildings')
@@ -175,12 +173,14 @@ router.put('/map-data/:id/refresh', async function (req, res) {
         await notionMap.save()
         return res.send(Object.values(locations))
     } catch (error) {
+        console.error(`Error updating Map it Notion ${error}`)
         return res.send([])
     }
 })
 
 function getLocationsSinceLastSynced(locations, lastSyncedDate) {
     let lastSynced = moment(lastSyncedDate)
+    // lastSynced = lastSynced.subtract(1, 'month')
     if (!lastSynced.isValid()) { return locations }
 
     let newLocations = {}
@@ -204,7 +204,6 @@ async function updateNotionWithLatestInfo(apiKey, locationsSinceLastSynced) {
     for (let [key, location] of Object.entries(locationsSinceLastSynced)) {
         if (location.latitude != null && location.longitude != null) {
             await notionUpdateWithLocation(apiKey, location) 
-            // await notionUpdateCoordinates(apiKey, location.id, location.latitude, location.longitude)
         }
     }
 }
@@ -334,32 +333,6 @@ function notionExtractLocations(data) {
     return mapObjects
 }
 
-async function notionUpdateCoordinates(apiKey, pageId, latitude, longitude) {
-    const options = {
-        method: 'PATCH',
-        url: `https://api.notion.com/v1/pages/${pageId}`,
-        headers: {
-            'Authorization': `Bearer ${apiKey}`,
-            'Accept': 'application/json',
-            'Notion-Version': '2022-02-22', // Don't upgrade to 2022-06-28. It doesn't seem like it's a stable change
-            'Content-Type': 'application/json'
-        },
-        data: {
-            "properties": {
-                "Latitude": {
-                    "number": latitude
-                },
-                "Longitude": {
-                    "number": longitude
-                }
-            }
-        }
-    }
-
-    let res = await axios(options)
-    return res
-}
-
 async function notionUpdateWithLocation(apiKey, location) {
     let properties = {}
     
@@ -372,17 +345,42 @@ async function notionUpdateWithLocation(apiKey, location) {
 
     if (location.name != null) {
         properties.Name = {
-            "title": [{
-                "text": {
-                    "content": location.name
+            title: [
+                {
+                    type: "text",
+                    text: {
+                        content: location.name
+                    }
                 }
-            }]
+            ]
         }
     }
 
     if (location.city != null) {
-        properties.City.select = {
-            "name": location.city
+        properties.City = {
+            select: {
+                name: location.city
+            }
+        }
+    }
+
+    if (location.price != null) {
+        properties.Price = {
+            select: {
+                name: location.price
+            }
+        }
+    }
+
+    if (location.categories != null) {
+        let categories = location.categories.map(x => {
+            return {
+                name: x
+            }
+        })
+        
+        properties.Tags = {
+            multi_select: categories
         }
     }
 
@@ -408,13 +406,8 @@ async function notionUpdateWithLocation(apiKey, location) {
 
 /* #region  Yelp API */
 
-async function getCoordinatesFromYelpIfNeeded(locations, forceUpdate) {
+async function getCoordinatesFromYelpIfNeeded(locations) {
     for (let [key, location] of Object.entries(locations)) {
-        // Skip: coordinates are already known
-        if (!forceUpdate && location.latitude != null && location.longitude != null) {
-            continue
-        }
-
         // Skip: No yelp info
         if (location.yelpId == null || location.yelpId.length == 0) {
             continue
@@ -443,12 +436,22 @@ async function yelpFetchBusinessFromId(businessId) {
 function yelpExtractDataForMap(data) {
     let yelpObject = {
         name: data.name,
-        city: data.location.city,
-        latitude: data.coordinates.latitude,
-        longitude: data.coordinates.longitude,
-        categories: data.categories.map(x => x.title),
-        price: data.price ?? null
+        price: data.price
     }
+
+    if (data.location != null) {
+        yelpObject.city = data.location.city
+    }
+
+    if (data.coordinates != null) {
+        yelpObject.latitude = data.coordinates.latitude
+        yelpObject.longitude = data.coordinates.longitude
+    }
+
+    if (data.categories != null) {
+        yelpObject.categories = data.categories.map(x => x.title)
+    }
+
     return yelpObject
 }
 
