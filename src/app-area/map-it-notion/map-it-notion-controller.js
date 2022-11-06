@@ -157,8 +157,6 @@ router.get('/map-data/:id', async function (req, res) {
 router.put('/map-data/:id/refresh', async function (req, res) {
     try {
         let id = req.params['id']
-        let forceUpdate = req.query.forceUpdate === 'true'
-
         let notionMap = await NotionMapModel.findById(new mongoose.Types.ObjectId(id))
         if (!notionMap) {
             throw `Notion map not found with id ${id}`
@@ -167,20 +165,22 @@ router.put('/map-data/:id/refresh', async function (req, res) {
         let notionRawResponse = await notionFetchDataFromTable(notionMap.secretKey, notionMap.databaseId)
         let locations = notionExtractLocations(notionRawResponse.data)
         let locationsSinceLastSynced = getLocationsSinceLastSynced(locations, notionMap.lastSyncedDate)
-        await getCoordinatesFromYelpIfNeeded(locationsSinceLastSynced, forceUpdate) // TODO: need to save location coordinates back to Notion
-        await updateNotionCoordinates(notionMap.secretKey, locationsSinceLastSynced)
+        await getCoordinatesFromYelpIfNeeded(locationsSinceLastSynced)
+        await updateNotionWithLatestInfo(notionMap.secretKey, locationsSinceLastSynced)
         notionMap.buildings = updatedNotionMapBuildings(notionMap.buildings, locationsSinceLastSynced)
         notionMap.markModified('buildings')
         notionMap.lastSyncedDate = new Date()
         await notionMap.save()
         return res.send(Object.values(locations))
     } catch (error) {
+        console.error(`Error updating Map it Notion ${error}`)
         return res.send([])
     }
 })
 
 function getLocationsSinceLastSynced(locations, lastSyncedDate) {
     let lastSynced = moment(lastSyncedDate)
+    // lastSynced = lastSynced.subtract(1, 'month')
     if (!lastSynced.isValid()) { return locations }
 
     let newLocations = {}
@@ -200,10 +200,10 @@ function updatedNotionMapBuildings(notionMapBuildings, locationsSinceLastSynced)
     return notionMapBuildings
 }
 
-async function updateNotionCoordinates(apiKey, locationsSinceLastSynced) {
+async function updateNotionWithLatestInfo(apiKey, locationsSinceLastSynced) {
     for (let [key, location] of Object.entries(locationsSinceLastSynced)) {
         if (location.latitude != null && location.longitude != null) {
-            await notionUpdateCoordinates(apiKey, location.id, location.latitude, location.longitude)
+            await notionUpdateWithLocation(apiKey, location) 
         }
     }
 }
@@ -333,10 +333,60 @@ function notionExtractLocations(data) {
     return mapObjects
 }
 
-async function notionUpdateCoordinates(apiKey, pageId, latitude, longitude) {
+async function notionUpdateWithLocation(apiKey, location) {
+    let properties = {}
+    
+    if (location.latitude != null) {
+        properties.Latitude = { "number": location.latitude }
+    }
+    if (location.longitude != null) {
+        properties.Longitude = { "number": location.longitude }
+    }
+
+    if (location.name != null) {
+        properties.Name = {
+            title: [
+                {
+                    type: "text",
+                    text: {
+                        content: location.name
+                    }
+                }
+            ]
+        }
+    }
+
+    if (location.city != null) {
+        properties.City = {
+            select: {
+                name: location.city
+            }
+        }
+    }
+
+    if (location.price != null) {
+        properties.Price = {
+            select: {
+                name: location.price
+            }
+        }
+    }
+
+    if (location.categories != null) {
+        let categories = location.categories.map(x => {
+            return {
+                name: x
+            }
+        })
+        
+        properties.Tags = {
+            multi_select: categories
+        }
+    }
+
     const options = {
         method: 'PATCH',
-        url: `https://api.notion.com/v1/pages/${pageId}`,
+        url: `https://api.notion.com/v1/pages/${location.id}`,
         headers: {
             'Authorization': `Bearer ${apiKey}`,
             'Accept': 'application/json',
@@ -344,14 +394,7 @@ async function notionUpdateCoordinates(apiKey, pageId, latitude, longitude) {
             'Content-Type': 'application/json'
         },
         data: {
-            "properties": {
-                "Latitude": {
-                    "number": latitude
-                },
-                "Longitude": {
-                    "number": longitude
-                }
-            }
+            "properties": properties
         }
     }
 
@@ -363,13 +406,8 @@ async function notionUpdateCoordinates(apiKey, pageId, latitude, longitude) {
 
 /* #region  Yelp API */
 
-async function getCoordinatesFromYelpIfNeeded(locations, forceUpdate) {
+async function getCoordinatesFromYelpIfNeeded(locations) {
     for (let [key, location] of Object.entries(locations)) {
-        // Skip: coordinates are already known
-        if (!forceUpdate && location.latitude != null && location.longitude != null) {
-            continue
-        }
-
         // Skip: No yelp info
         if (location.yelpId == null || location.yelpId.length == 0) {
             continue
@@ -377,8 +415,7 @@ async function getCoordinatesFromYelpIfNeeded(locations, forceUpdate) {
 
         let yelpRawResponse = await yelpFetchBusinessFromId(location.yelpId)
         let yelpObject = yelpExtractDataForMap(yelpRawResponse.data)
-        location.latitude = yelpObject.latitude
-        location.longitude = yelpObject.longitude
+        yelpMapYelpDataIntoLocation(yelpObject, location)
     }
 }
 
@@ -398,10 +435,33 @@ async function yelpFetchBusinessFromId(businessId) {
 
 function yelpExtractDataForMap(data) {
     let yelpObject = {
-        latitude: data.coordinates.latitude,
-        longitude: data.coordinates.longitude
+        name: data.name,
+        price: data.price
     }
+
+    if (data.location != null) {
+        yelpObject.city = data.location.city
+    }
+
+    if (data.coordinates != null) {
+        yelpObject.latitude = data.coordinates.latitude
+        yelpObject.longitude = data.coordinates.longitude
+    }
+
+    if (data.categories != null) {
+        yelpObject.categories = data.categories.map(x => x.title)
+    }
+
     return yelpObject
+}
+
+function yelpMapYelpDataIntoLocation(yelpObject, location) {
+    location.name = yelpObject.name
+    location.city = yelpObject.city
+    location.latitude = yelpObject.latitude
+    location.longitude = yelpObject.longitude
+    location.categories = yelpObject.categories
+    location.price = yelpObject.price
 }
 
 /* #endregion */
