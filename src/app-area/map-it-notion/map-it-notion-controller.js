@@ -151,7 +151,7 @@ router.get('/map-data/:id', async function (req, res) {
 })
 /* #endregion */
 
-/* #region  PUT /map-it-notion/map-data/{id}/refresh?forceUpdate=false */
+/* #region  PUT /map-it-notion/map-data/{id}/refresh */
 
 /// Updates everything in the database by fetching from Notion
 router.put('/map-data/:id/refresh', async function (req, res) {
@@ -165,13 +165,13 @@ router.put('/map-data/:id/refresh', async function (req, res) {
         let notionRawResponse = await notionFetchDataFromTable(notionMap.secretKey, notionMap.databaseId)
         let locations = notionExtractLocations(notionRawResponse.data)
         let locationsSinceLastSynced = getLocationsSinceLastSynced(locations, notionMap.lastSyncedDate)
-        await getCoordinatesFromYelpIfNeeded(locationsSinceLastSynced)
+        await getInfoFromYelpIfNeeded(locationsSinceLastSynced)
         await updateNotionWithLatestInfo(notionMap.secretKey, locationsSinceLastSynced)
         notionMap.buildings = updatedNotionMapBuildings(notionMap.buildings, locationsSinceLastSynced)
         notionMap.markModified('buildings')
         notionMap.lastSyncedDate = new Date()
         await notionMap.save()
-        return res.send(Object.values(locations))
+        return res.send(Object.values(locationsSinceLastSynced))
     } catch (error) {
         console.error(`Error updating Map it Notion ${error}`)
         return res.send([])
@@ -406,7 +406,7 @@ async function notionUpdateWithLocation(apiKey, location) {
 
 /* #region  Yelp API */
 
-async function getCoordinatesFromYelpIfNeeded(locations) {
+async function getInfoFromYelpIfNeeded(locations) {
     for (let [key, location] of Object.entries(locations)) {
         // Skip: No yelp info
         if (location.yelpId == null || location.yelpId.length == 0) {
@@ -457,6 +457,8 @@ function yelpExtractDataForMap(data) {
 
 function yelpMapYelpDataIntoLocation(yelpObject, location) {
     location.name = yelpObject.name
+    location.title = location.name
+    location.info = location.name
     location.city = yelpObject.city
     location.latitude = yelpObject.latitude
     location.longitude = yelpObject.longitude
