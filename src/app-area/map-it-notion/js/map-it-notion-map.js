@@ -7,10 +7,17 @@ async function renderMap() {
 // Display a map on the page
 function placeMarkerOnMapWithLocations(locations, bounds) {
     const mapEl = $('#notion-map-google-map-render').get(0);
-    const map = new google.maps.Map(mapEl, { mapTypeId: 'roadmap' });
-    placeMarkerOnMap(locations, map, bounds);
+    const map = new google.maps.Map(mapEl, {
+        mapTypeId: google.maps.MapTypeId.ROADMAP,
+        mapTypeControl: false,
+        streetViewControl: false,
+        fullscreenControl: false
+    });
 
-    google.maps.event.addListener(map, 'idle', function(event) {
+    placeMarkerOnMap(locations, map, bounds);
+    addPanToCurrentLocationButton(map)
+
+    google.maps.event.addListener(map, 'idle', function (event) {
         console.log(`  Map Bonds: ${JSON.stringify(this.getBounds().toJSON())}`)
         console.log(`  Zoom: ${this.getZoom()}`)
         updateMapBounds(this.getBounds().toJSON())
@@ -61,7 +68,7 @@ async function fetchMapData(completion) {
     let res = await axios(options)
     if (res.status == 200) {
         return res.data
-    } else { 
+    } else {
         console.error(`Error fetching map data ${res.statusText}`)
         return []
     }
@@ -120,7 +127,7 @@ $('#notion-map-render-refresh-button').click(() => {
 
 /* #region   Update Map Bounds*/
 
-async function updateMapBounds(bounds) { 
+async function updateMapBounds(bounds) {
     let mapId = $('#notion-map-id').val()
     const options = {
         method: 'PUT',
@@ -135,7 +142,7 @@ async function updateMapBounds(bounds) {
     let res = await axios(options)
     if (res.status == 200) {
         console.log("Updated map bounds")
-    } else { 
+    } else {
         console.error(`Error updating map bounds ${res.statusText}`)
     }
 }
@@ -143,7 +150,7 @@ async function updateMapBounds(bounds) {
 
 /* #region   Get Map Bounds*/
 
-async function getMapBounds(bounds) { 
+async function getMapBounds(bounds) {
     let mapId = $('#notion-map-id').val()
     const options = {
         method: 'GET',
@@ -157,9 +164,56 @@ async function getMapBounds(bounds) {
     let res = await axios(options)
     if (res.status == 200) {
         return res.data
-    } else { 
+    } else {
         console.error(`Error fetching map bounds ${res.statusText}`)
         return null
     }
+}
+/* #endregion */
+
+/* #region  Pan to Current Location */
+
+// Modified from https://developers.google.com/maps/documentation/javascript/geolocation
+function addPanToCurrentLocationButton(map) {
+    const infoWindow = new google.maps.InfoWindow();
+    const locationButton = document.createElement("button");
+    locationButton.textContent = "Pan to Current Location";
+    locationButton.classList.add("custom-map-control-button");
+    map.controls[google.maps.ControlPosition.TOP_CENTER].push(locationButton);
+
+    locationButton.addEventListener("click", () => {
+        // Try HTML5 geolocation.
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    const pos = {
+                        lat: position.coords.latitude,
+                        lng: position.coords.longitude,
+                    };
+
+                    infoWindow.setPosition(pos);
+                    infoWindow.setContent("You're here!");
+                    infoWindow.open(map);
+                    map.setCenter(pos);
+                },
+                () => {
+                    handleLocationError(true, infoWindow, map.getCenter());
+                }
+            );
+        } else {
+            // Browser doesn't support Geolocation
+            handleLocationError(false, infoWindow, map.getCenter());
+        }
+    });
+}
+
+function handleLocationError(browserHasGeolocation, infoWindow, pos) {
+    infoWindow.setPosition(pos);
+    infoWindow.setContent(
+        browserHasGeolocation
+            ? "Error: The Geolocation service failed."
+            : "Error: Your browser doesn't support geolocation."
+    );
+    infoWindow.open(map);
 }
 /* #endregion */
