@@ -32,7 +32,7 @@ router.get('/', async function (req, res) {
         let dbMaps = await NotionMapModel.find({ user: req.user }).sort({ modifiedDate: 'desc' }).lean()
         notionMaps = dbMaps.map(x => {
             let notionMap = {
-                title: x.title, 
+                title: x.title,
                 url: `${route}/${x._id.toString()}`
             }
             return notionMap
@@ -99,7 +99,7 @@ router.get('/:id', async function (req, res) {
             js: [`/${route}/js/map-it-notion.js`]
         });
     }
-    
+
     return res.render(path.join(__dirname, 'view/map-it-notion-detail'), {
         title: `Map It Notion - ${notionMap.title}`,
         description: 'Map Notion database onto Google Maps',
@@ -131,7 +131,7 @@ router.get('/render/:id', async function (req, res) {
             js: [`/${route}/js/map-it-notion.js`]
         });
     }
-    
+
     return res.render(path.join(__dirname, 'view/map-it-notion-render'), {
         title: `Map It Notion - ${notionMap.title}`,
         layout: "empty-template",
@@ -203,11 +203,43 @@ function updatedNotionMapBuildings(notionMapBuildings, locationsSinceLastSynced)
 async function updateNotionWithLatestInfo(apiKey, locationsSinceLastSynced) {
     for (let [key, location] of Object.entries(locationsSinceLastSynced)) {
         if (location.latitude != null && location.longitude != null) {
-            await notionUpdateWithLocation(apiKey, location) 
+            await notionUpdateWithLocation(apiKey, location)
         }
     }
 }
 
+/* #endregion */
+
+/* #region  PUT /map-it-notion/map-data/{id}/cleanup */
+
+// Remove anything that was previously added but was deleted in Notion
+router.put('/map-data/:id/cleanup', async function (req, res) {
+    try {
+        let id = req.params['id']
+        let notionMap = await NotionMapModel.findById(new mongoose.Types.ObjectId(id))
+        if (!notionMap) {
+            throw `Notion map not found with id ${id}`
+        }
+
+        let notionRawResponse = await notionFetchDataFromTable(notionMap.secretKey, notionMap.databaseId)
+        let locations = notionExtractLocations(notionRawResponse.data)
+
+        for (let [key, location] of Object.entries(notionMap.buildings)) {
+            if (locations[key] == null) {
+                delete notionMap.buildings[key]
+                console.log(`  Removing ${location.title}`)
+            }
+        }
+
+        notionMap.markModified('buildings')
+        notionMap.lastSyncedDate = new Date()
+        await notionMap.save()
+        return res.send([])
+    } catch (error) {
+        console.error(`Error cleaning up Map it Notion ${error}`)
+        return res.send([])
+    }
+})
 /* #endregion */
 
 /* #region  PUT /map-it-notion/map-data/{id}/bounds */
@@ -307,7 +339,7 @@ async function notionFetchDataFromTable(apiKey, databaseId) {
 
 function notionExtractLocations(data) {
     let mapObjects = {}
-    for (let result of data.results) { 
+    for (let result of data.results) {
         let properties = result.properties
 
         let mapObject = {
@@ -343,7 +375,7 @@ function notionExtractLocations(data) {
 
 async function notionUpdateWithLocation(apiKey, location) {
     let properties = {}
-    
+
     if (location.latitude != null) {
         properties.Latitude = { "number": location.latitude }
     }
@@ -386,7 +418,7 @@ async function notionUpdateWithLocation(apiKey, location) {
                 name: x
             }
         })
-        
+
         properties.Tags = {
             multi_select: categories
         }
@@ -436,7 +468,7 @@ async function yelpFetchBusinessFromId(businessId) {
             'Accept': 'application/json'
         }
     }
-    
+
     let res = await axios(options)
     return res
 }

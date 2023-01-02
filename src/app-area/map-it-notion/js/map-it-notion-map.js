@@ -82,7 +82,7 @@ $('#notion-map-render-refresh-button').click(() => {
     let mapId = $('#notion-map-id').val()
     $.ajax({
         method: 'PUT',
-        url: `/map-it-notion/map-data/${mapId}/refresh?forceUpdate=false`,
+        url: `/map-it-notion/map-data/${mapId}/refresh`,
         success: function (res) {
             if (res === null) { return }
 
@@ -119,6 +119,22 @@ $('#notion-map-render-refresh-button').click(() => {
             M.toast({ html: error.responseText, classes: 'red lighten-1' })
             $('#notion-map-render-refresh-button').removeClass('disabled')
         }
+    }).always(() => {
+        location.reload()
+    })
+})
+/* #endregion */
+
+/* #region   Cleanup button click */
+$('#notion-map-render-cleanup-button').click(() => {
+    $('#notion-map-render-cleanup-button').addClass('disabled')
+    $('#notion-map-render-cleanup-button').html('Cleaning <i class="fas fa-circle-notch fa-spin"></i>')
+    let mapId = $('#notion-map-id').val()
+    $.ajax({
+        method: 'PUT',
+        url: `/map-it-notion/map-data/${mapId}/cleanup`,
+        success: function (res) {},
+        error: function (error) {}
     }).always(() => {
         location.reload()
     })
