@@ -83,7 +83,7 @@ router.get('/:id', async function (req, res) {
 
     let notionMap = {}
     try {
-        let notionMap = await NotionMapModel.findById(new mongoose.Types.ObjectId(id))
+        notionMap = await NotionMapModel.findById(new mongoose.Types.ObjectId(id))
 
         if (!notionMap) {
             throw `Notion map not found with id ${id}`
@@ -117,7 +117,7 @@ router.get('/render/:id', async function (req, res) {
 
     let notionMap = {}
     try {
-        let notionMap = await NotionMapModel.findById(new mongoose.Types.ObjectId(id))
+        notionMap = await NotionMapModel.findById(new mongoose.Types.ObjectId(id))
         if (!notionMap) {
             throw `Notion map not found with id ${id}`
         }
