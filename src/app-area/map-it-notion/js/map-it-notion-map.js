@@ -179,6 +179,9 @@ async function getMapBounds(bounds) {
 
     let res = await axios(options)
     if (res.status == 200) {
+        if (res.data == null || res.data == '') {
+            return null
+        }
         return res.data
     } else {
         console.error(`Error fetching map bounds ${res.statusText}`)

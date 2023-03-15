@@ -167,7 +167,7 @@ router.put('/map-data/:id/refresh', async function (req, res) {
         let locationsSinceLastSynced = getLocationsSinceLastSynced(locations, notionMap.lastSyncedDate)
         await getInfoFromYelpIfNeeded(locationsSinceLastSynced)
         await updateNotionWithLatestInfo(notionMap.secretKey, locationsSinceLastSynced)
-        notionMap.buildings = updatedNotionMapBuildings(notionMap.buildings, locationsSinceLastSynced)
+        notionMap.buildings = updatedNotionMapBuildings(notionMap.buildings ?? {}, locationsSinceLastSynced)
         notionMap.markModified('buildings')
         notionMap.lastSyncedDate = new Date()
         await notionMap.save()
@@ -278,7 +278,7 @@ router.get('/map-data/:id/bounds', async function (req, res) {
             throw `Notion map not found with id ${id}`
         }
 
-        return res.send(notionMap.mapBounds)
+        return res.send(notionMap.mapBounds ?? null)
     } catch (error) {
         return res.send(null)
     }
@@ -294,7 +294,7 @@ async function mapDataForId(id) {
         if (!notionMap) {
             throw `Notion map not found with id ${id}`
         }
-        return notionMap.buildings
+        return notionMap.buildings ?? {}
     } catch (error) {
         console.error(`Error fetching map-data for notion: ${error}`)
         return []
@@ -350,11 +350,11 @@ function notionExtractLocations(data) {
         }
 
         if (properties.Name.title != null && properties.Name.title.length > 0) {
-            mapObject.title = properties.Name.title[0].plain_text
+            mapObject.title = properties.Name.title.map(x => x.plain_text).join('')
             mapObject.info = mapObject.title
         }
 
-        if (properties.Yelp.url != null && properties.Yelp.url.length > 0) {
+        if (properties.Yelp != null && properties.Yelp.url != null && properties.Yelp.url.length > 0) {
             try {
                 let url = new URL(properties.Yelp.url)
                 let path = url.pathname
