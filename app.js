@@ -37,7 +37,7 @@ app.use(cookieSession({
     name: 'aungmoe-session',
     keys: [process.env.SESSION_SECRET],
     sameSite: "strict",
-    maxAge:  30 * 24 * 60 * 60 * 1000   // 30 days
+    maxAge:  365 * 24 * 60 * 60 * 1000   // 1 year
 }))
 app.use(passport.initialize());
 app.use(passport.session());
