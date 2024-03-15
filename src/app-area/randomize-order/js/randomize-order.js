@@ -11,9 +11,9 @@ const Constants = {
 }
 
 let items = [
-    { value: "", color: null },
-    { value: "", color: null },
-    { value: "", color: null },
+    { value: "", color: null, stats: { placements: [] } },
+    { value: "", color: null, stats: { placements: [] } },
+    { value: "", color: null, stats: { placements: [] } },
 ]
 
 let reloadCount = 0
@@ -94,6 +94,11 @@ function reloadResultView() {
     for (let i = 0; i < items.length; ++i) {
         items[i].index = i
         items[i].opacity = (i == 0 ? 1 : 0.5)
+        
+        if (items[i].stats.placements == null || items[i].stats.placements.length != items.length) {
+            items[i].stats.placements = new Array(items.length).fill(0);
+        }
+        items[i].stats.placements[i] += 1
     }
 
     $('#randomize-order-result-list-items').html(items.map(ResultItem).join(''));
