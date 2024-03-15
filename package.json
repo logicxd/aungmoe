@@ -10,6 +10,7 @@
   },
   "scripts": {
     "start": "node app.js",
+    "start-debug": "NODE_TLS_REJECT_UNAUTHORIZED=0 node app.js",
     "start-forever": "forever start --minUptime 5000 --spinSleepTime 5000 app.js",
     "nodemon": "nodemon app.js",
     "sass": "sass --watch src:src"
@@ -26,7 +27,7 @@
   "homepage": "https://github.com/logicxd/DavidMoe#readme",
   "dependencies": {
     "axios": "^0.27.2",
-    "cheerio": "^1.0.0-rc.3",
+    "cheerio": "^1.0.0-rc.12",
     "cookie-parser": "^1.4.6",
     "cookie-session": "^2.0.0",
     "dotenv": "^16.0.2",
