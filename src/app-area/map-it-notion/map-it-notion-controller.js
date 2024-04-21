@@ -413,9 +413,10 @@ async function notionUpdateWithLocation(apiKey, location) {
     }
 
     if (location.categories != null) {
+        console.log(location.categories)
         let categories = location.categories.map(x => {
             return {
-                name: x
+                name: x.replaceAll(",", " ")    // Notion does not allow commas
             }
         })
 
