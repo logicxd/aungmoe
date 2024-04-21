@@ -203,7 +203,11 @@ function updatedNotionMapBuildings(notionMapBuildings, locationsSinceLastSynced)
 async function updateNotionWithLatestInfo(apiKey, locationsSinceLastSynced) {
     for (let [key, location] of Object.entries(locationsSinceLastSynced)) {
         if (location.latitude != null && location.longitude != null) {
-            await notionUpdateWithLocation(apiKey, location)
+            try {
+                await notionUpdateWithLocation(apiKey, location)
+            } catch (error) {
+                console.log(`Failed updating notion with latest info: ${error}`)
+            }
         }
     }
 }
