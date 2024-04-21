@@ -1,7 +1,12 @@
 async function renderMap() {
+    await initMap()
     let locations = await fetchMapData()
     let bounds = await getMapBounds()
     placeMarkerOnMapWithLocations(locations, bounds)
+}
+
+async function initMap() {
+    const { Map } = await google.maps.importLibrary("maps");
 }
 
 // Display a map on the page
