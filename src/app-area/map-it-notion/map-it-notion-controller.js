@@ -104,7 +104,8 @@ router.get('/:id', async function (req, res) {
         title: `Map It Notion - ${notionMap.title}`,
         description: 'Map Notion database onto Google Maps',
         css: [`/${route}/css/map-it-notion.css`],
-        js: [global.js.googleMaps, global.js.axios, `/${route}/js/map-it-notion.js`, `/${route}/js/map-it-notion-detail.js`, `/${route}/js/map-it-notion-map.js`],
+        js: [global.js.axios, `/${route}/js/map-it-notion.js`, `/${route}/js/map-it-notion-detail.js`, `/${route}/js/map-it-notion-map.js`],
+        shouldLoadGoogleMapsAPI: true,
         id: id
     })
 })
@@ -137,7 +138,8 @@ router.get('/render/:id', async function (req, res) {
         layout: "empty-template",
         description: 'Map Notion database onto Google Maps',
         css: [`/${route}/css/map-it-notion.css`],
-        js: [global.js.googleMaps, global.js.axios, `/${route}/js/map-it-notion.js`, `/${route}/js/map-it-notion-detail.js`, `/${route}/js/map-it-notion-map.js`],
+        js: [global.js.axios, `/${route}/js/map-it-notion.js`, `/${route}/js/map-it-notion-detail.js`, `/${route}/js/map-it-notion-map.js`],
+        shouldLoadGoogleMapsAPI: true,
         id: id
     })
 })
