@@ -7,6 +7,7 @@ async function renderMap() {
 
 async function initMap() {
     const { Map } = await google.maps.importLibrary("maps");
+    const { AdvancedMarkerElement } = await google.maps.importLibrary("marker");
 }
 
 // Display a map on the page
@@ -16,7 +17,8 @@ function placeMarkerOnMapWithLocations(locations, bounds) {
         mapTypeId: google.maps.MapTypeId.ROADMAP,
         mapTypeControl: false,
         streetViewControl: false,
-        fullscreenControl: false
+        fullscreenControl: false,
+        mapId: 'map-it-notion-google-maps-id'
     });
 
     placeMarkerOnMap(locations, map, bounds);
@@ -41,7 +43,7 @@ function placeMarkerOnMap(locations, map, bounds) {
         // Stretch our bounds to the newly found marker position
         localBounds.extend(position);
 
-        const marker = new google.maps.Marker({
+        const marker = new google.maps.marker.AdvancedMarkerElement({
             position: position,
             map: map,
             title: location.title
