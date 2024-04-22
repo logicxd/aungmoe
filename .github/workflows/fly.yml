@@ -1,4 +1,6 @@
 name: Fly Deploy
+runs:
+  using: 'node21'
 on:
   push:
     branches:
