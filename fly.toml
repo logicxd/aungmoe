@@ -1,12 +1,10 @@
-# fly.toml app configuration file generated for aungmoe-dawn-lake-3206 on 2024-04-21T18:31:40-07:00
+# fly.toml app configuration file generated for aungmoe on 2024-04-21T18:40:16-07:00
 #
 # See https://fly.io/docs/reference/configuration/ for information about how to use this file.
 #
 
 app = 'aungmoe'
 primary_region = 'sjc'
-
-[build]
 
 [http_service]
   internal_port = 3000
@@ -17,6 +15,6 @@ primary_region = 'sjc'
   processes = ['app']
 
 [[vm]]
-  memory = '1gb'
+  memory = '512mb'
   cpu_kind = 'shared'
   cpus = 1
