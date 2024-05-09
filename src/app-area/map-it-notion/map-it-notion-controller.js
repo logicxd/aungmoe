@@ -1,13 +1,14 @@
 "use strict";
 
 /* #region  Imports */
-var express = require('express');
-var router = express.Router();
-var path = require('path');
+var express = require('express')
+var router = express.Router()
+var path = require('path')
 var utility = require('../utility')
+var googleApiService = require('../../services/googleapiservice')
 var axios = require('axios')
-var moment = require('moment');
-var { body, param, validationResult } = require('express-validator');
+var moment = require('moment')
+var { body, param, validationResult } = require('express-validator')
 let yelpAPI = process.env.YELP_API
 
 // Text parser
@@ -168,6 +169,7 @@ router.put('/map-data/:id/refresh', async function (req, res) {
         let locations = notionExtractLocations(notionRawResponse.data)
         let locationsSinceLastSynced = getLocationsSinceLastSynced(locations, notionMap.lastSyncedDate)
         await getInfoFromYelpIfNeeded(locationsSinceLastSynced)
+        await getInfoFromGoogleMapIfNeeded(locationsSinceLastSynced)
         await updateNotionWithLatestInfo(notionMap.secretKey, locationsSinceLastSynced)
         notionMap.buildings = updatedNotionMapBuildings(notionMap.buildings ?? {}, locationsSinceLastSynced)
         notionMap.markModified('buildings')
@@ -370,7 +372,15 @@ function notionExtractLocations(data) {
                 mapObject.yelpId = id
             } catch (error) {
                 // Invalid URL
-                console.log(`Invalid yelp url: ${properties.Yelp.url}`)
+                console.log(`Invalid Yelp url: ${error}`)
+            }
+        } else if (properties["Google Maps"] != null && properties["Google Maps"].url != null && properties["Google Maps"].url.length > 0) {
+            try {
+                let url = new URL(properties["Google Maps"].url)
+                mapObject.googleMap = url.pathname
+            } catch (error) {
+                // Invalid URL
+                console.log(`Invalid Google Maps url: ${error}`)
             }
         }
 
@@ -511,6 +521,31 @@ function yelpMapYelpDataIntoLocation(yelpObject, location) {
     location.longitude = yelpObject.longitude
     location.categories = yelpObject.categories
     location.price = yelpObject.price
+}
+
+/* #endregion */
+
+/* #region  Google Maps API */
+
+async function getInfoFromGoogleMapIfNeeded(locations) {
+    for (let [key, location] of Object.entries(locations)) {
+        // Skip: Yelp is used
+        if (location.yelpId != null && location.yelpId.length > 0) {
+            continue
+        }
+
+        // Skip: Google Map URL is missing
+        if (location.googleMap == null || location.googleMap.length == 0) {
+            continue
+        }
+
+        let place = await googleApiService.getPlaceDetailFor(location.googleMap)
+        console.log(place)
+
+        // let yelpRawResponse = await yelpFetchBusinessFromId(location.yelpId)
+        // let yelpObject = yelpExtractDataForMap(yelpRawResponse.data)
+        // yelpMapYelpDataIntoLocation(yelpObject, location)
+    }
 }
 
 /* #endregion */
