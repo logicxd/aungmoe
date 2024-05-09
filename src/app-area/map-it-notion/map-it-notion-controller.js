@@ -538,13 +538,40 @@ async function getInfoFromGoogleMapIfNeeded(locations) {
         if (location.googleMap == null || location.googleMap.length == 0) {
             continue
         }
+        
+        let googleMap = await googleApiService.getPlaceDetailFor(location.googleMap)
+        googleMapDataIntoLocation(googleMap, location)
+    }
+}
 
-        let place = await googleApiService.getPlaceDetailFor(location.googleMap)
-        console.log(place)
+function googleMapDataIntoLocation(googleMap, location) {
+    location.name = googleMap.displayName.text
+    location.title = googleMap.displayName.text
+    location.info = googleMap.displayName.text
+    location.latitude = googleMap.location.latitude
+    location.longitude = googleMap.location.longitude
+    location.price = googleMapPriceLevelMap(googleMap.priceLevel)
 
-        // let yelpRawResponse = await yelpFetchBusinessFromId(location.yelpId)
-        // let yelpObject = yelpExtractDataForMap(yelpRawResponse.data)
-        // yelpMapYelpDataIntoLocation(yelpObject, location)
+    const cityComponent = googleMap.addressComponents.filter(x => x.types.includes('locality'))
+    if (cityComponent != null && cityComponent.length > 0 ) {
+        location.city = cityComponent[0].longText
+    }
+    
+    // location.categories = yelpObject.categories // Not supported by Google Places
+}
+
+function googleMapPriceLevelMap(priceDescription) {
+    switch (priceDescription) {
+        case 'PRICE_LEVEL_INEXPENSIVE':
+            return '$';
+        case 'PRICE_LEVEL_MODERATE':
+            return '$$';
+        case 'PRICE_LEVEL_EXPENSIVE':
+            return '$$$';
+        case 'PRICE_LEVEL_VERY_EXPENSIVE':
+            return '$$$$';
+        default:
+            return null;
     }
 }
 
