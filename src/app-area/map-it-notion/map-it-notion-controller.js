@@ -190,7 +190,7 @@ function getLocationsSinceLastSynced(locations, lastSyncedDate) {
     let newLocations = {}
     for (let [key, location] of Object.entries(locations)) {
         let date = moment(location.lastEdited)
-        if (date.isValid() && date.isAfter(lastSynced)) {
+        if (date.isValid() && date.isSameOrAfter(lastSynced, 'minute')) {
             newLocations[location.id] = location
         }
     }
