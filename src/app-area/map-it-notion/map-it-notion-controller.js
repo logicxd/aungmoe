@@ -168,9 +168,13 @@ router.put('/map-data/:id/refresh', async function (req, res) {
         let notionRawResponse = await notionFetchDataFromTable(notionMap.secretKey, notionMap.databaseId)
         let locations = notionExtractLocations(notionRawResponse.data)
         let locationsSinceLastSynced = getLocationsSinceLastSynced(locations, notionMap.lastSyncedDate)
+        console.log(`Locations since last synced: ${Object.keys(locationsSinceLastSynced).length}`)
+
         await getInfoFromYelpIfNeeded(locationsSinceLastSynced)
         await getInfoFromGoogleMapIfNeeded(locationsSinceLastSynced)
         await updateNotionWithLatestInfo(notionMap.secretKey, locationsSinceLastSynced)
+        console.log(`Locations: ${Object.values(locationsSinceLastSynced).map(x => x.title)}`)
+
         notionMap.buildings = updatedNotionMapBuildings(notionMap.buildings ?? {}, locationsSinceLastSynced)
         notionMap.markModified('buildings')
         notionMap.lastSyncedDate = new Date()
