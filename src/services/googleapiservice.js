@@ -21,7 +21,7 @@ async function placeTextSearch(googleMapsUrl) {
     const location = extractLocationFromUrl(googleMapsUrl)
 
     if (placeName == null || location == null) {
-        return null
+        return []
     }
     
     const options = {
@@ -51,10 +51,9 @@ async function placeTextSearch(googleMapsUrl) {
     let res = await axios(options)
     if (res.status != 200 || 
         res.data == null ||
-        res.data.places == null ||
-        res.data.places.length == 0
+        res.data.places == null
     ) {
-        return null
+        return []
     }
     return res.data.places
 }

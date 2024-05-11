@@ -549,11 +549,19 @@ async function getInfoFromGoogleMapIfNeeded(locations) {
 }
 
 function googleMapDataIntoLocation(googleMap, location) {
-    location.name = googleMap.displayName.text
-    location.title = googleMap.displayName.text
-    location.info = googleMap.displayName.text
-    location.latitude = googleMap.location.latitude
-    location.longitude = googleMap.location.longitude
+    if (googleMap == null) { return }
+
+    if (googleMap.displayName != null) {
+        location.name = googleMap.displayName.text
+        location.title = googleMap.displayName.text
+        location.info = googleMap.displayName.text
+    }
+    
+    if (googleMap.location != null) {
+        location.latitude = googleMap.location.latitude
+        location.longitude = googleMap.location.longitude    
+    }
+    
     location.price = googleMapPriceLevelMap(googleMap.priceLevel)
 
     const cityComponent = googleMap.addressComponents.filter(x => x.types.includes('locality'))
