@@ -194,7 +194,7 @@ function getLocationsSinceLastSynced(locations, lastSyncedDate) {
     let newLocations = {}
     for (let [key, location] of Object.entries(locations)) {
         let date = moment(location.lastEdited)
-        if (date.isValid() && date.isSameOrAfter(lastSynced, 'minute')) {
+        if (date.isValid() && date.isSameOrAfter(lastSynced, 'minute') && location.synced === false) {
             newLocations[location.id] = location
         }
     }
@@ -358,7 +358,8 @@ function notionExtractLocations(data) {
             id: result.id,
             latitude: properties.Latitude.number,
             longitude: properties.Longitude.number,
-            lastEdited: new Date(result.last_edited_time)
+            lastEdited: new Date(result.last_edited_time),
+            synced: properties.Synced.checkbox
         }
 
         if (properties.Name.title != null && properties.Name.title.length > 0) {
@@ -442,6 +443,10 @@ async function notionUpdateWithLocation(apiKey, location) {
         properties.Tags = {
             multi_select: categories
         }
+    }
+
+    properties.Synced = {
+        checkbox: true
     }
 
     const options = {
