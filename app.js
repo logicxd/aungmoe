@@ -53,6 +53,7 @@ app.use('/projects', require('./src/app-area/project/project-controller'));
 app.use('/bookmark', require('./src/app-area/bookmark/bookmark-controller'));
 app.use('/randomize-order', require('./src/app-area/randomize-order/randomize-order-controller'));
 app.use('/map-it-notion', require('./src/app-area/map-it-notion/map-it-notion-controller'));
+app.use('/recurring-events', require('./src/app-area/recurring-events/recurring-events-controller'));
 /* #endregion */
 
 /* #region Connect other services */

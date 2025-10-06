@@ -1,0 +1,118 @@
+<main class="container">
+    <h2>Recurring Events</h2>
+    <p class="row">
+        Manage recurring events in your Notion calendar database. Create events that automatically repeat based on your schedule.
+    </p>
+    <p class="row">
+        Required Notion database properties (case-sensitive):
+    </p>
+    <ul class="browser-default">
+        <li><b>DateTime</b> - must be of type `Date`</li>
+        <li><b>Recurring Frequency</b> - must be of type `Select` with option "Weekly"</li>
+        <li><b>Recurring Cadence</b> - must be of type `Number` (e.g., 1 for every week, 2 for every 2 weeks)</li>
+        <li><b>Recurring Days</b> - must be of type `Multi-select` with options: Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday</li>
+        <li><b>Recurring Lookahead Number</b> - must be of type `Number` (number of weeks to create ahead)</li>
+        <li><b>Recurring ID</b> - must be of type `Text` (unique identifier for recurring group)</li>
+        <li><b>Recurring Source</b> - must be of type `Checkbox` (mark as true to use as template)</li>
+    </ul>
+    <div class="row">
+        <a id="recurring-events-add-button" class="waves-effect waves-light btn-small">Add Configuration</a>
+    </div>
+    <ul class="recurring-events-list">
+        {{#each recurringConfigs}}
+        <li>
+            <h4 class="m-t-0">
+                <a class="recurring-events-link" href="{{this.url}}">
+                    {{this.title}}
+                </a>
+            </h4>
+            <p class="grey-text">Last synced: {{this.lastSynced}}</p>
+        </li>
+        {{/each}}
+    </ul>
+</main>
+
+<!-- Modal -->
+<div id="recurring-events-info-modal" class="modal bottom-sheet modal-fixed-footer">
+    <div class="modal-content">
+        <h4>Add Notion Database Configuration</h4>
+        <input id="recurring-events-info-modal-id" type="hidden"/>
+        <div class="row m-b-0">
+            <div class="input-field col s12">
+                <input id="recurring-events-info-modal-title" type="text" class="validate" required aria-required="true">
+                <label for="recurring-events-info-modal-title" data-error="Invalid">Title</label>
+                <span class="helper-text" data-error="Please enter a title"></span>
+            </div>
+        </div>
+        <div class="row m-b-0">
+            <div class="input-field col s12">
+                <input id="recurring-events-info-modal-databaseId" type="text" class="validate" required aria-required="true">
+                <label for="recurring-events-info-modal-databaseId" data-error="Invalid">Database Id</label>
+                <span class="helper-text" data-error="Please enter the Database Id"></span>
+            </div>
+        </div>
+        <div class="row m-b-0">
+            <div class="input-field col s12">
+                <input id="recurring-events-info-modal-secretKey" type="text" class="validate" required aria-required="true">
+                <label for="recurring-events-info-modal-secretKey" data-error="Invalid">Secret Key</label>
+                <span class="helper-text" data-error="Please enter the Secret Key"></span>
+            </div>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <a id="recurring-events-info-modal-button" class="waves-effect btn disabled">Add</a>
+    </div>
+
+    <!-- Loading screen -->
+    <div id="loading-screen">
+        <div class="preloader-wrapper active ">
+            <div class="spinner-layer spinner-blue">
+                <div class="circle-clipper left">
+                    <div class="circle"></div>
+                </div>
+                <div class="gap-patch">
+                    <div class="circle"></div>
+                </div>
+                <div class="circle-clipper right">
+                    <div class="circle"></div>
+                </div>
+            </div>
+
+            <div class="spinner-layer spinner-red">
+                <div class="circle-clipper left">
+                    <div class="circle"></div>
+                </div>
+                <div class="gap-patch">
+                    <div class="circle"></div>
+                </div>
+                <div class="circle-clipper right">
+                    <div class="circle"></div>
+                </div>
+            </div>
+
+            <div class="spinner-layer spinner-yellow">
+                <div class="circle-clipper left">
+                    <div class="circle"></div>
+                </div>
+                <div class="gap-patch">
+                    <div class="circle"></div>
+                </div>
+                <div class="circle-clipper right">
+                    <div class="circle"></div>
+                </div>
+            </div>
+
+            <div class="spinner-layer spinner-green">
+                <div class="circle-clipper left">
+                    <div class="circle"></div>
+                </div>
+                <div class="gap-patch">
+                    <div class="circle"></div>
+                </div>
+                <div class="circle-clipper right">
+                    <div class="circle"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

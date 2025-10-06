@@ -22,6 +22,12 @@ router.get('/', async function (req, res) {
 function listOfProjects() {
     return [
     {
+        title: 'Recurring Events',
+        url: '/recurring-events',
+        dateString: '2025',
+        category: 'Notion, Recurring Tasks, Automation'
+    },
+    {
         title: 'Map It Notion',
         url: '/map-it-notion',
         dateString: '2022',

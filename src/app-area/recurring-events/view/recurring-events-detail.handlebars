@@ -1,0 +1,83 @@
+<main class="container">
+    <h2>Recurring Events - Sync</h2>
+    <p class="row">
+        Manage and sync recurring events for this Notion database.
+    </p>
+    <input id="recurring-events-id" type="hidden" value="{{this.id}}"/>
+
+    <div class="row">
+        <p><strong>Last Synced:</strong> {{this.lastSynced}}</p>
+    </div>
+
+    <div class="row">
+        <a id="sync-button" class="waves-effect waves-light btn">Sync Now</a>
+    </div>
+
+    <div id="sync-status" class="row" style="display: none;">
+        <div class="card-panel">
+            <h5>Sync Results</h5>
+            <p id="sync-status-message"></p>
+            <ul id="sync-status-details" class="browser-default"></ul>
+        </div>
+    </div>
+
+    <div id="sync-error" class="row" style="display: none;">
+        <div class="card-panel red lighten-4">
+            <h5>Sync Error</h5>
+            <p id="sync-error-message"></p>
+        </div>
+    </div>
+
+    <!-- Loading screen -->
+    <div id="loading-screen" style="display: none;">
+        <div class="preloader-wrapper active">
+            <div class="spinner-layer spinner-blue">
+                <div class="circle-clipper left">
+                    <div class="circle"></div>
+                </div>
+                <div class="gap-patch">
+                    <div class="circle"></div>
+                </div>
+                <div class="circle-clipper right">
+                    <div class="circle"></div>
+                </div>
+            </div>
+
+            <div class="spinner-layer spinner-red">
+                <div class="circle-clipper left">
+                    <div class="circle"></div>
+                </div>
+                <div class="gap-patch">
+                    <div class="circle"></div>
+                </div>
+                <div class="circle-clipper right">
+                    <div class="circle"></div>
+                </div>
+            </div>
+
+            <div class="spinner-layer spinner-yellow">
+                <div class="circle-clipper left">
+                    <div class="circle"></div>
+                </div>
+                <div class="gap-patch">
+                    <div class="circle"></div>
+                </div>
+                <div class="circle-clipper right">
+                    <div class="circle"></div>
+                </div>
+            </div>
+
+            <div class="spinner-layer spinner-green">
+                <div class="circle-clipper left">
+                    <div class="circle"></div>
+                </div>
+                <div class="gap-patch">
+                    <div class="circle"></div>
+                </div>
+                <div class="circle-clipper right">
+                    <div class="circle"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
