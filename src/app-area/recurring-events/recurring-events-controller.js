@@ -108,6 +108,41 @@ router.get('/:id', async function (req, res) {
 })
 /* #endregion */
 
+/* #region  GET /recurring-events/{id}/embed */
+router.get('/:id/embed', async function (req, res) {
+    let id = req.params['id']
+
+    let config = {}
+    try {
+        config = await NotionRecurringModel.findById(new mongoose.Types.ObjectId(id))
+
+        if (!config) {
+            throw `Recurring events config not found with id ${id}`
+        }
+
+    } catch (error) {
+        console.error(error)
+        res.status(404)
+        return res.render(path.join(__dirname, 'view/recurring-events-unknown-page'), {
+            title: 'Recurring Events - Not Found',
+            description: 'Config not found!',
+            css: [`/${route}/css/recurring-events.css`],
+            js: [`/${route}/js/recurring-events.js`],
+            layout: 'empty-template'
+        });
+    }
+
+    return res.render(path.join(__dirname, 'view/recurring-events-embed'), {
+        title: `Sync Recurring Events`,
+        description: 'Sync recurring events in Notion',
+        css: [`/${route}/css/recurring-events.css`],
+        js: [global.js.axios, `/${route}/js/recurring-events-embed.js`],
+        id: id,
+        layout: 'empty-template'
+    })
+})
+/* #endregion */
+
 /* #region  PUT /recurring-events/{id}/sync */
 router.put('/:id/sync', async function (req, res) {
     try {
