@@ -41,6 +41,10 @@ This is a personal website built with Node.js and Express.js. It includes featur
 - Never commit API keys or `.env` file
 - Don't use the same Google API key for server-side and client-side (client-side is exposed)
 
+## Testing
+
+- Don't write unit tests; it's okay for a personal project.
+
 ## Project Structure
 
 Preference:
