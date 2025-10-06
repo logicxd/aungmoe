@@ -117,7 +117,7 @@ router.put('/:id/sync', async function (req, res) {
             throw `Recurring events config not found with id ${id}`
         }
 
-        const result = await processRecurringEvents(config.secretKey, config.databaseId)
+        const result = await processRecurringEvents(config.secretKey, config.databaseId, config.lastSyncedDate)
 
         config.lastSyncedDate = new Date()
         await config.save()
@@ -237,7 +237,7 @@ async function notionUpdatePage(apiKey, pageId, properties) {
 
 /* #region  Recurring Event Processing */
 
-async function processRecurringEvents(apiKey, databaseId) {
+async function processRecurringEvents(apiKey, databaseId, lastSyncedDate) {
     const result = {
         created: 0,
         updated: 0,
@@ -246,9 +246,11 @@ async function processRecurringEvents(apiKey, databaseId) {
     }
 
     try {
-        // Fetch all pages within date range: 7 days before today to 21 days from today
+        // Fetch all pages within date range: from lastSyncedDate (or 14 days before today if not set) to 21 days from today
         const today = moment.utc()
-        const startDate = today.clone().subtract(7, 'days').startOf('day').toISOString()
+        const startDate = lastSyncedDate
+            ? moment.utc(lastSyncedDate).startOf('day').toISOString()
+            : today.clone().subtract(14, 'days').startOf('day').toISOString()
         const endDate = today.clone().add(21, 'days').endOf('day').toISOString()
 
         const data = await notionFetchPages(apiKey, databaseId, {
