@@ -5,23 +5,13 @@ async function ready() {
 }
 
 function setupEmbedSyncButton() {
-    const $button = $('#embed-sync-button')
-    const $status = $('#embed-status')
-    const $statusText = $('#embed-status-text')
-    const $btnText = $('.btn-text')
-    const $btnLoader = $('.btn-loader')
-
-    $button.click(async () => {
+    $('#embed-sync-button').click(async () => {
         const configId = $('#recurring-events-id').val()
-
-        // Reset status
-        $status.removeClass('success error').hide()
-        $statusText.text('')
+        const $button = $('#embed-sync-button')
 
         // Show loading state
-        $btnText.hide()
-        $btnLoader.show()
-        $button.addClass('loading').prop('disabled', true)
+        $button.addClass('disabled')
+        $button.html('Syncing <i class="fas fa-circle-notch fa-spin"></i>')
 
         try {
             const response = await axios.put(`/recurring-events/${configId}/sync`)
@@ -31,15 +21,21 @@ function setupEmbedSyncButton() {
 
                 // Build compact status message
                 const parts = []
-                if (result.created > 0) parts.push(`✓ ${result.created} created`)
-                if (result.updated > 0) parts.push(`↻ ${result.updated} updated`)
-                if (result.skipped > 0) parts.push(`⊘ ${result.skipped} skipped`)
-                if (result.errors && result.errors.length > 0) parts.push(`✗ ${result.errors.length} errors`)
+                if (result.created > 0) parts.push(`✓ ${result.created}`)
+                if (result.updated > 0) parts.push(`↻ ${result.updated}`)
+                if (result.skipped > 0) parts.push(`⊘ ${result.skipped}`)
+                if (result.errors && result.errors.length > 0) parts.push(`✗ ${result.errors.length}`)
 
-                const message = parts.length > 0 ? parts.join(' • ') : 'Sync completed successfully'
+                const message = parts.length > 0 ? parts.join(' • ') : 'Synced!'
 
-                $statusText.text(message)
-                $status.addClass('success').show()
+                // Show success message in button
+                $button.removeClass('disabled')
+                $button.html(message)
+
+                // Reset button after 3 seconds
+                setTimeout(() => {
+                    $button.html('Sync Events')
+                }, 3000)
 
             } else {
                 throw new Error(response.data.error || 'Unknown error')
@@ -49,14 +45,14 @@ function setupEmbedSyncButton() {
             console.error('Sync error:', error)
             const errorMessage = error.response?.data?.error || error.message || 'Sync failed'
 
-            $statusText.text(`✗ ${errorMessage}`)
-            $status.addClass('error').show()
+            // Show error state in button
+            $button.removeClass('disabled')
+            $button.html(`✗ ${errorMessage}`)
 
-        } finally {
-            // Reset button state
-            $btnLoader.hide()
-            $btnText.show()
-            $button.removeClass('loading').prop('disabled', false)
+            // Reset button after 5 seconds
+            setTimeout(() => {
+                $button.html('Sync Events')
+            }, 5000)
         }
     })
 }
