@@ -249,7 +249,7 @@ async function processRecurringEvents(apiKey, databaseId, lastSyncedDate) {
         // Fetch all pages within date range: from lastSyncedDate (or 14 days before today if not set) to 21 days from today
         const today = moment.utc()
         const startDate = lastSyncedDate
-            ? moment.utc(lastSyncedDate).startOf('day').toISOString()
+            ? moment.utc(lastSyncedDate).toISOString()
             : today.clone().subtract(14, 'days').startOf('day').toISOString()
         const endDate = today.clone().add(21, 'days').endOf('day').toISOString()
 
@@ -361,7 +361,7 @@ async function processSourcePage(apiKey, databaseId, allSourcePages, sourcePage,
     const lookaheadEndDate = now.clone().add(lookaheadNumber, frequency === 'Weekly' ? 'weeks' : 'days') // TODO: future, actually set Weekly/Monthly/Daily
 
     // Generate new events
-    const newEvents = generateRecurringDates(
+    const newEventStartDates = generateRecurringDates(
         moment.utc(dateTime),
         lookaheadEndDate,
         frequency,
@@ -382,11 +382,11 @@ async function processSourcePage(apiKey, databaseId, allSourcePages, sourcePage,
         }))
 
     // Create new events if they don't already exist
-    for (const newEventDate of newEvents) {
+    for (const newEventStartDate of newEventStartDates) {
         try {
             // Check if event already exists at this exact time
             const existsAtTime = existingEventsList.some(e =>
-                e.dateTime.format('YYYY-MM-DDTHH:mm') === newEventDate.format('YYYY-MM-DDTHH:mm')
+                e.dateTime.format('YYYY-MM-DDTHH:mm') === newEventStartDate.format('YYYY-MM-DDTHH:mm')
             )
 
             if (existsAtTime) {
@@ -394,11 +394,11 @@ async function processSourcePage(apiKey, databaseId, allSourcePages, sourcePage,
                 continue
             }
 
-            await createEventFromSource(apiKey, databaseId, actualSourcePage, newEventDate.toISOString())
+            await createEventFromSource(apiKey, databaseId, actualSourcePage, newEventStartDate.toISOString())
             result.created++
         } catch (error) {
-            console.error(`Error creating event for ${newEventDate.format()}: ${error}`)
-            result.errors.push(`Create ${newEventDate.format()}: ${error.message}`)
+            console.error(`Error creating event for ${newEventStartDate.format()}: ${error}`)
+            result.errors.push(`Create ${newEventStartDate.format()}: ${error.message}`)
         }
     }
 
@@ -439,16 +439,25 @@ function generateRecurringDates(startDate, endDate, frequency, cadence, recurrin
     return dates
 }
 
-async function createEventFromSource(apiKey, databaseId, sourcePage, newDateTime) {
+async function createEventFromSource(apiKey, databaseId, sourcePage, newStartDateTime) {
     const sourceProps = sourcePage.properties
     const newProperties = {}
 
     // Copy all properties from source
     for (const [key, value] of Object.entries(sourceProps)) {
         if (key === 'Date') {
+            // Calculate end datetime based on source duration
+            let newEndDateTime = null
+            const sourceStart = sourceProps['Date']?.date?.start
+            const sourceEnd = sourceProps['Date']?.date?.end
+            if (sourceStart && sourceEnd) {
+                const durationMs = moment.utc(sourceEnd).diff(moment.utc(sourceStart))
+                newEndDateTime = moment.utc(newStartDateTime).add(durationMs, 'milliseconds').toISOString()
+            }
             newProperties[key] = {
                 date: {
-                    start: newDateTime
+                    start: newStartDateTime,
+                    ...(newEndDateTime && { end: newEndDateTime })
                 }
             }
         } else if (key === 'Recurring Source') {
@@ -493,13 +502,31 @@ async function createEventFromSource(apiKey, databaseId, sourcePage, newDateTime
     await notionCreatePage(apiKey, databaseId, newProperties)
 }
 
-async function updateEventFromSource(apiKey, targetPageId, sourcePage, targetDateTime) {
+async function updateEventFromSource(apiKey, targetPageId, sourcePage, targetStartDateTime) {
     const sourceProps = sourcePage.properties
     const updateProperties = {}
 
-    // Copy all properties from source except DateTime and Recurring Source
+    // Copy all properties from source except Recurring Source
     for (const [key, value] of Object.entries(sourceProps)) {
-        if (key === 'Date' || key === 'Recurring Source') {
+        if (key === 'Recurring Source') {
+            continue
+        }
+
+        if (key === 'Date') {
+            // Calculate end datetime based on source duration
+            let targetEndDateTime = null
+            const sourceStart = sourceProps['Date']?.date?.start
+            const sourceEnd = sourceProps['Date']?.date?.end
+            if (sourceStart && sourceEnd) {
+                const durationMs = moment.utc(sourceEnd).diff(moment.utc(sourceStart))
+                targetEndDateTime = moment.utc(targetStartDateTime).add(durationMs, 'milliseconds').toISOString()
+            }
+            updateProperties[key] = {
+                date: {
+                    start: targetStartDateTime,
+                    ...(targetEndDateTime && { end: targetEndDateTime })
+                }
+            }
             continue
         }
 
