@@ -18,7 +18,7 @@ This feature allows you to manage recurring events in a Notion calendar database
 
 Your Notion database must have the following properties:
 
-1. **DateTime** (Date)
+1. **Date** (Date)
    - The date and time of the event
    - Must include time component
 
@@ -51,7 +51,7 @@ Your Notion database must have the following properties:
 ### 1. Create Initial Recurring Event
 
 1. Create a new event in your Notion database
-2. Set the **DateTime** to your desired start date/time
+2. Set the **Date** to your desired start date/time
 3. Set **Recurring Frequency** to "Weekly"
 4. Set **Recurring Cadence** (e.g., 1 for every week)
 5. Select **Recurring Days** (e.g., Monday, Friday)
@@ -77,7 +77,7 @@ To update all future events:
 ## Example Scenario
 
 **Initial Setup (2025-10-01):**
-- DateTime: 2025-10-01 13:00
+- Date: 2025-10-01 13:00
 - Recurring Frequency: Weekly
 - Recurring Cadence: 1
 - Recurring Days: Monday, Friday
@@ -103,7 +103,7 @@ If an event already exists at the exact same time with the same Recurring ID, th
 
 ### Updating Template
 When you mark a different event as the Recurring Source and sync:
-- All future events (same or later DateTime) will update to match
+- All future events (same or later Date) will update to match
 - Past events remain unchanged
 
 ### Lookahead Changes
@@ -154,7 +154,7 @@ If you delete future events manually:
 ### Events Not Updating
 - Confirm the event is marked as Recurring Source
 - Check that future events share the same Recurring ID
-- Verify DateTime is on or after the source event
+- Verify Date is on or after the source event
 
 ### Sync Errors
 - Check Notion API key has proper permissions

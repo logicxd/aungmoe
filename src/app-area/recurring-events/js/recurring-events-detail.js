@@ -50,11 +50,6 @@ function setupSyncButton() {
                     displayLength: 3000
                 })
 
-                // Reload page after a delay to show updated last sync time
-                setTimeout(() => {
-                    location.reload()
-                }, 3000)
-
             } else {
                 throw new Error(response.data.error || 'Unknown error')
             }

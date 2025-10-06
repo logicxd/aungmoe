@@ -10,6 +10,7 @@ var moment = require('moment')
 var { body, validationResult } = require('express-validator')
 var NotionRecurringModel = require('../../database/model/NotionRecurring')
 var mongoose = require('mongoose');
+var { randomUUID } = require('crypto');
 /* #endregion */
 
 /* #region  Set up routes */
@@ -245,12 +246,26 @@ async function processRecurringEvents(apiKey, databaseId) {
     }
 
     try {
-        // Fetch all pages with Recurring Source = true
+        // Fetch all pages within date range: 7 days before today to 14 days from today
+        const today = moment.utc()
+        const startDate = today.clone().subtract(7, 'days').startOf('day').toISOString()
+        const endDate = today.clone().add(14, 'days').endOf('day').toISOString()
+
         const data = await notionFetchPages(apiKey, databaseId, {
-            property: "Recurring Source",
-            checkbox: {
-                equals: true
-            }
+            and: [
+                {
+                    property: "Date",
+                    date: {
+                        on_or_after: startDate
+                    }
+                },
+                {
+                    property: "Date",
+                    date: {
+                        on_or_before: endDate
+                    }
+                }
+            ]
         })
 
         const sourcePages = data.results
@@ -274,24 +289,35 @@ async function processRecurringEvents(apiKey, databaseId) {
 
 async function processSourcePage(apiKey, databaseId, sourcePage, result) {
     const props = sourcePage.properties
-
-    // Validate required properties
-    if (!props['Recurring Frequency']?.select?.name) {
-        result.skipped++
-        return
-    }
-
     const frequency = props['Recurring Frequency'].select.name
     const cadence = props['Recurring Cadence']?.number || 1
     const recurringDays = props['Recurring Days']?.multi_select?.map(d => d.name) || []
     const lookaheadNumber = props['Recurring Lookahead Number']?.number || 0
-    const recurringId = props['Recurring ID']?.rich_text?.[0]?.plain_text
-    const dateTime = props['DateTime']?.date?.start
+    const dateTime = props['Date']?.date?.start
+    let recurringId = props['Recurring ID']?.rich_text?.[0]?.plain_text
 
     // Validate
-    if (!dateTime || cadence < 0 || recurringDays.length === 0 || lookaheadNumber < 1) {
+    if (!frequency || !dateTime || cadence < 0 || recurringDays.length === 0 || lookaheadNumber < 1) {
         result.skipped++
         return
+    }
+
+    if (!recurringId) {
+        recurringId = randomUUID()
+        // Update the source page with the new UUID
+        await notionUpdatePage(apiKey, sourcePage.id, {
+            'Recurring ID': {
+                rich_text: [
+                    {
+                        type: 'text',
+                        text: {
+                            content: recurringId
+                        }
+                    }
+                ]
+            }
+        })
+        console.log(`Generated new Recurring ID for page ${sourcePage.id}: ${recurringId}`)
     }
 
     // Get all existing events with same Recurring ID
@@ -306,7 +332,7 @@ async function processSourcePage(apiKey, databaseId, sourcePage, result) {
         .filter(e => e.id !== sourcePage.id)
         .map(e => ({
             id: e.id,
-            dateTime: moment.utc(e.properties['DateTime']?.date?.start),
+            dateTime: moment.utc(e.properties['Date']?.date?.start),
             isSource: e.properties['Recurring Source']?.checkbox === true,
             properties: e.properties
         }))
@@ -318,7 +344,7 @@ async function processSourcePage(apiKey, databaseId, sourcePage, result) {
 
     for (const futureEvent of futureEvents) {
         try {
-            await updateEventFromSource(apiKey, futureEvent.id, sourcePage, futureEvent.properties['DateTime']?.date?.start)
+            await updateEventFromSource(apiKey, futureEvent.id, sourcePage, futureEvent.properties['Date']?.date?.start)
             result.updated++
         } catch (error) {
             console.error(`Error updating event ${futureEvent.id}: ${error}`)
@@ -398,7 +424,7 @@ async function createEventFromSource(apiKey, databaseId, sourcePage, newDateTime
 
     // Copy all properties from source
     for (const [key, value] of Object.entries(sourceProps)) {
-        if (key === 'DateTime') {
+        if (key === 'Date') {
             newProperties[key] = {
                 date: {
                     start: newDateTime
@@ -452,7 +478,7 @@ async function updateEventFromSource(apiKey, targetPageId, sourcePage, targetDat
 
     // Copy all properties from source except DateTime and Recurring Source
     for (const [key, value] of Object.entries(sourceProps)) {
-        if (key === 'DateTime' || key === 'Recurring Source') {
+        if (key === 'Date' || key === 'Recurring Source') {
             continue
         }
 
