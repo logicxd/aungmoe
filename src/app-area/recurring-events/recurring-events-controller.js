@@ -246,10 +246,10 @@ async function processRecurringEvents(apiKey, databaseId) {
     }
 
     try {
-        // Fetch all pages within date range: 7 days before today to 14 days from today
+        // Fetch all pages within date range: 7 days before today to 21 days from today
         const today = moment.utc()
         const startDate = today.clone().subtract(7, 'days').startOf('day').toISOString()
-        const endDate = today.clone().add(14, 'days').endOf('day').toISOString()
+        const endDate = today.clone().add(21, 'days').endOf('day').toISOString()
 
         const data = await notionFetchPages(apiKey, databaseId, {
             and: [
@@ -268,11 +268,11 @@ async function processRecurringEvents(apiKey, databaseId) {
             ]
         })
 
-        const sourcePages = data.results
+        const allSourcePages = data.results
 
-        for (const sourcePage of sourcePages) {
+        for (const sourcePage of allSourcePages) {
             try {
-                await processSourcePage(apiKey, databaseId, sourcePage, result)
+                await processSourcePage(apiKey, databaseId, allSourcePages, sourcePage, result)
             } catch (error) {
                 console.error(`Error processing source page ${sourcePage.id}: ${error}`)
                 result.errors.push(`Page ${sourcePage.id}: ${error.message}`)
@@ -287,14 +287,15 @@ async function processRecurringEvents(apiKey, databaseId) {
     return result
 }
 
-async function processSourcePage(apiKey, databaseId, sourcePage, result) {
+async function processSourcePage(apiKey, databaseId, allSourcePages, sourcePage, result) {
     const props = sourcePage.properties
-    const frequency = props['Recurring Frequency'].select.name
+    const frequency = props['Recurring Frequency']?.select?.name
     const cadence = props['Recurring Cadence']?.number || 1
     const recurringDays = props['Recurring Days']?.multi_select?.map(d => d.name) || []
     const lookaheadNumber = props['Recurring Lookahead Number']?.number || 0
     const dateTime = props['Date']?.date?.start
     let recurringId = props['Recurring ID']?.rich_text?.[0]?.plain_text
+    const isRecurringSource = props['Recurring Source']?.checkbox === true
 
     // Validate
     if (!frequency || !dateTime || cadence < 0 || recurringDays.length === 0 || lookaheadNumber < 1) {
@@ -302,6 +303,13 @@ async function processSourcePage(apiKey, databaseId, sourcePage, result) {
         return
     }
 
+    // Skip if "Recurring Source" is not true
+    if (!isRecurringSource) {
+        result.skipped++
+        return
+    }
+
+    // Ensure Recurring ID exists
     if (!recurringId) {
         recurringId = randomUUID()
         // Update the source page with the new UUID
@@ -320,31 +328,25 @@ async function processSourcePage(apiKey, databaseId, sourcePage, result) {
         console.log(`Generated new Recurring ID for page ${sourcePage.id}: ${recurringId}`)
     }
 
-    // Get all existing events with same Recurring ID
-    const existingEvents = await notionFetchPages(apiKey, databaseId, {
-        property: "Recurring ID",
-        rich_text: {
-            equals: recurringId
-        }
-    })
+    // Since allSourcePages are sorted by date ascending, and this sourcePage has "Recurring Source" = true,
+    // this must be the earliest event with "Recurring Source" marked as true
+    const actualSourcePage = sourcePage
 
-    const existingEventsList = existingEvents.results
-        .filter(e => e.id !== sourcePage.id)
-        .map(e => ({
-            id: e.id,
-            dateTime: moment.utc(e.properties['Date']?.date?.start),
-            isSource: e.properties['Recurring Source']?.checkbox === true,
-            properties: e.properties
-        }))
-        .sort((a, b) => a.dateTime - b.dateTime)
-
-    // Update all future events if this is a source
+    // Find all future date pages with the same "Recurring ID" (excluding the source page itself)
     const sourceDateTime = moment.utc(dateTime)
-    const futureEvents = existingEventsList.filter(e => e.dateTime.isSameOrAfter(sourceDateTime))
+    const futureEvents = allSourcePages
+        .filter(p => {
+            if (p.id === sourcePage.id) { return false }
+            const pRecurringId = p.properties['Recurring ID']?.rich_text?.[0]?.plain_text
+            if (pRecurringId !== recurringId) { return false }
+            const pDateTime = moment.utc(p.properties['Date']?.date?.start)
+            return pDateTime.isAfter(sourceDateTime)
+        })
 
+    // Update all future events based on the actual source
     for (const futureEvent of futureEvents) {
         try {
-            await updateEventFromSource(apiKey, futureEvent.id, sourcePage, futureEvent.properties['Date']?.date?.start)
+            await updateEventFromSource(apiKey, futureEvent.id, actualSourcePage, futureEvent.properties['Date']?.date?.start)
             result.updated++
         } catch (error) {
             console.error(`Error updating event ${futureEvent.id}: ${error}`)
@@ -354,16 +356,11 @@ async function processSourcePage(apiKey, databaseId, sourcePage, result) {
 
     // Calculate lookahead period
     const now = moment.utc()
-    const lookaheadEndDate = now.clone().add(lookaheadNumber, frequency === 'Weekly' ? 'weeks' : 'days')
-
-    // Find the last event date
-    const lastEventDate = existingEventsList.length > 0
-        ? existingEventsList[existingEventsList.length - 1].dateTime
-        : sourceDateTime
+    const lookaheadEndDate = now.clone().add(lookaheadNumber, frequency === 'Weekly' ? 'weeks' : 'days') // TODO: future, actually set Weekly/Monthly/Daily
 
     // Generate new events
     const newEvents = generateRecurringDates(
-        lastEventDate.clone().add(1, 'day'),
+        moment.utc(dateTime),
         lookaheadEndDate,
         frequency,
         cadence,
@@ -371,7 +368,18 @@ async function processSourcePage(apiKey, databaseId, sourcePage, result) {
         sourceDateTime
     )
 
-    // Create new events
+    // Get all existing events with the same Recurring ID for checking
+    const existingEventsList = allSourcePages
+        .filter(p => {
+            const pRecurringId = p.properties['Recurring ID']?.rich_text?.[0]?.plain_text
+            return pRecurringId === recurringId
+        })
+        .map(p => ({
+            ...p,
+            dateTime: moment.utc(p.properties['Date']?.date?.start)
+        }))
+
+    // Create new events if they don't already exist
     for (const newEventDate of newEvents) {
         try {
             // Check if event already exists at this exact time
@@ -384,18 +392,29 @@ async function processSourcePage(apiKey, databaseId, sourcePage, result) {
                 continue
             }
 
-            await createEventFromSource(apiKey, databaseId, sourcePage, newEventDate.toISOString())
+            await createEventFromSource(apiKey, databaseId, actualSourcePage, newEventDate.toISOString())
             result.created++
         } catch (error) {
             console.error(`Error creating event for ${newEventDate.format()}: ${error}`)
             result.errors.push(`Create ${newEventDate.format()}: ${error.message}`)
         }
     }
+
+    // Mark "Recurring Source" as false on the source page
+    try {
+        await notionUpdatePage(apiKey, sourcePage.id, {
+            'Recurring Source': {
+                checkbox: false
+            }
+        })
+    } catch (error) {
+        console.error(`Error clearing Recurring Source flag for page ${sourcePage.id}: ${error}`)
+    }
 }
 
 function generateRecurringDates(startDate, endDate, frequency, cadence, recurringDays, sourceDateTime) {
     const dates = []
-    const current = startDate.clone()
+    const current = startDate.clone().add(1, 'day')
     const sourceTime = moment.utc(sourceDateTime)
 
     while (current.isSameOrBefore(endDate)) {
