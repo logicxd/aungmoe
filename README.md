@@ -1,4 +1,11 @@
-# Project Installation
+# Aung Moe
+
+This project was created originally for my portfolio but now has grown to host a collection of different projects that I have done over the years. 
+
+* List of projects listed at /projects
+* List of blogs that I don't work on anymore at /blog
+
+## Project Installation
 
 1. Run `npm install`
 2. Install nodemon if you haven't with `npm install --global nodemon`
