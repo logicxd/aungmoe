@@ -14,7 +14,7 @@ function setupEmbedSyncButton() {
         $button.html('Syncing <i class="fas fa-circle-notch fa-spin"></i>')
 
         try {
-            const response = await axios.put(`/recurring-events/${configId}/sync`)
+            const response = await axios.post(`/recurring-events/${configId}/sync`)
 
             if (response.data.success) {
                 const result = response.data

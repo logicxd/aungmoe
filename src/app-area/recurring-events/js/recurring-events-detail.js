@@ -17,7 +17,7 @@ function setupSyncButton() {
         $('#sync-button').addClass('disabled')
 
         try {
-            const response = await axios.put(`/recurring-events/${configId}/sync`)
+            const response = await axios.post(`/recurring-events/${configId}/sync`)
 
             if (response.data.success) {
                 // Show success message

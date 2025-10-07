@@ -143,8 +143,8 @@ router.get('/:id/embed', async function (req, res) {
 })
 /* #endregion */
 
-/* #region  PUT /recurring-events/{id}/sync */
-router.put('/:id/sync', async function (req, res) {
+/* #region  POST /recurring-events/{id}/sync */
+router.post('/:id/sync', async function (req, res) {
     try {
         let id = req.params['id']
         let config = await NotionRecurringModel.findById(new mongoose.Types.ObjectId(id))
