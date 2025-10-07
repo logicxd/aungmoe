@@ -370,12 +370,12 @@ async function processRecurringEvents(apiKey, databaseId, lastSyncedDate) {
         const database = await notionGetDatabase(apiKey, databaseId)
         const dataSourceId = database.data_sources[0]?.id || database.id
 
-        // Fetch all pages within date range: from lastSyncedDate (or 14 days before today if not set) to 21 days from today
+        // Fetch all pages within date range: from lastSyncedDate (or 14 days before today if not set) to 60 days from today
         const today = moment.utc()
         const startDate = lastSyncedDate
             ? moment.utc(lastSyncedDate).toISOString()
             : today.clone().subtract(14, 'days').startOf('day').toISOString()
-        const endDate = today.clone().add(21, 'days').endOf('day').toISOString()
+        const endDate = today.clone().add(60, 'days').endOf('day').toISOString()
 
         const data = await notionFetchPages(apiKey, dataSourceId, {
             and: [
@@ -416,9 +416,9 @@ async function processRecurringEvents(apiKey, databaseId, lastSyncedDate) {
 async function processSourcePage(apiKey, dataSourceId, allSourcePages, sourcePage, result) {
     const props = sourcePage.properties
     const frequency = props['Recurring Frequency']?.select?.name
-    const cadence = props['Recurring Cadence']?.number || 1
+    let cadence = props['Recurring Cadence']?.number || 1
     const recurringDays = props['Recurring Days']?.multi_select?.map(d => d.name) || []
-    const lookaheadNumber = props['Recurring Lookahead Number']?.number || 0
+    let lookaheadNumber = props['Recurring Lookahead Number']?.number || 0
     const sourcePageDateTime = props['Date']?.date?.start
     let recurringId = props['Recurring ID']?.rich_text?.[0]?.plain_text
     const isRecurringSource = props['Recurring Source']?.checkbox === true
@@ -440,6 +440,16 @@ async function processSourcePage(apiKey, dataSourceId, allSourcePages, sourcePag
         result.skipped++
         return
     }
+
+    // Apply upper limit to cadence and lookaheadNumber
+    if (frequency === 'Weekly') {
+        cadence = Math.min(cadence, 4)
+        lookaheadNumber = Math.min(lookaheadNumber, 8)
+    } else if (frequency === 'Daily') {
+        cadence = Math.min(cadence, 30)
+        lookaheadNumber = Math.min(lookaheadNumber, 60)
+    }
+    console.log(`Cadence: ${cadence}, lookahead: ${lookaheadNumber}`)
 
     // Ensure Recurring ID exists
     if (!recurringId) {
