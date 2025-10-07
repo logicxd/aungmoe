@@ -203,6 +203,40 @@ async function notionGetDatabase(apiKey, databaseId) {
     return res.data
 }
 
+async function notionGetDataSource(apiKey, dataSourceId) {
+    const options = {
+        method: 'GET',
+        url: `https://api.notion.com/v1/data_sources/${dataSourceId}`,
+        headers: {
+            'Authorization': `Bearer ${apiKey}`,
+            'Accept': 'application/json',
+            'Notion-Version': '2025-09-03'
+        }
+    }
+
+    let res = await axios(options)
+    return res.data
+}
+
+async function notionUpdateDataSource(apiKey, dataSourceId, properties) {
+    const options = {
+        method: 'PATCH',
+        url: `https://api.notion.com/v1/data_sources/${dataSourceId}`,
+        headers: {
+            'Authorization': `Bearer ${apiKey}`,
+            'Accept': 'application/json',
+            'Notion-Version': '2025-09-03',
+            'Content-Type': 'application/json'
+        },
+        data: {
+            properties: properties
+        }
+    }
+
+    let res = await axios(options)
+    return res.data
+}
+
 async function notionFetchPages(apiKey, dataSourceId, filter = null) {
     const options = {
         method: 'POST',
@@ -357,6 +391,70 @@ async function notionAppendBlocks(apiKey, pageId, children) {
 
 /* #region  Recurring Event Processing */
 
+async function ensureRecurringProperties(apiKey, dataSourceId) {
+    const dataSource = await notionGetDataSource(apiKey, dataSourceId)
+    const existingProperties = dataSource.properties || {}
+
+    const requiredProperties = {
+        'Recurring Frequency': {
+            select: {
+                options: [
+                    { name: 'Daily', color: 'blue' },
+                    { name: 'Weekly', color: 'green' }
+                ]
+            }
+        },
+        'Recurring Cadence': {
+            number: {
+                format: 'number'
+            }
+        },
+        'Recurring Days': {
+            multi_select: {
+                options: [
+                    { name: 'Monday', color: 'blue' },
+                    { name: 'Tuesday', color: 'green' },
+                    { name: 'Wednesday', color: 'yellow' },
+                    { name: 'Thursday', color: 'orange' },
+                    { name: 'Friday', color: 'red' },
+                    { name: 'Saturday', color: 'purple' },
+                    { name: 'Sunday', color: 'pink' }
+                ]
+            }
+        },
+        'Recurring Lookahead Number': {
+            number: {
+                format: 'number'
+            }
+        },
+        'Recurring Source': {
+            checkbox: {}
+        },
+        'Recurring ID': {
+            rich_text: {}
+        }
+    }
+
+    const propertiesToCreate = {}
+    let hasNewProperties = false
+
+    for (const [propName, propConfig] of Object.entries(requiredProperties)) {
+        if (!existingProperties[propName]) {
+            propertiesToCreate[propName] = propConfig
+            hasNewProperties = true
+            console.log(`Will create missing property: ${propName}`)
+        }
+    }
+
+    if (hasNewProperties) {
+        console.log('Creating missing Recurring properties in data source...')
+        await notionUpdateDataSource(apiKey, dataSourceId, propertiesToCreate)
+        console.log('Successfully created missing properties')
+    } else {
+        console.log('All required Recurring properties already exist')
+    }
+}
+
 async function processRecurringEvents(apiKey, databaseId, lastSyncedDate) {
     const result = {
         created: 0,
@@ -369,6 +467,9 @@ async function processRecurringEvents(apiKey, databaseId, lastSyncedDate) {
         // Get the database to retrieve the data source ID
         const database = await notionGetDatabase(apiKey, databaseId)
         const dataSourceId = database.data_sources[0]?.id || database.id
+
+        // Ensure all required properties exist in the data source
+        await ensureRecurringProperties(apiKey, dataSourceId)
 
         // Fetch all pages within date range: from lastSyncedDate (or 14 days before today if not set) to 60 days from today
         const today = moment.utc()
@@ -406,8 +507,9 @@ async function processRecurringEvents(apiKey, databaseId, lastSyncedDate) {
         }
 
     } catch (error) {
-        console.error(`Error in processRecurringEvents: ${error}`)
-        result.errors.push(error.response.data.message || error.message || 'Unknown error')
+        const errorMessage = error.response.data.message || error.message || 'Unknown error'
+        console.error(`Error in processRecurringEvents: ${errorMessage}`)
+        result.errors.push(errorMessage)
     }
 
     return result
