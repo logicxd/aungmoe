@@ -553,6 +553,10 @@ async function createEventFromSource(apiKey, dataSourceId, sourcePage, newStartD
             newProperties[key] = {
                 url: value.url
             }
+        } else if (value.type === 'relation') {
+            newProperties[key] = {
+                relation: value.relation
+            }
         }
     }
 
@@ -614,6 +618,10 @@ async function updateEventFromSource(apiKey, targetPageId, sourcePage, targetSta
         } else if (value.type === 'url') {
             updateProperties[key] = {
                 url: value.url
+            }
+        } else if (value.type === 'relation') {
+            updateProperties[key] = {
+                relation: value.relation
             }
         }
     }
