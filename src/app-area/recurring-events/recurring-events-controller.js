@@ -419,12 +419,18 @@ async function processSourcePage(apiKey, dataSourceId, allSourcePages, sourcePag
     const cadence = props['Recurring Cadence']?.number || 1
     const recurringDays = props['Recurring Days']?.multi_select?.map(d => d.name) || []
     const lookaheadNumber = props['Recurring Lookahead Number']?.number || 0
-    const dateTime = props['Date']?.date?.start
+    const sourcePageDateTime = props['Date']?.date?.start
     let recurringId = props['Recurring ID']?.rich_text?.[0]?.plain_text
     const isRecurringSource = props['Recurring Source']?.checkbox === true
 
     // Validate
-    if (!frequency || !dateTime || cadence < 0 || recurringDays.length === 0 || lookaheadNumber < 1) {
+    if (!frequency || !sourcePageDateTime || cadence < 1 || lookaheadNumber < 1) {
+        result.skipped++
+        return
+    }
+
+    // For Weekly frequency, recurringDays is required
+    if (frequency === 'Weekly' && recurringDays.length === 0) {
         result.skipped++
         return
     }
@@ -459,14 +465,14 @@ async function processSourcePage(apiKey, dataSourceId, allSourcePages, sourcePag
     const actualSourcePage = sourcePage
 
     // Find all future date pages with the same "Recurring ID" (excluding the source page itself)
-    const sourceDateTime = moment.utc(dateTime)
+    const sourcePageDateTimeMoment = moment.utc(sourcePageDateTime)
     const futureEvents = allSourcePages
         .filter(p => {
             if (p.id === sourcePage.id) { return false }
             const pRecurringId = p.properties['Recurring ID']?.rich_text?.[0]?.plain_text
             if (pRecurringId !== recurringId) { return false }
             const pDateTime = moment.utc(p.properties['Date']?.date?.start)
-            return pDateTime.isAfter(sourceDateTime)
+            return pDateTime.isAfter(sourcePageDateTimeMoment)
         })
 
     // Update all future events based on the actual source
@@ -482,16 +488,23 @@ async function processSourcePage(apiKey, dataSourceId, allSourcePages, sourcePag
 
     // Calculate lookahead period
     const now = moment.utc()
-    const lookaheadEndDate = now.clone().add(lookaheadNumber, frequency === 'Weekly' ? 'weeks' : 'days') // TODO: future, actually set Weekly/Monthly/Daily
+    let lookaheadEndDate
+    if (frequency === 'Weekly') {
+        lookaheadEndDate = now.clone().add(lookaheadNumber, 'weeks')
+    } else if (frequency === 'Daily') {
+        lookaheadEndDate = now.clone().add(lookaheadNumber, 'days')
+    } else {
+        // Unsupported frequency, skip event generation
+        return
+    }
 
     // Generate new events
     const newEventStartDates = generateRecurringDates(
-        moment.utc(dateTime),
+        sourcePageDateTimeMoment,
         lookaheadEndDate,
         frequency,
         cadence,
-        recurringDays,
-        sourceDateTime
+        recurringDays
     )
 
     // Get all existing events with the same Recurring ID for checking
@@ -538,26 +551,73 @@ async function processSourcePage(apiKey, dataSourceId, allSourcePages, sourcePag
     }
 }
 
-function generateRecurringDates(startDate, endDate, frequency, cadence, recurringDays, sourceDateTime) {
+function generateRecurringDates(startDate, endDate, frequency, cadence, recurringDays) {
     const dates = []
-    const current = startDate.clone().add(1, 'day')
-    const sourceTime = moment.utc(sourceDateTime)
+    const sourceHour = startDate.hours()
+    const sourceMinute = startDate.minutes()
 
-    while (current.isSameOrBefore(endDate)) {
-        const dayName = current.format('dddd')
+    if (frequency === 'Daily') {
+        // For Daily frequency, use cadence to determine interval
+        const current = startDate.clone().add(cadence, 'days')
 
-        if (recurringDays.includes(dayName)) {
+        while (current.isSameOrBefore(endDate)) {
             // Set the time from source
             const eventDate = current.clone()
-            eventDate.hours(sourceTime.hours())
-            eventDate.minutes(sourceTime.minutes())
+            eventDate.hours(sourceHour)
+            eventDate.minutes(sourceMinute)
             eventDate.seconds(0)
             eventDate.milliseconds(0)
 
             dates.push(eventDate)
+            current.add(cadence, 'days')
         }
+    } else if (frequency === 'Weekly') {
+        // For Weekly frequency, use cadence to skip weeks
+        const current = startDate.clone().add(1, 'day')
+        let weeksSinceStart = 0
 
-        current.add(1, 'day')
+        while (current.isSameOrBefore(endDate)) {
+            // Calculate how many weeks have passed since the start date
+            weeksSinceStart = Math.floor(current.diff(startDate, 'weeks', true))
+
+            // Only process days that fall on a cadence week (e.g., every 2nd week if cadence is 2)
+            if (weeksSinceStart > 0 && weeksSinceStart % cadence === 0) {
+                const dayName = current.format('dddd')
+
+                if (recurringDays.includes(dayName)) {
+                    // Set the time from source
+                    const eventDate = current.clone()
+                    eventDate.hours(sourceHour)
+                    eventDate.minutes(sourceMinute)
+                    eventDate.seconds(0)
+                    eventDate.milliseconds(0)
+
+                    dates.push(eventDate)
+                }
+            }
+
+            current.add(1, 'day')
+        }
+    } else {
+        // For other frequencies, use recurringDays without cadence
+        const current = startDate.clone().add(1, 'day')
+
+        while (current.isSameOrBefore(endDate)) {
+            const dayName = current.format('dddd')
+
+            if (recurringDays.includes(dayName)) {
+                // Set the time from source
+                const eventDate = current.clone()
+                eventDate.hours(sourceHour)
+                eventDate.minutes(sourceMinute)
+                eventDate.seconds(0)
+                eventDate.milliseconds(0)
+
+                dates.push(eventDate)
+            }
+
+            current.add(1, 'day')
+        }
     }
 
     return dates
