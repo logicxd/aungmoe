@@ -244,7 +244,7 @@ async function notionGetPage(apiKey, pageId) {
     return res.data
 }
 
-async function notionCreatePage(apiKey, dataSourceId, properties) {
+async function notionCreatePage(apiKey, dataSourceId, properties, icon = null, children = null) {
     const options = {
         method: 'POST',
         url: `https://api.notion.com/v1/pages`,
@@ -259,7 +259,9 @@ async function notionCreatePage(apiKey, dataSourceId, properties) {
                 type: 'data_source_id',
                 data_source_id: dataSourceId
             },
-            properties: properties
+            properties: properties,
+            ...(icon && { icon: icon }),
+            ...(children && { children: children })
         }
     }
 
@@ -267,7 +269,7 @@ async function notionCreatePage(apiKey, dataSourceId, properties) {
     return res.data
 }
 
-async function notionUpdatePage(apiKey, pageId, properties) {
+async function notionUpdatePage(apiKey, pageId, properties, icon = null) {
     const options = {
         method: 'PATCH',
         url: `https://api.notion.com/v1/pages/${pageId}`,
@@ -278,7 +280,72 @@ async function notionUpdatePage(apiKey, pageId, properties) {
             'Content-Type': 'application/json'
         },
         data: {
-            properties: properties
+            properties: properties,
+            ...(icon && { icon: icon })
+        }
+    }
+
+    let res = await axios(options)
+    return res.data
+}
+
+async function notionGetPageBlocks(apiKey, pageId) {
+    const options = {
+        method: 'GET',
+        url: `https://api.notion.com/v1/blocks/${pageId}/children`,
+        headers: {
+            'Authorization': `Bearer ${apiKey}`,
+            'Accept': 'application/json',
+            'Notion-Version': '2025-09-03'
+        }
+    }
+
+    let res = await axios(options)
+    return res.data
+}
+
+async function notionReplacePageBlocks(apiKey, pageId, children) {
+    // First, get existing blocks
+    const existingBlocks = await notionGetPageBlocks(apiKey, pageId)
+
+    // Delete all existing blocks
+    for (const block of existingBlocks.results) {
+        await notionDeleteBlock(apiKey, block.id)
+    }
+
+    // Add new blocks
+    if (children && children.length > 0) {
+        await notionAppendBlocks(apiKey, pageId, children)
+    }
+}
+
+async function notionDeleteBlock(apiKey, blockId) {
+    const options = {
+        method: 'DELETE',
+        url: `https://api.notion.com/v1/blocks/${blockId}`,
+        headers: {
+            'Authorization': `Bearer ${apiKey}`,
+            'Accept': 'application/json',
+            'Notion-Version': '2025-09-03'
+        }
+    }
+
+    let res = await axios(options)
+    return res.data
+}
+
+async function notionAppendBlocks(apiKey, pageId, children) {
+    const options = {
+        method: 'PATCH',
+        url: `https://api.notion.com/v1/blocks/${pageId}/children`,
+        headers: {
+            'Authorization': `Bearer ${apiKey}`,
+            'Accept': 'application/json',
+            'Notion-Version': '2025-09-03',
+            'Content-Type': 'application/json'
+        },
+        data: {
+            children: children
         }
     }
 
@@ -496,6 +563,24 @@ function generateRecurringDates(startDate, endDate, frequency, cadence, recurrin
     return dates
 }
 
+function prepareBlocksForCopying(blocks) {
+    if (!blocks || blocks.length === 0) {
+        return []
+    }
+
+    return blocks.map(block => {
+        // Strip out read-only fields that Notion API doesn't accept when creating blocks
+        const { id, created_time, last_edited_time, created_by, last_edited_by, has_children, archived, ...cleanBlock } = block
+
+        // If the block has children, recursively process them
+        if (block[block.type]?.children) {
+            cleanBlock[block.type].children = prepareBlocksForCopying(block[block.type].children)
+        }
+
+        return cleanBlock
+    })
+}
+
 async function createEventFromSource(apiKey, dataSourceId, sourcePage, newStartDateTime) {
     const sourceProps = sourcePage.properties
     const newProperties = {}
@@ -560,7 +645,15 @@ async function createEventFromSource(apiKey, dataSourceId, sourcePage, newStartD
         }
     }
 
-    await notionCreatePage(apiKey, dataSourceId, newProperties)
+    // Get the full source page to retrieve icon
+    const fullSourcePage = await notionGetPage(apiKey, sourcePage.id)
+    const sourceIcon = fullSourcePage.icon
+
+    // Get the source page's content blocks
+    const sourceBlocks = await notionGetPageBlocks(apiKey, sourcePage.id)
+    const sourceChildren = prepareBlocksForCopying(sourceBlocks.results)
+
+    await notionCreatePage(apiKey, dataSourceId, newProperties, sourceIcon, sourceChildren)
 }
 
 async function updateEventFromSource(apiKey, targetPageId, sourcePage, targetStartDateTime) {
@@ -631,7 +724,17 @@ async function updateEventFromSource(apiKey, targetPageId, sourcePage, targetSta
         checkbox: false
     }
 
-    await notionUpdatePage(apiKey, targetPageId, updateProperties)
+    // Get the full source page to retrieve icon
+    const fullSourcePage = await notionGetPage(apiKey, sourcePage.id)
+    const sourceIcon = fullSourcePage.icon
+
+    // Update the page with properties and icon
+    await notionUpdatePage(apiKey, targetPageId, updateProperties, sourceIcon)
+
+    // Get the source page's content blocks and replace target's content
+    const sourceBlocks = await notionGetPageBlocks(apiKey, sourcePage.id)
+    const sourceChildren = prepareBlocksForCopying(sourceBlocks.results)
+    await notionReplacePageBlocks(apiKey, targetPageId, sourceChildren)
 }
 
 /* #endregion */
