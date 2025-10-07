@@ -188,14 +188,29 @@ function requiredValidators() {
 
 /* #region  Notion API */
 
-async function notionFetchPages(apiKey, databaseId, filter = null) {
+async function notionGetDatabase(apiKey, databaseId) {
     const options = {
-        method: 'POST',
-        url: `https://api.notion.com/v1/databases/${databaseId}/query`,
+        method: 'GET',
+        url: `https://api.notion.com/v1/databases/${databaseId}`,
         headers: {
             'Authorization': `Bearer ${apiKey}`,
             'Accept': 'application/json',
-            'Notion-Version': '2022-02-22',
+            'Notion-Version': '2025-09-03'
+        }
+    }
+
+    let res = await axios(options)
+    return res.data
+}
+
+async function notionFetchPages(apiKey, dataSourceId, filter = null) {
+    const options = {
+        method: 'POST',
+        url: `https://api.notion.com/v1/data_sources/${dataSourceId}/query`,
+        headers: {
+            'Authorization': `Bearer ${apiKey}`,
+            'Accept': 'application/json',
+            'Notion-Version': '2025-09-03',
             'Content-Type': 'application/json'
         },
         data: {
@@ -221,7 +236,7 @@ async function notionGetPage(apiKey, pageId) {
         headers: {
             'Authorization': `Bearer ${apiKey}`,
             'Accept': 'application/json',
-            'Notion-Version': '2022-02-22'
+            'Notion-Version': '2025-09-03'
         }
     }
 
@@ -229,18 +244,21 @@ async function notionGetPage(apiKey, pageId) {
     return res.data
 }
 
-async function notionCreatePage(apiKey, databaseId, properties) {
+async function notionCreatePage(apiKey, dataSourceId, properties) {
     const options = {
         method: 'POST',
         url: `https://api.notion.com/v1/pages`,
         headers: {
             'Authorization': `Bearer ${apiKey}`,
             'Accept': 'application/json',
-            'Notion-Version': '2022-02-22',
+            'Notion-Version': '2025-09-03',
             'Content-Type': 'application/json'
         },
         data: {
-            parent: { database_id: databaseId },
+            parent: {
+                type: 'data_source_id',
+                data_source_id: dataSourceId
+            },
             properties: properties
         }
     }
@@ -256,7 +274,7 @@ async function notionUpdatePage(apiKey, pageId, properties) {
         headers: {
             'Authorization': `Bearer ${apiKey}`,
             'Accept': 'application/json',
-            'Notion-Version': '2022-02-22',
+            'Notion-Version': '2025-09-03',
             'Content-Type': 'application/json'
         },
         data: {
@@ -281,6 +299,10 @@ async function processRecurringEvents(apiKey, databaseId, lastSyncedDate) {
     }
 
     try {
+        // Get the database to retrieve the data source ID
+        const database = await notionGetDatabase(apiKey, databaseId)
+        const dataSourceId = database.data_sources[0]?.id || database.id
+
         // Fetch all pages within date range: from lastSyncedDate (or 14 days before today if not set) to 21 days from today
         const today = moment.utc()
         const startDate = lastSyncedDate
@@ -288,7 +310,7 @@ async function processRecurringEvents(apiKey, databaseId, lastSyncedDate) {
             : today.clone().subtract(14, 'days').startOf('day').toISOString()
         const endDate = today.clone().add(21, 'days').endOf('day').toISOString()
 
-        const data = await notionFetchPages(apiKey, databaseId, {
+        const data = await notionFetchPages(apiKey, dataSourceId, {
             and: [
                 {
                     property: "Date",
@@ -309,7 +331,7 @@ async function processRecurringEvents(apiKey, databaseId, lastSyncedDate) {
 
         for (const sourcePage of allSourcePages) {
             try {
-                await processSourcePage(apiKey, databaseId, allSourcePages, sourcePage, result)
+                await processSourcePage(apiKey, dataSourceId, allSourcePages, sourcePage, result)
             } catch (error) {
                 console.error(`Error processing source page ${sourcePage.id}: ${error}`)
                 result.errors.push(`Page ${sourcePage.id}: ${error.message}`)
@@ -318,13 +340,13 @@ async function processRecurringEvents(apiKey, databaseId, lastSyncedDate) {
 
     } catch (error) {
         console.error(`Error in processRecurringEvents: ${error}`)
-        result.errors.push(error.message)
+        result.errors.push(error.response.data.message || error.message || 'Unknown error')
     }
 
     return result
 }
 
-async function processSourcePage(apiKey, databaseId, allSourcePages, sourcePage, result) {
+async function processSourcePage(apiKey, dataSourceId, allSourcePages, sourcePage, result) {
     const props = sourcePage.properties
     const frequency = props['Recurring Frequency']?.select?.name
     const cadence = props['Recurring Cadence']?.number || 1
@@ -429,7 +451,7 @@ async function processSourcePage(apiKey, databaseId, allSourcePages, sourcePage,
                 continue
             }
 
-            await createEventFromSource(apiKey, databaseId, actualSourcePage, newEventStartDate.toISOString())
+            await createEventFromSource(apiKey, dataSourceId, actualSourcePage, newEventStartDate.toISOString())
             result.created++
         } catch (error) {
             console.error(`Error creating event for ${newEventStartDate.format()}: ${error}`)
@@ -474,7 +496,7 @@ function generateRecurringDates(startDate, endDate, frequency, cadence, recurrin
     return dates
 }
 
-async function createEventFromSource(apiKey, databaseId, sourcePage, newStartDateTime) {
+async function createEventFromSource(apiKey, dataSourceId, sourcePage, newStartDateTime) {
     const sourceProps = sourcePage.properties
     const newProperties = {}
 
@@ -534,7 +556,7 @@ async function createEventFromSource(apiKey, databaseId, sourcePage, newStartDat
         }
     }
 
-    await notionCreatePage(apiKey, databaseId, newProperties)
+    await notionCreatePage(apiKey, dataSourceId, newProperties)
 }
 
 async function updateEventFromSource(apiKey, targetPageId, sourcePage, targetStartDateTime) {
