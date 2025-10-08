@@ -12,11 +12,57 @@ This feature allows you to manage recurring events in a Notion calendar database
 - **Batch Updates**: When a source event is updated, all future events sync automatically
 - **Manual Sync**: Trigger sync manually through the web interface
 
+## Setup Instructions
+
+### 1. Create a Notion Integration
+
+To access your Notion database programmatically, you need to create an integration and obtain a secret key:
+
+1. Go to [https://www.notion.so/my-integrations](https://www.notion.so/my-integrations)
+2. Click **"+ New integration"**
+3. Fill in the details:
+   - **Name**: Choose a name (e.g., "Recurring Events Integration")
+   - **Associated workspace**: Select your workspace
+   - **Type**: Internal integration
+4. Click **"Submit"**
+5. Copy the **Internal Integration Secret** to be used as the Secret Key
+
+### 2. Share Database with Integration
+
+After creating the integration, you must grant it access to your Notion database:
+
+1. Open your Notion calendar database page
+2. Click the **"..."** menu (top-right of the page)
+3. Scroll down and click **"Add connections"**
+4. Search for and select your integration name
+5. Click **"Confirm"**
+
+Your integration now has access to read and modify this database.
+
+### 3. Get Database ID
+
+You'll need the database ID for configuration:
+
+1. Open your database in Notion (full page view)
+2. Copy the URL from your browser
+3. The database ID is the 32-character string after the workspace name and before the `?`
+   - Format: `https://www.notion.so/[workspace]/[DATABASE_ID]?v=...`
+   - Example: If URL is `https://www.notion.so/myworkspace/a1b2c3d4e5f6...?v=abc123`
+   - Database ID is `a1b2c3d4e5f6...`
+
+### 4. Putting It All Together
+
+1. Go to /recurring-events
+2. Click on Add Configuration
+    - Title: you can choose a name
+    - Database Id: grabbed ID from above
+    - Secret Key: grabbed secret key from above
+
 ## Notion Database Setup
 
 ### Required Properties (case-sensitive)
 
-Your Notion database must have the following properties:
+Your Notion database must have the following properties. If you don't have these properties, it will be created for you after the first run:
 
 1. **Date** (Date)
    - The date and time of the event
@@ -56,11 +102,11 @@ Your Notion database must have the following properties:
 4. Set **Recurring Cadence** (e.g., 1 for every week)
 5. Select **Recurring Days** (e.g., Monday, Friday)
 6. Set **Recurring Lookahead Number** (e.g., 2 for 2 weeks ahead)
-7. Add a unique **Recurring ID**
-8. Set **Recurring Source** to `true`
+7. Set **Recurring Source** to `true`
 
 ### 2. Run Sync
 
+- Trigger the Sync via the endpoint "POST /recurring-events/{id-of-your-event}/sync"
 - Navigate to `/recurring-events` in your browser
 - Click on your configuration
 - Click "Sync Now"
@@ -136,12 +182,7 @@ If you delete future events manually:
 
 ## Future Enhancements
 
-- [ ] Support for daily, monthly, and yearly frequencies
 - [ ] Automated scheduled sync (cron job)
-- [ ] Event deletion handling
-- [ ] End date for recurring series
-- [ ] Exception dates (skip specific occurrences)
-- [ ] Time zone support
 
 ## Troubleshooting
 
