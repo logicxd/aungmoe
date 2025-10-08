@@ -1,0 +1,882 @@
+"use strict";
+
+const { describe, it, expect, beforeEach, vi } = require('vitest')
+const moment = require('moment')
+const { RecurringEventsService } = require('../../../../src/app-area/recurring-events/service/recurring-events-service')
+
+/* #region Event Class Tests */
+
+describe('Event Class', () => {
+    describe('Constructor and Validation', () => {
+        it('should create valid daily event', () => {
+            const sourcePage = createSourcePage({
+                frequency: 'Daily',
+                cadence: 1,
+                lookaheadNumber: 30,
+                dateTime: '2025-10-08T10:00:00Z',
+                isRecurringSource: true
+            })
+
+            const { Event } = require('../../../../src/app-area/recurring-events/service/recurring-events-service')
+            const event = new Event(sourcePage)
+
+            expect(event.frequency).toBe('Daily')
+            expect(event.cadence).toBe(1)
+            expect(event.lookaheadNumber).toBe(30)
+            expect(event.isValid()).toBe(true)
+        })
+
+        it('should create valid weekly event', () => {
+            const sourcePage = createSourcePage({
+                frequency: 'Weekly',
+                cadence: 2,
+                lookaheadNumber: 4,
+                dateTime: '2025-10-08T10:00:00Z',
+                recurringDays: ['Monday', 'Wednesday'],
+                isRecurringSource: true
+            })
+
+            const { Event } = require('../../../../src/app-area/recurring-events/service/recurring-events-service')
+            const event = new Event(sourcePage)
+
+            expect(event.frequency).toBe('Weekly')
+            expect(event.cadence).toBe(2)
+            expect(event.lookaheadNumber).toBe(4)
+            expect(event.recurringDays).toEqual(['Monday', 'Wednesday'])
+            expect(event.isValid()).toBe(true)
+        })
+
+        it('should be invalid when missing frequency', () => {
+            const sourcePage = createSourcePage({
+                frequency: null,
+                cadence: 1,
+                lookaheadNumber: 30,
+                dateTime: '2025-10-08T10:00:00Z',
+                isRecurringSource: true
+            })
+
+            const { Event } = require('../../../../src/app-area/recurring-events/service/recurring-events-service')
+            const event = new Event(sourcePage)
+
+            expect(event.isValid()).toBe(false)
+            expect(event.getValidationFailureReason()).toBe('Missing frequency')
+        })
+
+        it('should be invalid when missing date', () => {
+            const sourcePage = createSourcePage({
+                frequency: 'Daily',
+                cadence: 1,
+                lookaheadNumber: 30,
+                dateTime: null,
+                isRecurringSource: true
+            })
+
+            const { Event } = require('../../../../src/app-area/recurring-events/service/recurring-events-service')
+            const event = new Event(sourcePage)
+
+            expect(event.isValid()).toBe(false)
+            expect(event.getValidationFailureReason()).toBe('Missing date')
+        })
+
+        it('should be invalid when cadence is less than 1', () => {
+            const sourcePage = createSourcePage({
+                frequency: 'Daily',
+                cadence: 0,
+                lookaheadNumber: 30,
+                dateTime: '2025-10-08T10:00:00Z',
+                isRecurringSource: true
+            })
+
+            const { Event } = require('../../../../src/app-area/recurring-events/service/recurring-events-service')
+            const event = new Event(sourcePage)
+
+            expect(event.isValid()).toBe(false)
+            expect(event.getValidationFailureReason()).toBe('Invalid cadence (< 1)')
+        })
+
+        it('should be invalid when lookahead number is less than 1', () => {
+            const sourcePage = createSourcePage({
+                frequency: 'Daily',
+                cadence: 1,
+                lookaheadNumber: 0,
+                dateTime: '2025-10-08T10:00:00Z',
+                isRecurringSource: true
+            })
+
+            const { Event } = require('../../../../src/app-area/recurring-events/service/recurring-events-service')
+            const event = new Event(sourcePage)
+
+            expect(event.isValid()).toBe(false)
+            expect(event.getValidationFailureReason()).toBe('Invalid lookahead number (< 1)')
+        })
+
+        it('should be invalid when weekly event has no recurring days', () => {
+            const sourcePage = createSourcePage({
+                frequency: 'Weekly',
+                cadence: 1,
+                lookaheadNumber: 4,
+                dateTime: '2025-10-08T10:00:00Z',
+                recurringDays: [],
+                isRecurringSource: true
+            })
+
+            const { Event } = require('../../../../src/app-area/recurring-events/service/recurring-events-service')
+            const event = new Event(sourcePage)
+
+            expect(event.isValid()).toBe(false)
+            expect(event.getValidationFailureReason()).toBe('Weekly frequency requires recurring days')
+        })
+
+        it('should be invalid when not marked as recurring source', () => {
+            const sourcePage = createSourcePage({
+                frequency: 'Daily',
+                cadence: 1,
+                lookaheadNumber: 30,
+                dateTime: '2025-10-08T10:00:00Z',
+                isRecurringSource: false
+            })
+
+            const { Event } = require('../../../../src/app-area/recurring-events/service/recurring-events-service')
+            const event = new Event(sourcePage)
+
+            expect(event.isValid()).toBe(false)
+            expect(event.getValidationFailureReason()).toBe('Not marked as recurring source')
+        })
+
+        it('should enforce upper limit for weekly cadence', () => {
+            const sourcePage = createSourcePage({
+                frequency: 'Weekly',
+                cadence: 10,
+                lookaheadNumber: 20,
+                dateTime: '2025-10-08T10:00:00Z',
+                recurringDays: ['Monday'],
+                isRecurringSource: true
+            })
+
+            const { Event } = require('../../../../src/app-area/recurring-events/service/recurring-events-service')
+            const event = new Event(sourcePage)
+
+            expect(event.cadence).toBe(4)
+            expect(event.lookaheadNumber).toBe(8)
+        })
+
+        it('should enforce upper limit for daily cadence', () => {
+            const sourcePage = createSourcePage({
+                frequency: 'Daily',
+                cadence: 50,
+                lookaheadNumber: 100,
+                dateTime: '2025-10-08T10:00:00Z',
+                isRecurringSource: true
+            })
+
+            const { Event } = require('../../../../src/app-area/recurring-events/service/recurring-events-service')
+            const event = new Event(sourcePage)
+
+            expect(event.cadence).toBe(30)
+            expect(event.lookaheadNumber).toBe(60)
+        })
+    })
+})
+
+/* #endregion */
+
+/* #region Date Calculation Tests */
+
+describe('RecurringEventsService - Date Calculation', () => {
+    let service
+
+    beforeEach(() => {
+        const mockNotionApi = createMockNotionApi()
+        service = new RecurringEventsService('test-api-key', 'test-db-id', mockNotionApi)
+    })
+
+    describe('_calculateLookaheadEndDate', () => {
+        it('should calculate lookahead for weekly frequency', () => {
+            const event = createEvent({ frequency: 'Weekly', lookaheadNumber: 4 })
+            const endDate = service._calculateLookaheadEndDate(event)
+
+            const expectedEndDate = moment.utc().add(4, 'weeks')
+            expect(endDate.format('YYYY-MM-DD')).toBe(expectedEndDate.format('YYYY-MM-DD'))
+        })
+
+        it('should calculate lookahead for daily frequency', () => {
+            const event = createEvent({ frequency: 'Daily', lookaheadNumber: 30 })
+            const endDate = service._calculateLookaheadEndDate(event)
+
+            const expectedEndDate = moment.utc().add(30, 'days')
+            expect(endDate.format('YYYY-MM-DD')).toBe(expectedEndDate.format('YYYY-MM-DD'))
+        })
+
+        it('should return null for unsupported frequency', () => {
+            const event = createEvent({ frequency: 'Monthly', lookaheadNumber: 3 })
+            const endDate = service._calculateLookaheadEndDate(event)
+
+            expect(endDate).toBeNull()
+        })
+    })
+
+    describe('_shouldGenerateDailyEvent', () => {
+        it('should return true for valid cadence with exact multiple', () => {
+            expect(service._shouldGenerateDailyEvent(2, 2)).toBe(true)
+            expect(service._shouldGenerateDailyEvent(4, 2)).toBe(true)
+            expect(service._shouldGenerateDailyEvent(6, 2)).toBe(true)
+        })
+
+        it('should return false for days not matching cadence', () => {
+            expect(service._shouldGenerateDailyEvent(1, 2)).toBe(false)
+            expect(service._shouldGenerateDailyEvent(3, 2)).toBe(false)
+            expect(service._shouldGenerateDailyEvent(5, 2)).toBe(false)
+        })
+
+        it('should return false for day zero or negative', () => {
+            expect(service._shouldGenerateDailyEvent(0, 1)).toBe(false)
+            expect(service._shouldGenerateDailyEvent(-1, 1)).toBe(false)
+        })
+    })
+
+    describe('_shouldGenerateWeeklyEvent', () => {
+        it('should return true when week matches cadence and day is in recurringDays', () => {
+            const mondayDate = moment.utc('2025-10-13') // Monday
+            const recurringDays = ['Monday', 'Wednesday']
+
+            expect(service._shouldGenerateWeeklyEvent(1, 1, mondayDate, recurringDays)).toBe(true)
+        })
+
+        it('should return false when day is not in recurringDays', () => {
+            const tuesdayDate = moment.utc('2025-10-14') // Tuesday
+            const recurringDays = ['Monday', 'Wednesday']
+
+            expect(service._shouldGenerateWeeklyEvent(1, 1, tuesdayDate, recurringDays)).toBe(false)
+        })
+
+        it('should return false when week does not match cadence', () => {
+            const mondayDate = moment.utc('2025-10-13') // Monday, week 1
+            const recurringDays = ['Monday']
+
+            expect(service._shouldGenerateWeeklyEvent(1, 2, mondayDate, recurringDays)).toBe(false)
+        })
+
+        it('should return false for week zero or negative', () => {
+            const mondayDate = moment.utc('2025-10-13')
+            const recurringDays = ['Monday']
+
+            expect(service._shouldGenerateWeeklyEvent(0, 1, mondayDate, recurringDays)).toBe(false)
+            expect(service._shouldGenerateWeeklyEvent(-1, 1, mondayDate, recurringDays)).toBe(false)
+        })
+    })
+
+    describe('_createEventDateWithTime', () => {
+        it('should create event date with time from source', () => {
+            const currentDate = moment.utc('2025-10-15T00:00:00Z')
+            const sourceDateTime = moment.utc('2025-10-08T14:30:00Z')
+
+            const result = service._createEventDateWithTime(currentDate, sourceDateTime)
+
+            expect(result.format('YYYY-MM-DD')).toBe('2025-10-15')
+            expect(result.hours()).toBe(14)
+            expect(result.minutes()).toBe(30)
+            expect(result.seconds()).toBe(0)
+            expect(result.milliseconds()).toBe(0)
+        })
+    })
+})
+
+/* #endregion */
+
+/* #region Date Generation Strategy Tests */
+
+describe('RecurringEventsService - Date Generation Strategies', () => {
+    let service
+
+    beforeEach(() => {
+        const mockNotionApi = createMockNotionApi()
+        service = new RecurringEventsService('test-api-key', 'test-db-id', mockNotionApi)
+    })
+
+    describe('Daily Strategy', () => {
+        it('should generate daily events with cadence 1', () => {
+            const startDate = moment.utc('2025-10-08T10:00:00Z')
+            const endDate = moment.utc('2025-10-12T10:00:00Z')
+            const event = createEvent({
+                dateTimeMoment: startDate,
+                cadence: 1
+            })
+
+            const dates = service._dailyDateStrategy.generate(event, endDate)
+
+            expect(dates).toHaveLength(4)
+            expect(dates[0].format('YYYY-MM-DD')).toBe('2025-10-09')
+            expect(dates[1].format('YYYY-MM-DD')).toBe('2025-10-10')
+            expect(dates[2].format('YYYY-MM-DD')).toBe('2025-10-11')
+            expect(dates[3].format('YYYY-MM-DD')).toBe('2025-10-12')
+        })
+
+        it('should generate daily events with cadence 2', () => {
+            const startDate = moment.utc('2025-10-08T10:00:00Z')
+            const endDate = moment.utc('2025-10-16T10:00:00Z')
+            const event = createEvent({
+                dateTimeMoment: startDate,
+                cadence: 2
+            })
+
+            const dates = service._dailyDateStrategy.generate(event, endDate)
+
+            expect(dates).toHaveLength(4)
+            expect(dates[0].format('YYYY-MM-DD')).toBe('2025-10-10')
+            expect(dates[1].format('YYYY-MM-DD')).toBe('2025-10-12')
+            expect(dates[2].format('YYYY-MM-DD')).toBe('2025-10-14')
+            expect(dates[3].format('YYYY-MM-DD')).toBe('2025-10-16')
+        })
+
+        it('should generate daily events with cadence 7', () => {
+            const startDate = moment.utc('2025-10-08T10:00:00Z')
+            const endDate = moment.utc('2025-10-29T10:00:00Z')
+            const event = createEvent({
+                dateTimeMoment: startDate,
+                cadence: 7
+            })
+
+            const dates = service._dailyDateStrategy.generate(event, endDate)
+
+            expect(dates).toHaveLength(3)
+            expect(dates[0].format('YYYY-MM-DD')).toBe('2025-10-15')
+            expect(dates[1].format('YYYY-MM-DD')).toBe('2025-10-22')
+            expect(dates[2].format('YYYY-MM-DD')).toBe('2025-10-29')
+        })
+
+        it('should preserve time from source event', () => {
+            const startDate = moment.utc('2025-10-08T14:30:00Z')
+            const endDate = moment.utc('2025-10-10T10:00:00Z')
+            const event = createEvent({
+                dateTimeMoment: startDate,
+                cadence: 1
+            })
+
+            const dates = service._dailyDateStrategy.generate(event, endDate)
+
+            expect(dates[0].hours()).toBe(14)
+            expect(dates[0].minutes()).toBe(30)
+        })
+    })
+
+    describe('Weekly Strategy', () => {
+        it('should generate weekly events on selected days with cadence 1', () => {
+            const startDate = moment.utc('2025-10-08T10:00:00Z') // Wednesday
+            const endDate = moment.utc('2025-10-20T10:00:00Z')
+            const event = createEvent({
+                dateTimeMoment: startDate,
+                cadence: 1,
+                recurringDays: ['Monday', 'Wednesday']
+            })
+
+            const dates = service._weeklyDateStrategy.generate(event, endDate)
+
+            // Should include: Oct 13 (Mon), Oct 15 (Wed)
+            expect(dates.length).toBeGreaterThanOrEqual(2)
+            const formattedDates = dates.map(d => d.format('YYYY-MM-DD'))
+            expect(formattedDates).toContain('2025-10-13') // Monday
+            expect(formattedDates).toContain('2025-10-15') // Wednesday
+        })
+
+        it('should generate weekly events with cadence 2', () => {
+            const startDate = moment.utc('2025-10-06T10:00:00Z') // Monday
+            const endDate = moment.utc('2025-10-27T10:00:00Z')
+            const event = createEvent({
+                dateTimeMoment: startDate,
+                cadence: 2,
+                recurringDays: ['Monday']
+            })
+
+            const dates = service._weeklyDateStrategy.generate(event, endDate)
+
+            // Week 2: Oct 20 (Mon)
+            const formattedDates = dates.map(d => d.format('YYYY-MM-DD'))
+            expect(formattedDates).toContain('2025-10-20')
+        })
+
+        it('should skip days not in recurringDays', () => {
+            const startDate = moment.utc('2025-10-06T10:00:00Z') // Monday
+            const endDate = moment.utc('2025-10-20T10:00:00Z')
+            const event = createEvent({
+                dateTimeMoment: startDate,
+                cadence: 1,
+                recurringDays: ['Monday']
+            })
+
+            const dates = service._weeklyDateStrategy.generate(event, endDate)
+
+            // Should only have Mondays
+            dates.forEach(date => {
+                expect(date.format('dddd')).toBe('Monday')
+            })
+        })
+    })
+})
+
+/* #endregion */
+
+/* #region Event Filtering and Result Tracking Tests */
+
+describe('RecurringEventsService - Event Filtering and Result Tracking', () => {
+    let service
+
+    beforeEach(() => {
+        const mockNotionApi = createMockNotionApi()
+        service = new RecurringEventsService('test-api-key', 'test-db-id', mockNotionApi)
+    })
+
+    describe('findFutureEvents', () => {
+        it('should find events with matching recurring ID', () => {
+            const sourceEvent = createEventWithPage({
+                notionPageId: 'page-1',
+                recurringId: 'recurring-123',
+                dateTime: '2025-10-08T10:00:00Z'
+            })
+
+            service.allEvents = [
+                sourceEvent,
+                createEventWithPage({
+                    notionPageId: 'page-2',
+                    recurringId: 'recurring-123',
+                    dateTime: '2025-10-10T10:00:00Z'
+                }),
+                createEventWithPage({
+                    notionPageId: 'page-3',
+                    recurringId: 'recurring-456',
+                    dateTime: '2025-10-12T10:00:00Z'
+                })
+            ]
+
+            const futureEvents = service.findFutureEvents(sourceEvent)
+
+            expect(futureEvents).toHaveLength(1)
+            expect(futureEvents[0].notionPageId).toBe('page-2')
+        })
+
+        it('should exclude source event itself', () => {
+            const sourceEvent = createEventWithPage({
+                notionPageId: 'page-1',
+                recurringId: 'recurring-123',
+                dateTime: '2025-10-08T10:00:00Z'
+            })
+
+            service.allEvents = [sourceEvent]
+
+            const futureEvents = service.findFutureEvents(sourceEvent)
+
+            expect(futureEvents).toHaveLength(0)
+        })
+
+        it('should only include future events', () => {
+            const sourceEvent = createEventWithPage({
+                notionPageId: 'page-1',
+                recurringId: 'recurring-123',
+                dateTime: '2025-10-08T10:00:00Z'
+            })
+
+            service.allEvents = [
+                sourceEvent,
+                createEventWithPage({
+                    notionPageId: 'page-2',
+                    recurringId: 'recurring-123',
+                    dateTime: '2025-10-05T10:00:00Z' // Past
+                }),
+                createEventWithPage({
+                    notionPageId: 'page-3',
+                    recurringId: 'recurring-123',
+                    dateTime: '2025-10-10T10:00:00Z' // Future
+                })
+            ]
+
+            const futureEvents = service.findFutureEvents(sourceEvent)
+
+            expect(futureEvents).toHaveLength(1)
+            expect(futureEvents[0].notionPageId).toBe('page-3')
+        })
+    })
+
+    describe('Result Tracking', () => {
+        it('should create processing result with correct structure', () => {
+            const result = service._createProcessingResult()
+
+            expect(result).toEqual({
+                created: 0,
+                updated: 0,
+                skipped: 0,
+                errors: []
+            })
+        })
+
+        it('should validate recurring event and update skip count', () => {
+            const result = service._createProcessingResult()
+            const invalidEvent = createEvent({
+                frequency: null,
+                dateTime: '2025-10-08T10:00:00Z',
+                isRecurringSource: true
+            })
+
+            const isValid = service._validateRecurringEvent(invalidEvent, result)
+
+            expect(isValid).toBe(false)
+            expect(result.skipped).toBe(1)
+        })
+
+        it('should handle processing error', () => {
+            const result = service._createProcessingResult()
+            const error = new Error('Test error')
+
+            service._handleProcessingError(error, result)
+
+            expect(result.errors).toHaveLength(1)
+            expect(result.errors[0]).toBe('Test error')
+        })
+    })
+})
+
+/* #endregion */
+
+/* #region Block Preparation Tests */
+
+describe('RecurringEventsService - Block Preparation', () => {
+    let service
+
+    beforeEach(() => {
+        const mockNotionApi = createMockNotionApi()
+        service = new RecurringEventsService('test-api-key', 'test-db-id', mockNotionApi)
+    })
+
+    describe('_prepareBlocksForCopying', () => {
+        it('should strip read-only fields from blocks', () => {
+            const blocks = [
+                {
+                    id: 'block-1',
+                    type: 'paragraph',
+                    created_time: '2025-10-08T10:00:00Z',
+                    last_edited_time: '2025-10-08T10:00:00Z',
+                    created_by: { id: 'user-1' },
+                    last_edited_by: { id: 'user-1' },
+                    has_children: false,
+                    archived: false,
+                    paragraph: {
+                        rich_text: [{ type: 'text', text: { content: 'Hello' } }]
+                    }
+                }
+            ]
+
+            const cleanedBlocks = service._prepareBlocksForCopying(blocks)
+
+            expect(cleanedBlocks).toHaveLength(1)
+            expect(cleanedBlocks[0]).not.toHaveProperty('id')
+            expect(cleanedBlocks[0]).not.toHaveProperty('created_time')
+            expect(cleanedBlocks[0]).not.toHaveProperty('last_edited_time')
+            expect(cleanedBlocks[0]).not.toHaveProperty('created_by')
+            expect(cleanedBlocks[0]).not.toHaveProperty('last_edited_by')
+            expect(cleanedBlocks[0]).not.toHaveProperty('has_children')
+            expect(cleanedBlocks[0]).not.toHaveProperty('archived')
+            expect(cleanedBlocks[0]).toHaveProperty('type')
+            expect(cleanedBlocks[0]).toHaveProperty('paragraph')
+        })
+
+        it('should handle nested children recursively', () => {
+            const blocks = [
+                {
+                    id: 'block-1',
+                    type: 'bulleted_list_item',
+                    created_time: '2025-10-08T10:00:00Z',
+                    last_edited_time: '2025-10-08T10:00:00Z',
+                    created_by: { id: 'user-1' },
+                    last_edited_by: { id: 'user-1' },
+                    has_children: true,
+                    archived: false,
+                    bulleted_list_item: {
+                        rich_text: [{ type: 'text', text: { content: 'Parent' } }],
+                        children: [
+                            {
+                                id: 'block-2',
+                                type: 'paragraph',
+                                created_time: '2025-10-08T10:00:00Z',
+                                last_edited_time: '2025-10-08T10:00:00Z',
+                                created_by: { id: 'user-1' },
+                                last_edited_by: { id: 'user-1' },
+                                has_children: false,
+                                archived: false,
+                                paragraph: {
+                                    rich_text: [{ type: 'text', text: { content: 'Child' } }]
+                                }
+                            }
+                        ]
+                    }
+                }
+            ]
+
+            const cleanedBlocks = service._prepareBlocksForCopying(blocks)
+
+            expect(cleanedBlocks).toHaveLength(1)
+            expect(cleanedBlocks[0].bulleted_list_item.children).toHaveLength(1)
+            expect(cleanedBlocks[0].bulleted_list_item.children[0]).not.toHaveProperty('id')
+            expect(cleanedBlocks[0].bulleted_list_item.children[0]).toHaveProperty('type')
+        })
+
+        it('should handle empty blocks array', () => {
+            const cleanedBlocks = service._prepareBlocksForCopying([])
+
+            expect(cleanedBlocks).toEqual([])
+        })
+
+        it('should handle null or undefined blocks', () => {
+            expect(service._prepareBlocksForCopying(null)).toEqual([])
+            expect(service._prepareBlocksForCopying(undefined)).toEqual([])
+        })
+    })
+})
+
+/* #endregion */
+
+/* #region Service Method Tests with Mocked NotionApi */
+
+describe('RecurringEventsService - Service Methods', () => {
+    let service
+    let mockNotionApi
+
+    beforeEach(() => {
+        mockNotionApi = createMockNotionApi()
+        service = new RecurringEventsService('test-api-key', 'test-db-id', mockNotionApi)
+    })
+
+    describe('ensureRecurringProperties', () => {
+        it('should create missing properties', async () => {
+            mockNotionApi.getDataSource.mockResolvedValue({
+                properties: {}
+            })
+
+            service.dataSourceId = 'datasource-1'
+            await service.ensureRecurringProperties()
+
+            expect(mockNotionApi.updateDataSource).toHaveBeenCalledWith(
+                'test-api-key',
+                'datasource-1',
+                expect.objectContaining({
+                    'Recurring Frequency': expect.any(Object),
+                    'Recurring Cadence': expect.any(Object),
+                    'Recurring Days': expect.any(Object),
+                    'Recurring Lookahead Number': expect.any(Object),
+                    'Recurring Source': expect.any(Object),
+                    'Recurring ID': expect.any(Object)
+                })
+            )
+        })
+
+        it('should skip creation when properties already exist', async () => {
+            mockNotionApi.getDataSource.mockResolvedValue({
+                properties: {
+                    'Recurring Frequency': {},
+                    'Recurring Cadence': {},
+                    'Recurring Days': {},
+                    'Recurring Lookahead Number': {},
+                    'Recurring Source': {},
+                    'Recurring ID': {}
+                }
+            })
+
+            service.dataSourceId = 'datasource-1'
+            await service.ensureRecurringProperties()
+
+            expect(mockNotionApi.updateDataSource).not.toHaveBeenCalled()
+        })
+    })
+
+    describe('stampRecurringId', () => {
+        it('should generate UUID when recurringId is missing', async () => {
+            const event = createEventWithPage({
+                notionPageId: 'page-1',
+                recurringId: null
+            })
+
+            await service.stampRecurringId(event)
+
+            expect(event.recurringId).toBeTruthy()
+            expect(event.recurringId).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)
+            expect(mockNotionApi.updatePage).toHaveBeenCalledWith(
+                'test-api-key',
+                'page-1',
+                expect.objectContaining({
+                    'Recurring ID': {
+                        rich_text: [
+                            {
+                                type: 'text',
+                                text: {
+                                    content: event.recurringId
+                                }
+                            }
+                        ]
+                    }
+                })
+            )
+        })
+
+        it('should not generate UUID when recurringId exists', async () => {
+            const event = createEventWithPage({
+                notionPageId: 'page-1',
+                recurringId: 'existing-uuid'
+            })
+
+            await service.stampRecurringId(event)
+
+            expect(event.recurringId).toBe('existing-uuid')
+            expect(mockNotionApi.updatePage).not.toHaveBeenCalled()
+        })
+    })
+
+    describe('createNewEvents', () => {
+        it('should skip creating events that already exist at same time', async () => {
+            const sourceEvent = createEventWithPage({
+                notionPageId: 'page-1',
+                recurringId: 'recurring-123',
+                dateTime: '2025-10-08T10:00:00Z',
+                notionPage: createNotionPage()
+            })
+
+            service.allEvents = [
+                sourceEvent,
+                createEventWithPage({
+                    notionPageId: 'page-2',
+                    recurringId: 'recurring-123',
+                    dateTime: '2025-10-10T10:00:00Z'
+                })
+            ]
+
+            const newEventDates = [
+                moment.utc('2025-10-10T10:00:00Z'),
+                moment.utc('2025-10-12T10:00:00Z')
+            ]
+
+            const result = service._createProcessingResult()
+            service.dataSourceId = 'datasource-1'
+            await service.createNewEvents(sourceEvent, newEventDates, result)
+
+            expect(result.skipped).toBe(1)
+            expect(result.created).toBe(1)
+            expect(mockNotionApi.createPage).toHaveBeenCalledTimes(1)
+        })
+    })
+
+    describe('updateAllFutureEvents', () => {
+        it('should update all future events', async () => {
+            const sourceEvent = createEventWithPage({
+                notionPageId: 'page-1',
+                notionPage: createNotionPage()
+            })
+
+            const futureEvents = [
+                createEventWithPage({
+                    notionPageId: 'page-2',
+                    dateTime: '2025-10-10T10:00:00Z'
+                }),
+                createEventWithPage({
+                    notionPageId: 'page-3',
+                    dateTime: '2025-10-12T10:00:00Z'
+                })
+            ]
+
+            mockNotionApi.getPage.mockResolvedValue({ icon: { type: 'emoji', emoji: '=�' } })
+            mockNotionApi.getPageBlocks.mockResolvedValue({ results: [] })
+
+            const result = service._createProcessingResult()
+            await service.updateAllFutureEvents(futureEvents, sourceEvent, result)
+
+            expect(result.updated).toBe(2)
+            expect(mockNotionApi.updatePage).toHaveBeenCalledTimes(2)
+        })
+    })
+})
+
+/* #endregion */
+
+/* #region Test Helper Functions */
+
+function createSourcePage({ frequency, cadence, lookaheadNumber, dateTime, recurringDays = [], isRecurringSource = false, recurringId = null, name = 'Test Event' }) {
+    return {
+        id: 'test-page-id',
+        properties: {
+            'Name': {
+                title: [{ plain_text: name }]
+            },
+            'Recurring Frequency': {
+                select: frequency ? { name: frequency } : null
+            },
+            'Recurring Cadence': {
+                number: cadence
+            },
+            'Recurring Days': {
+                multi_select: recurringDays.map(day => ({ name: day }))
+            },
+            'Recurring Lookahead Number': {
+                number: lookaheadNumber
+            },
+            'Date': {
+                date: dateTime ? { start: dateTime } : null
+            },
+            'Recurring ID': {
+                rich_text: recurringId ? [{ plain_text: recurringId }] : []
+            },
+            'Recurring Source': {
+                checkbox: isRecurringSource
+            }
+        }
+    }
+}
+
+function createEvent({ frequency = 'Daily', cadence = 1, lookaheadNumber = 30, dateTimeMoment = moment.utc('2025-10-08T10:00:00Z'), recurringDays = [] }) {
+    return {
+        frequency,
+        cadence,
+        lookaheadNumber,
+        dateTimeMoment,
+        recurringDays
+    }
+}
+
+function createEventWithPage({ notionPageId, recurringId, dateTime, notionPage = null }) {
+    const { Event } = require('../../../../src/app-area/recurring-events/service/recurring-events-service')
+    const sourcePage = createSourcePage({
+        frequency: 'Daily',
+        cadence: 1,
+        lookaheadNumber: 30,
+        dateTime: dateTime || '2025-10-08T10:00:00Z',
+        isRecurringSource: true,
+        recurringId
+    })
+    sourcePage.id = notionPageId
+    const event = new Event(sourcePage)
+    if (notionPage) {
+        event.notionPage = notionPage
+    }
+    return event
+}
+
+function createNotionPage() {
+    return {
+        id: 'notion-page-id',
+        properties: {
+            'Name': { title: [{ plain_text: 'Test' }] },
+            'Date': { date: { start: '2025-10-08T10:00:00Z' } },
+            'Recurring Source': { checkbox: true }
+        }
+    }
+}
+
+function createMockNotionApi() {
+    return {
+        getDatabase: vi.fn(),
+        getDataSource: vi.fn(),
+        updateDataSource: vi.fn(),
+        queryDataSource: vi.fn(),
+        getPage: vi.fn(),
+        updatePage: vi.fn(),
+        createPage: vi.fn(),
+        getPageBlocks: vi.fn(),
+        replacePageBlocks: vi.fn()
+    }
+}
+
+/* #endregion */
