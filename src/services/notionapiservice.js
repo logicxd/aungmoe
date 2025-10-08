@@ -40,26 +40,41 @@ async function getDatabase(apiKey, databaseId, notionVersion = DEFAULT_NOTION_VE
  * @param {string} databaseId - Database ID
  * @param {Object} queryOptions - Query options (page_size, sorts, filter, etc.)
  * @param {string} notionVersion - Notion API version (optional, defaults to legacy)
- * @returns {Promise<Object>} Query results
+ * @returns {Promise<Object>} Query results with all pages
  */
 async function queryDatabase(apiKey, databaseId, queryOptions = {}, notionVersion = LEGACY_NOTION_VERSION) {
-    const options = {
-        method: 'POST',
-        url: `https://api.notion.com/v1/databases/${databaseId}/query`,
-        headers: {
-            'Authorization': `Bearer ${apiKey}`,
-            'Accept': 'application/json',
-            'Notion-Version': notionVersion,
-            'Content-Type': 'application/json'
-        },
-        data: {
-            page_size: 100,
-            ...queryOptions
-        }
-    };
+    let allResults = [];
+    let hasMore = true;
+    let startCursor = undefined;
 
-    const res = await axios(options);
-    return res.data;
+    while (hasMore) {
+        const options = {
+            method: 'POST',
+            url: `https://api.notion.com/v1/databases/${databaseId}/query`,
+            headers: {
+                'Authorization': `Bearer ${apiKey}`,
+                'Accept': 'application/json',
+                'Notion-Version': notionVersion,
+                'Content-Type': 'application/json'
+            },
+            data: {
+                page_size: 100,
+                ...queryOptions,
+                ...(startCursor && { start_cursor: startCursor })
+            }
+        };
+
+        const res = await axios(options);
+        allResults = allResults.concat(res.data.results);
+        hasMore = res.data.has_more;
+        startCursor = res.data.next_cursor;
+    }
+
+    return {
+        results: allResults,
+        has_more: false,
+        next_cursor: null
+    };
 }
 
 /**
@@ -119,27 +134,42 @@ async function updateDataSource(apiKey, dataSourceId, properties, notionVersion 
  * @param {Array} sorts - Sort options (optional)
  * @param {number} pageSize - Page size (optional, defaults to 100)
  * @param {string} notionVersion - Notion API version (optional, defaults to latest)
- * @returns {Promise<Object>} Query results
+ * @returns {Promise<Object>} Query results with all pages
  */
 async function queryDataSource(apiKey, dataSourceId, filter = null, sorts = null, pageSize = 100, notionVersion = DEFAULT_NOTION_VERSION) {
-    const options = {
-        method: 'POST',
-        url: `https://api.notion.com/v1/data_sources/${dataSourceId}/query`,
-        headers: {
-            'Authorization': `Bearer ${apiKey}`,
-            'Accept': 'application/json',
-            'Notion-Version': notionVersion,
-            'Content-Type': 'application/json'
-        },
-        data: {
-            page_size: pageSize,
-            ...(filter && { filter }),
-            ...(sorts && { sorts })
-        }
-    };
+    let allResults = [];
+    let hasMore = true;
+    let startCursor = undefined;
 
-    const res = await axios(options);
-    return res.data;
+    while (hasMore) {
+        const options = {
+            method: 'POST',
+            url: `https://api.notion.com/v1/data_sources/${dataSourceId}/query`,
+            headers: {
+                'Authorization': `Bearer ${apiKey}`,
+                'Accept': 'application/json',
+                'Notion-Version': notionVersion,
+                'Content-Type': 'application/json'
+            },
+            data: {
+                page_size: pageSize,
+                ...(filter && { filter }),
+                ...(sorts && { sorts }),
+                ...(startCursor && { start_cursor: startCursor })
+            }
+        };
+
+        const res = await axios(options);
+        allResults = allResults.concat(res.data.results);
+        hasMore = res.data.has_more;
+        startCursor = res.data.next_cursor;
+    }
+
+    return {
+        results: allResults,
+        has_more: false,
+        next_cursor: null
+    };
 }
 
 /**
@@ -233,21 +263,40 @@ async function updatePage(apiKey, pageId, properties, icon = null, notionVersion
  * @param {string} apiKey - Notion API key
  * @param {string} pageId - Page ID
  * @param {string} notionVersion - Notion API version (optional, defaults to latest)
- * @returns {Promise<Object>} Blocks object
+ * @returns {Promise<Object>} Blocks object with all pages
  */
 async function getPageBlocks(apiKey, pageId, notionVersion = DEFAULT_NOTION_VERSION) {
-    const options = {
-        method: 'GET',
-        url: `https://api.notion.com/v1/blocks/${pageId}/children`,
-        headers: {
-            'Authorization': `Bearer ${apiKey}`,
-            'Accept': 'application/json',
-            'Notion-Version': notionVersion
-        }
-    };
+    let allResults = [];
+    let hasMore = true;
+    let startCursor = undefined;
 
-    const res = await axios(options);
-    return res.data;
+    while (hasMore) {
+        const url = new URL(`https://api.notion.com/v1/blocks/${pageId}/children`);
+        if (startCursor) {
+            url.searchParams.append('start_cursor', startCursor);
+        }
+
+        const options = {
+            method: 'GET',
+            url: url.toString(),
+            headers: {
+                'Authorization': `Bearer ${apiKey}`,
+                'Accept': 'application/json',
+                'Notion-Version': notionVersion
+            }
+        };
+
+        const res = await axios(options);
+        allResults = allResults.concat(res.data.results);
+        hasMore = res.data.has_more;
+        startCursor = res.data.next_cursor;
+    }
+
+    return {
+        results: allResults,
+        has_more: false,
+        next_cursor: null
+    };
 }
 
 /**
