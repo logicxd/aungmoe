@@ -10,6 +10,7 @@ var { body, validationResult } = require('express-validator')
 var NotionRecurringModel = require('../../database/model/NotionRecurring')
 var mongoose = require('mongoose');
 var { RecurringEventsService } = require('./service/recurring-events-service')
+var sanitizeHtml = require('sanitize-html')
 /* #endregion */
 
 /* #region  Set up routes */
@@ -34,7 +35,8 @@ router.get('/', async function (req, res) {
             }
         })
     } catch (error) {
-        console.error(error)
+        console.error('Error fetching recurring configs:', error)
+        return res.status(500).render('error', { message: 'Failed to load recurring events configurations' })
     }
 
     return res.render(path.join(__dirname, 'view/recurring-events'), {
@@ -50,7 +52,7 @@ router.get('/', async function (req, res) {
 /* #region  POST /recurring-events */
 router.post('/', requiredValidators(), async function (req, res) {
     if (!req.isAuthenticated()) {
-        return res.status(403).send("You're not signed in, please sign in again.")
+        return res.status(403).json({ error: "You're not signed in, please sign in again." })
     }
 
     const errors = validationResult(req);
@@ -59,16 +61,20 @@ router.post('/', requiredValidators(), async function (req, res) {
     }
 
     try {
-        await NotionRecurringModel.create({
+        const newConfig = await NotionRecurringModel.create({
             user: req.user,
-            title: req.body.title,
-            databaseId: req.body.databaseId,
-            secretKey: req.body.secretKey
+            title: sanitizeHtml(req.body.title, { allowedTags: [], allowedAttributes: {} }),
+            databaseId: req.body.databaseId.trim(),
+            secretKey: req.body.secretKey.trim()
         })
-        return res.status(204).end()
+
+        return res.status(201).json({
+            id: newConfig._id,
+            url: `/${route}/${newConfig._id}`
+        })
     } catch (error) {
-        console.error(error)
-        return res.status(500).send('Unhandled exception')
+        console.error('Error creating recurring config:', error)
+        return res.status(500).json({ error: 'Failed to create configuration' })
     }
 })
 /* #endregion */
@@ -79,84 +85,68 @@ router.get('/:id', async function (req, res) {
         return res.redirect(`/login?redirectUrl=${route}`)
     }
 
-    let id = req.params['id']
+    const id = req.params['id']
 
-    let config = {}
     try {
-        config = await NotionRecurringModel.findOne({ 
-            _id: new mongoose.Types.ObjectId(id),
-            user: req.user._id  // Add ownership check
+        const config = await findConfigByIdAndUser(id, req.user._id)
+
+        return res.render(path.join(__dirname, 'view/recurring-events-detail'), {
+            title: `Recurring Events - ${config.title}`,
+            description: 'Manage recurring events in Notion',
+            css: [`/${route}/css/recurring-events.css`],
+            js: [global.js.axios, `/${route}/js/recurring-events.js`, `/${route}/js/recurring-events-detail.js`],
+            id: id,
+            lastSynced: moment(config.lastSyncedDate).format('YYYY-MM-DD HH:mm')
         })
-
-        if (!config) {
-            throw `Recurring events config not found with id ${id}`
-        }
-
     } catch (error) {
-        console.error(error)
-        res.status(404)
+        console.error(`Error loading config ${id}:`, error)
+        const statusCode = error.statusCode || 500
+        res.status(statusCode)
         return res.render(path.join(__dirname, 'view/recurring-events-unknown-page'), {
             title: 'Recurring Events - Not Found',
-            description: 'Config not found!',
+            description: error.message || 'Config not found!',
             css: [`/${route}/css/recurring-events.css`],
             js: [`/${route}/js/recurring-events.js`]
-        });
+        })
     }
-
-    return res.render(path.join(__dirname, 'view/recurring-events-detail'), {
-        title: `Recurring Events - ${config.title}`,
-        description: 'Manage recurring events in Notion',
-        css: [`/${route}/css/recurring-events.css`],
-        js: [global.js.axios, `/${route}/js/recurring-events.js`, `/${route}/js/recurring-events-detail.js`],
-        id: id,
-        lastSynced: moment(config.lastSyncedDate).format('YYYY-MM-DD HH:mm')
-    })
 })
 /* #endregion */
 
 /* #region  GET /recurring-events/{id}/embed */
 router.get('/:id/embed', async function (req, res) {
-    let id = req.params['id']
+    const id = req.params['id']
 
-    let config = {}
     try {
-        config = await NotionRecurringModel.findById(new mongoose.Types.ObjectId(id))
+        const config = await findConfigById(id)
 
-        if (!config) {
-            throw `Recurring events config not found with id ${id}`
-        }
-
+        return res.render(path.join(__dirname, 'view/recurring-events-embed'), {
+            title: `Sync Recurring Events`,
+            description: 'Sync recurring events in Notion',
+            css: [`/${route}/css/recurring-events.css`],
+            js: [global.js.axios, `/${route}/js/recurring-events-embed.js`],
+            id: id,
+            layout: 'empty-template'
+        })
     } catch (error) {
-        console.error(error)
-        res.status(404)
+        console.error(`Error loading config ${id}:`, error)
+        const statusCode = error.statusCode || 500
+        res.status(statusCode)
         return res.render(path.join(__dirname, 'view/recurring-events-unknown-page'), {
             title: 'Recurring Events - Not Found',
-            description: 'Config not found!',
+            description: error.message || 'Config not found!',
             css: [`/${route}/css/recurring-events.css`],
             js: [`/${route}/js/recurring-events.js`],
             layout: 'empty-template'
-        });
+        })
     }
-
-    return res.render(path.join(__dirname, 'view/recurring-events-embed'), {
-        title: `Sync Recurring Events`,
-        description: 'Sync recurring events in Notion',
-        css: [`/${route}/css/recurring-events.css`],
-        js: [global.js.axios, `/${route}/js/recurring-events-embed.js`],
-        id: id,
-        layout: 'empty-template'
-    })
 })
 /* #endregion */
 
 /* #region  POST /recurring-events/{id}/sync */
 router.post('/:id/sync', async function (req, res) {
     try {
-        let id = req.params['id']
-        let config = await NotionRecurringModel.findById(new mongoose.Types.ObjectId(id))
-        if (!config) {
-            throw `Recurring events config not found with id ${id}`
-        }
+        const id = req.params['id']
+        const config = await findConfigById(id)
 
         const decryptedSecretKey = config.getDecryptedSecretKey()
         const service = new RecurringEventsService(decryptedSecretKey, config.databaseId)
@@ -173,8 +163,9 @@ router.post('/:id/sync', async function (req, res) {
             errors: result.errors
         })
     } catch (error) {
-        console.error(`Error syncing recurring events: ${error}`)
-        return res.status(500).json({
+        console.error(`Error syncing recurring events:`, error)
+        const statusCode = error.statusCode || 500
+        return res.status(statusCode).json({
             success: false,
             error: error.message || 'Unknown error'
         })
@@ -190,6 +181,61 @@ function requiredValidators() {
         body('databaseId').trim().notEmpty(),
         body('secretKey').trim().notEmpty()
     ]
+}
+
+function isValidObjectId(id) {
+    return mongoose.Types.ObjectId.isValid(id)
+}
+
+async function findConfigById(id) {
+    if (!isValidObjectId(id)) {
+        throw new ValidationError('Invalid ID format')
+    }
+
+    const config = await NotionRecurringModel.findById(new mongoose.Types.ObjectId(id))
+
+    if (!config) {
+        throw new NotFoundError(`Recurring events config not found with id ${id}`)
+    }
+
+    return config
+}
+
+async function findConfigByIdAndUser(id, userId) {
+    if (!isValidObjectId(id)) {
+        throw new ValidationError('Invalid ID format')
+    }
+
+    const config = await NotionRecurringModel.findOne({
+        _id: new mongoose.Types.ObjectId(id),
+        user: userId
+    })
+
+    if (!config) {
+        throw new NotFoundError(`Recurring events config not found with id ${id}`)
+    }
+
+    return config
+}
+
+/* #endregion */
+
+/* #region  Custom Error Classes */
+
+class ValidationError extends Error {
+    constructor(message) {
+        super(message)
+        this.name = 'ValidationError'
+        this.statusCode = 400
+    }
+}
+
+class NotFoundError extends Error {
+    constructor(message) {
+        super(message)
+        this.name = 'NotFoundError'
+        this.statusCode = 404
+    }
 }
 
 /* #endregion */
