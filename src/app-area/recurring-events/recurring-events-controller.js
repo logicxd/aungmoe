@@ -75,11 +75,18 @@ router.post('/', requiredValidators(), async function (req, res) {
 
 /* #region  GET /recurring-events/{id} */
 router.get('/:id', async function (req, res) {
+    if (!req.isAuthenticated()) {
+        return res.redirect(`/login?redirectUrl=${route}`)
+    }
+
     let id = req.params['id']
 
     let config = {}
     try {
-        config = await NotionRecurringModel.findById(new mongoose.Types.ObjectId(id))
+        config = await NotionRecurringModel.findOne({ 
+            _id: new mongoose.Types.ObjectId(id),
+            user: req.user._id  // Add ownership check
+        })
 
         if (!config) {
             throw `Recurring events config not found with id ${id}`
@@ -151,7 +158,8 @@ router.post('/:id/sync', async function (req, res) {
             throw `Recurring events config not found with id ${id}`
         }
 
-        const service = new RecurringEventsService(config.secretKey, config.databaseId)
+        const decryptedSecretKey = config.getDecryptedSecretKey()
+        const service = new RecurringEventsService(decryptedSecretKey, config.databaseId)
         const result = await service.processRecurringEvents(config.lastSyncedDate)
 
         config.lastSyncedDate = new Date()
