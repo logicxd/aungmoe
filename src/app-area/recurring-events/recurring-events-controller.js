@@ -387,14 +387,14 @@ function findFutureEvents(allRecurringEvents, sourceEvent) {
     return allRecurringEvents.filter(event => {
         if (event.sourcePageId === sourceEvent.sourcePageId) { return false }
         if (event.recurringId !== sourceEvent.recurringId) { return false }
-        return event.dateTime && event.dateTime.isAfter(sourceEvent.dateTime)
+        return event.dateTimeMoment && event.dateTimeMoment.isAfter(sourceEvent.dateTimeMoment)
     })
 }
 
 async function updateAllFutureEvents(apiKey, futureEvents, sourceEvent, result) {
     for (const futureEvent of futureEvents) {
         try {
-            await updateEventFromSource(apiKey, futureEvent.sourcePageId, sourceEvent.sourcePage, futureEvent.sourcePageDateTime)
+            await updateEventFromSource(apiKey, futureEvent.sourcePageId, sourceEvent.sourcePage, futureEvent.dateTime)
             result.updated++
         } catch (error) {
             console.error(`Error updating event ${futureEvent.sourcePageId}: ${error}`)
@@ -415,7 +415,7 @@ function calculateLookaheadEndDate(event) {
 
 function generateNewEventDates(event, lookaheadEndDate) {
     return generateRecurringDates(
-        event.dateTime,
+        event.dateTimeMoment,
         lookaheadEndDate,
         event.frequency,
         event.cadence,
@@ -429,7 +429,7 @@ async function createNewEvents(apiKey, dataSourceId, allRecurringEvents, sourceE
     for (const newEventStartDate of newEventStartDates) {
         try {
             const existsAtTime = existingEvents.some(e =>
-                e.dateTime && e.dateTime.format('YYYY-MM-DDTHH:mm') === newEventStartDate.format('YYYY-MM-DDTHH:mm')
+                e.dateTimeMoment && e.dateTimeMoment.format('YYYY-MM-DDTHH:mm') === newEventStartDate.format('YYYY-MM-DDTHH:mm')
             )
 
             if (existsAtTime) {
@@ -725,11 +725,11 @@ class RecurringEvent {
         this.cadence = props['Recurring Cadence']?.number || 1
         this.recurringDays = props['Recurring Days']?.multi_select?.map(d => d.name) || []
         this.lookaheadNumber = props['Recurring Lookahead Number']?.number || 0
-        this.sourcePageDateTime = props['Date']?.date?.start
+        this.dateTime = props['Date']?.date?.start
         this.recurringId = props['Recurring ID']?.rich_text?.[0]?.plain_text
         this.isRecurringSource = props['Recurring Source']?.checkbox === true
         this.name = props['Name']?.title?.[0]?.plain_text
-        this.dateTime = this.sourcePageDateTime ? moment.utc(this.sourcePageDateTime) : null
+        this.dateTimeMoment = this.dateTime ? moment.utc(this.dateTime) : null
 
         this._applyUpperLimits()
     }
@@ -745,7 +745,7 @@ class RecurringEvent {
     }
 
     isValid() {
-        if (!this.frequency || !this.sourcePageDateTime || this.cadence < 1 || this.lookaheadNumber < 1) {
+        if (!this.frequency || !this.dateTime || this.cadence < 1 || this.lookaheadNumber < 1) {
             return false
         }
 
@@ -762,7 +762,7 @@ class RecurringEvent {
 
     getValidationFailureReason() {
         if (!this.frequency) return 'Missing frequency'
-        if (!this.sourcePageDateTime) return 'Missing date'
+        if (!this.dateTime) return 'Missing date'
         if (this.cadence < 1) return 'Invalid cadence (< 1)'
         if (this.lookaheadNumber < 1) return 'Invalid lookahead number (< 1)'
         if (this.frequency === 'Weekly' && this.recurringDays.length === 0) {
