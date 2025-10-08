@@ -1,16 +1,35 @@
 "use strict";
 
 const axios = require('axios');
+const axiosRetry = require('axios-retry').default;
 
 /**
  * Notion API Service
  *
  * A centralized service for making API calls to Notion.
  * Supports multiple API versions for backward compatibility.
+ * Handles rate limiting with exponential backoff using axios-retry.
  */
 
 const DEFAULT_NOTION_VERSION = '2025-09-03';
 const LEGACY_NOTION_VERSION = '2022-02-22';
+
+// Configure axios-retry for rate limiting
+axiosRetry(axios, {
+    retries: 3,
+    retryDelay: (retryCount, error) => {
+        // Use retry-after header if available (Notion provides this in seconds)
+        if (error.response?.headers['retry-after']) {
+            return parseInt(error.response.headers['retry-after']) * 1000;
+        }
+        // Otherwise use exponential backoff
+        return axiosRetry.exponentialDelay(retryCount);
+    },
+    retryCondition: (error) => {
+        // Retry on rate limit (429) or network errors
+        return axiosRetry.isNetworkOrIdempotentRequestError(error) || error.response?.status === 429;
+    }
+});
 
 /**
  * Get a database
