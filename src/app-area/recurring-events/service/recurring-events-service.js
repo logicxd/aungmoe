@@ -17,7 +17,7 @@ class RecurringEventsService {
     /* #region Main Processing */
 
     async processRecurringEvents(lastSyncedDate) {
-        const result = createProcessingResult()
+        const result = this._createProcessingResult()
 
         try {
             this.dataSourceId = await this.getDataSourceId()
@@ -28,7 +28,7 @@ class RecurringEventsService {
 
             console.log(`Recurring events processing completed.`)
         } catch (error) {
-            handleProcessingError(error, result)
+            this._handleProcessingError(error, result)
         }
 
         return result
@@ -159,7 +159,7 @@ class RecurringEventsService {
     /* #region Source Page Processing */
 
     async processSourcePage(event, result) {
-        if (!validateRecurringEvent(event, result)) {
+        if (!this._validateRecurringEvent(event, result)) {
             return
         }
 
@@ -213,13 +213,13 @@ class RecurringEventsService {
     }
 
     async generateFutureEvents(event, result) {
-        const lookaheadEndDate = calculateLookaheadEndDate(event)
+        const lookaheadEndDate = this._calculateLookaheadEndDate(event)
         if (!lookaheadEndDate) {
             console.log(`Unsupported frequency: ${event.frequency}, skipping event generation`)
             return
         }
 
-        const newEventStartDates = generateNewEventDates(event, lookaheadEndDate)
+        const newEventStartDates = this._generateNewEventDates(event, lookaheadEndDate)
         await this.createNewEvents(event, newEventStartDates, result)
     }
 
@@ -333,7 +333,7 @@ class RecurringEventsService {
 
         // Get the source page's content blocks
         const sourceBlocks = await notionApi.getPageBlocks(this.apiKey, sourcePage.id)
-        const sourceChildren = prepareBlocksForCopying(sourceBlocks.results)
+        const sourceChildren = this._prepareBlocksForCopying(sourceBlocks.results)
 
         await notionApi.createPage(this.apiKey, this.dataSourceId, newProperties, sourceIcon, sourceChildren)
     }
@@ -415,151 +415,151 @@ class RecurringEventsService {
 
         // Get the source page's content blocks and replace target's content
         const sourceBlocks = await notionApi.getPageBlocks(this.apiKey, sourcePage.id)
-        const sourceChildren = prepareBlocksForCopying(sourceBlocks.results)
+        const sourceChildren = this._prepareBlocksForCopying(sourceBlocks.results)
         await notionApi.replacePageBlocks(this.apiKey, targetPageId, sourceChildren)
     }
 
     /* #endregion */
-}
 
-/* #endregion */
+    /* #region Result Tracking and Validation */
 
-/* #region Helper Functions */
-
-function createProcessingResult() {
-    return {
-        created: 0,
-        updated: 0,
-        skipped: 0,
-        errors: []
+    _createProcessingResult() {
+        return {
+            created: 0,
+            updated: 0,
+            skipped: 0,
+            errors: []
+        }
     }
-}
 
-function handleProcessingError(error, result) {
-    const errorMessage = error.response?.data?.message || error.message || 'Unknown error'
-    console.error(`Error in processRecurringEvents: ${errorMessage}`)
-    result.errors.push(errorMessage)
-}
-
-function validateRecurringEvent(event, result) {
-    if (!event.isValid()) {
-        const reason = event.getValidationFailureReason()
-        console.log(`Skipping page ${event.name}: ${reason}`)
-        result.skipped++
-        return false
+    _handleProcessingError(error, result) {
+        const errorMessage = error.response?.data?.message || error.message || 'Unknown error'
+        console.error(`Error in processRecurringEvents: ${errorMessage}`)
+        result.errors.push(errorMessage)
     }
-    return true
-}
 
-/* #endregion */
-
-/* #region Date Generation */
-
-function calculateLookaheadEndDate(event) {
-    const now = moment.utc()
-    if (event.frequency === 'Weekly') {
-        return now.clone().add(event.lookaheadNumber, 'weeks')
-    } else if (event.frequency === 'Daily') {
-        return now.clone().add(event.lookaheadNumber, 'days')
+    _validateRecurringEvent(event, result) {
+        if (!event.isValid()) {
+            const reason = event.getValidationFailureReason()
+            console.log(`Skipping page ${event.name}: ${reason}`)
+            result.skipped++
+            return false
+        }
+        return true
     }
-    return null
-}
 
-function generateNewEventDates(event, lookaheadEndDate) {
-    const strategy = getDateGenerationStrategy(event.frequency)
-    return strategy.generate(event, lookaheadEndDate)
-}
+    /* #endregion */
 
-function getDateGenerationStrategy(frequency) {
-    const strategies = {
-        'Daily': dailyDateStrategy,
-        'Weekly': weeklyDateStrategy
+    /* #region Date Calculation and Generation Strategy */
+
+    _calculateLookaheadEndDate(event) {
+        const now = moment.utc()
+        if (event.frequency === 'Weekly') {
+            return now.clone().add(event.lookaheadNumber, 'weeks')
+        } else if (event.frequency === 'Daily') {
+            return now.clone().add(event.lookaheadNumber, 'days')
+        }
+        return null
     }
-    return strategies[frequency]
-}
 
-const dailyDateStrategy = {
-    generate(event, lookaheadEndDate) {
-        const dates = []
-        const current = event.dateTimeMoment.clone().add(1, 'day')
-        let daysSinceStart = 0
+    _generateNewEventDates(event, lookaheadEndDate) {
+        const strategy = this._getDateGenerationStrategy(event.frequency)
+        return strategy.generate(event, lookaheadEndDate)
+    }
 
-        while (current.isSameOrBefore(lookaheadEndDate)) {
-            daysSinceStart = Math.floor(current.diff(event.dateTimeMoment, 'days', true))
+    _getDateGenerationStrategy(frequency) {
+        const strategies = {
+            'Daily': this._dailyDateStrategy,
+            'Weekly': this._weeklyDateStrategy
+        }
+        return strategies[frequency]
+    }
 
-            if (shouldGenerateDailyEvent(daysSinceStart, event.cadence)) {
-                dates.push(createEventDateWithTime(current, event.dateTimeMoment))
+    _dailyDateStrategy = {
+        generate: (event, lookaheadEndDate) => {
+            const dates = []
+            const current = event.dateTimeMoment.clone().add(1, 'day')
+            let daysSinceStart = 0
+
+            while (current.isSameOrBefore(lookaheadEndDate)) {
+                daysSinceStart = Math.floor(current.diff(event.dateTimeMoment, 'days', true))
+
+                if (this._shouldGenerateDailyEvent(daysSinceStart, event.cadence)) {
+                    dates.push(this._createEventDateWithTime(current, event.dateTimeMoment))
+                }
+
+                current.add(1, 'day')
             }
 
-            current.add(1, 'day')
+            return dates
         }
-
-        return dates
     }
-}
 
-function shouldGenerateDailyEvent(daysSinceStart, cadence) {
-    return daysSinceStart > 0 && daysSinceStart % cadence === 0
-}
+    _shouldGenerateDailyEvent(daysSinceStart, cadence) {
+        return daysSinceStart > 0 && daysSinceStart % cadence === 0
+    }
 
-const weeklyDateStrategy = {
-    generate(event, lookaheadEndDate) {
-        const dates = []
-        const current = event.dateTimeMoment.clone().add(1, 'day')
-        let weeksSinceStart = 0
+    _weeklyDateStrategy = {
+        generate: (event, lookaheadEndDate) => {
+            const dates = []
+            const current = event.dateTimeMoment.clone().add(1, 'day')
+            let weeksSinceStart = 0
 
-        while (current.isSameOrBefore(lookaheadEndDate)) {
-            weeksSinceStart = Math.floor(current.diff(event.dateTimeMoment, 'weeks', true))
+            while (current.isSameOrBefore(lookaheadEndDate)) {
+                weeksSinceStart = Math.floor(current.diff(event.dateTimeMoment, 'weeks', true))
 
-            if (shouldGenerateWeeklyEvent(weeksSinceStart, event.cadence, current, event.recurringDays)) {
-                dates.push(createEventDateWithTime(current, event.dateTimeMoment))
+                if (this._shouldGenerateWeeklyEvent(weeksSinceStart, event.cadence, current, event.recurringDays)) {
+                    dates.push(this._createEventDateWithTime(current, event.dateTimeMoment))
+                }
+
+                current.add(1, 'day')
             }
 
-            current.add(1, 'day')
+            return dates
+        }
+    }
+
+    _shouldGenerateWeeklyEvent(weeksSinceStart, cadence, current, recurringDays) {
+        if (weeksSinceStart <= 0 || weeksSinceStart % cadence !== 0) {
+            return false
         }
 
-        return dates
-    }
-}
-
-function shouldGenerateWeeklyEvent(weeksSinceStart, cadence, current, recurringDays) {
-    if (weeksSinceStart <= 0 || weeksSinceStart % cadence !== 0) {
-        return false
+        const dayName = current.format('dddd')
+        return recurringDays.includes(dayName)
     }
 
-    const dayName = current.format('dddd')
-    return recurringDays.includes(dayName)
-}
-
-function createEventDateWithTime(current, sourceDateTime) {
-    const eventDate = current.clone()
-    eventDate.hours(sourceDateTime.hours())
-    eventDate.minutes(sourceDateTime.minutes())
-    eventDate.seconds(0)
-    eventDate.milliseconds(0)
-    return eventDate
-}
-
-/* #endregion */
-
-/* #region Block Utilities */
-
-function prepareBlocksForCopying(blocks) {
-    if (!blocks || blocks.length === 0) {
-        return []
+    _createEventDateWithTime(current, sourceDateTime) {
+        const eventDate = current.clone()
+        eventDate.hours(sourceDateTime.hours())
+        eventDate.minutes(sourceDateTime.minutes())
+        eventDate.seconds(0)
+        eventDate.milliseconds(0)
+        return eventDate
     }
 
-    return blocks.map(block => {
-        // Strip out read-only fields that Notion API doesn't accept when creating blocks
-        const { id, created_time, last_edited_time, created_by, last_edited_by, has_children, archived, ...cleanBlock } = block
+    /* #endregion */
 
-        // If the block has children, recursively process them
-        if (block[block.type]?.children) {
-            cleanBlock[block.type].children = prepareBlocksForCopying(block[block.type].children)
+    /* #region Notion Block Preparation */
+
+    _prepareBlocksForCopying(blocks) {
+        if (!blocks || blocks.length === 0) {
+            return []
         }
 
-        return cleanBlock
-    })
+        return blocks.map(block => {
+            // Strip out read-only fields that Notion API doesn't accept when creating blocks
+            const { id, created_time, last_edited_time, created_by, last_edited_by, has_children, archived, ...cleanBlock } = block
+
+            // If the block has children, recursively process them
+            if (block[block.type]?.children) {
+                cleanBlock[block.type].children = this._prepareBlocksForCopying(block[block.type].children)
+            }
+
+            return cleanBlock
+        })
+    }
+
+    /* #endregion */
 }
 
 /* #endregion */

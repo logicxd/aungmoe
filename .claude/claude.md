@@ -18,6 +18,7 @@ This is a personal website built with Node.js and Express.js. It includes featur
 - Authentication - Passport.js with local strategy
 - Styling - Sass
 - Markdown - markdown-it with emoji support and syntax highlighting (highlight.js)
+- Tests - Vitest
 
 ## Development Workflow
 
@@ -49,13 +50,23 @@ This is a personal website built with Node.js and Express.js. It includes featur
     - Hide implementation details; expose minimal surface area
 8. Error handling is part of the logic
     - Keep try/catch blocks small; extract to dedicated functions when possible
+9. Dependency injection: Accept collaborators (repos, clients) via constructor so you can mock them easily or replace with other services
 
 ## Code Style Preference
 
 ### Web
 
 - Prefer async/await over callbacks
-- Use #region blocks to group sections together if it’s long or contains multiple methods doing to help achieve a common task
+- Use #region blocks to group sections together if it’s long or contains multiple methods doing to help achieve a common task. Region shouldn't be too generic or basic. It can't be like "Private Helper Methods" and should describe a functional or business operation.
+
+## Testing Principles
+
+- Pure logic: Test the service in isolation. Do not hit network, DB, or filesystem.
+- Mock boundaries: Mock repositories, external APIs, and side effects.
+- Small, focused tests: One behavior per test with clear Given-When–Then
+- Deterministic: No reliance on environment or time unless explicitly controlled.
+- Blackbox test as much as possible before - sparingly use whitebox testing
+- Aim for 80% or higher code coverage; 100% is a nice to have if it's too difficult
 
 ## Security
 
