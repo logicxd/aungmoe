@@ -4,13 +4,25 @@ var moment = require('moment')
 var { randomUUID } = require('crypto')
 var notionApi = require('../../../services/notionapiservice')
 
+/* #region Constants */
+
+const DEFAULT_LOOKBACK_DAYS = 14
+const DEFAULT_LOOKAHEAD_DAYS = 60
+const MAX_WEEKLY_CADENCE = 4
+const MAX_WEEKLY_LOOKAHEAD = 8
+const MAX_DAILY_CADENCE = 30
+const MAX_DAILY_LOOKAHEAD = 60
+
+/* #endregion */
+
 /* #region RecurringEventsService */
 
 class RecurringEventsService {
-    constructor(apiKey, databaseId, notionApiService = notionApi) {
+    constructor(apiKey, databaseId, notionApiService = notionApi, logger = console) {
         this.apiKey = apiKey
         this.databaseId = databaseId
         this.notionApi = notionApiService
+        this.logger = logger
         this.dataSourceId = null
         this.allEvents = []
     }
@@ -27,7 +39,7 @@ class RecurringEventsService {
             const allSourcePages = await this.fetchSourcePages(lastSyncedDate)
             await this.processAllSourcePages(allSourcePages, result)
 
-            console.log(`Recurring events processing completed.`)
+            this.logger.log(`Recurring events processing completed.`)
         } catch (error) {
             this._handleProcessingError(error, result)
         }
@@ -37,15 +49,20 @@ class RecurringEventsService {
 
     async getDataSourceId() {
         const database = await this.notionApi.getDatabase(this.apiKey, this.databaseId)
-        return database.data_sources[0]?.id || database.id
+
+        if (!database.data_sources || database.data_sources.length === 0) {
+            throw new Error(`Database ${this.databaseId} has no data sources. Cannot proceed with recurring events processing.`)
+        }
+
+        return database.data_sources[0].id
     }
 
     async fetchSourcePages(lastSyncedDate) {
         const today = moment.utc()
         const startDate = lastSyncedDate
             ? moment.utc(lastSyncedDate).toISOString()
-            : today.clone().subtract(14, 'days').startOf('day').toISOString()
-        const endDate = today.clone().add(60, 'days').endOf('day').toISOString()
+            : today.clone().subtract(DEFAULT_LOOKBACK_DAYS, 'days').startOf('day').toISOString()
+        const endDate = today.clone().add(DEFAULT_LOOKAHEAD_DAYS, 'days').endOf('day').toISOString()
 
         const data = await this.notionApi.queryDataSource(this.apiKey, this.dataSourceId, {
             and: [
@@ -69,7 +86,7 @@ class RecurringEventsService {
             }
         ])
 
-        console.log(`Fetched ${data.results.length} page(s) from data source between ${startDate} and ${endDate}`)
+        this.logger.log(`Fetched ${data.results.length} page(s) from data source between ${startDate} and ${endDate}`)
         return data.results
     }
 
@@ -78,10 +95,10 @@ class RecurringEventsService {
 
         for (const event of this.allEvents) {
             try {
-                console.log(`Processing source page "${event.name}" ...`)
+                this.logger.log(`Processing source page "${event.name}" ...`)
                 await this.processSourcePage(event, result)
             } catch (error) {
-                console.error(`Error processing source page "${event.notionPageId}": ${error}`)
+                this.logger.error(`Error processing source page "${event.notionPageId}": ${error}`)
                 result.errors.push(`Page ${event.notionPageId}: ${error.message}`)
             }
         }
@@ -142,16 +159,16 @@ class RecurringEventsService {
             if (!existingProperties[propName]) {
                 propertiesToCreate[propName] = propConfig
                 hasNewProperties = true
-                console.log(`Will create missing property: ${propName}`)
+                this.logger.log(`Will create missing property: ${propName}`)
             }
         }
 
         if (hasNewProperties) {
-            console.log('Creating missing Recurring properties in data source...')
+            this.logger.log('Creating missing Recurring properties in data source...')
             await this.notionApi.updateDataSource(this.apiKey, this.dataSourceId, propertiesToCreate)
-            console.log('Successfully created missing properties')
+            this.logger.log('Successfully created missing properties')
         } else {
-            console.log('All required Recurring properties already exist')
+            this.logger.log('All required Recurring properties already exist')
         }
     }
 
@@ -171,7 +188,7 @@ class RecurringEventsService {
 
         await this.generateFutureEvents(event, result)
 
-        await this.markEventAsProcessed(event)
+        await this.markEventAsProcessed(event, result)
     }
 
     async stampRecurringId(event) {
@@ -189,7 +206,7 @@ class RecurringEventsService {
                     ]
                 }
             })
-            console.log(`Generated new Recurring ID for page ${event.notionPageId}: ${event.recurringId}`)
+            this.logger.log(`Generated new Recurring ID for page ${event.notionPageId}: ${event.recurringId}`)
         }
     }
 
@@ -207,7 +224,7 @@ class RecurringEventsService {
                 await this.updateEventFromSource(futureEvent.notionPageId, sourceEvent.notionPage, futureEvent.dateTime)
                 result.updated++
             } catch (error) {
-                console.error(`Error updating event ${futureEvent.notionPageId}: ${error}`)
+                this.logger.error(`Error updating event ${futureEvent.notionPageId}: ${error}`)
                 result.errors.push(`Update ${futureEvent.notionPageId}: ${error.message}`)
             }
         }
@@ -216,7 +233,7 @@ class RecurringEventsService {
     async generateFutureEvents(event, result) {
         const lookaheadEndDate = this._calculateLookaheadEndDate(event)
         if (!lookaheadEndDate) {
-            console.log(`Unsupported frequency: ${event.frequency}, skipping event generation`)
+            this.logger.log(`Unsupported frequency: ${event.frequency}, skipping event generation`)
             return
         }
 
@@ -239,16 +256,16 @@ class RecurringEventsService {
                 }
 
                 await this.createEventFromSource(sourceEvent.notionPage, newEventStartDate.toISOString())
-                console.log(`Created new event on ${newEventStartDate.format()} from source ${sourceEvent.Name}`)
+                this.logger.log(`Created new event on ${newEventStartDate.format()} from source ${sourceEvent.name}`)
                 result.created++
             } catch (error) {
-                console.error(`Error creating event for ${newEventStartDate.format()}: ${error}`)
+                this.logger.error(`Error creating event for ${newEventStartDate.format()}: ${error}`)
                 result.errors.push(`Create ${newEventStartDate.format()}: ${error.message}`)
             }
         }
     }
 
-    async markEventAsProcessed(event) {
+    async markEventAsProcessed(event, result) {
         try {
             await this.notionApi.updatePage(this.apiKey, event.notionPageId, {
                 'Recurring Source': {
@@ -256,7 +273,8 @@ class RecurringEventsService {
                 }
             })
         } catch (error) {
-            console.error(`Error clearing Recurring Source flag for page ${event.notionPageId}: ${error}`)
+            this.logger.error(`Error clearing Recurring Source flag for page ${event.notionPageId}: ${error}`)
+            result.errors.push(`Mark processed ${event.notionPageId}: ${error.message}`)
         }
     }
 
@@ -265,159 +283,84 @@ class RecurringEventsService {
     /* #region Event Creation and Update */
 
     async createEventFromSource(sourcePage, newStartDateTime) {
-        const sourceProps = sourcePage.properties
-        const newProperties = {}
-
-        // Copy all properties from source
-        for (const [key, value] of Object.entries(sourceProps)) {
-            if (key === 'Date') {
-                // Calculate end datetime based on source duration
-                let newEndDateTime = null
-                const sourceStart = sourceProps['Date']?.date?.start
-                const sourceEnd = sourceProps['Date']?.date?.end
-                if (sourceStart && sourceEnd) {
-                    const durationMs = moment.utc(sourceEnd).diff(moment.utc(sourceStart))
-                    newEndDateTime = moment.utc(newStartDateTime).add(durationMs, 'milliseconds').toISOString()
-                }
-                newProperties[key] = {
-                    date: {
-                        start: newStartDateTime,
-                        ...(newEndDateTime && { end: newEndDateTime })
-                    }
-                }
-            } else if (key === 'Recurring Source') {
-                newProperties[key] = {
-                    checkbox: false
-                }
-            } else if (value.type === 'title') {
-                newProperties[key] = {
-                    title: value.title
-                }
-            } else if (value.type === 'rich_text') {
-                newProperties[key] = {
-                    rich_text: value.rich_text
-                }
-            } else if (value.type === 'number') {
-                newProperties[key] = {
-                    number: value.number
-                }
-            } else if (value.type === 'select') {
-                newProperties[key] = {
-                    select: value.select
-                }
-            } else if (value.type === 'multi_select') {
-                newProperties[key] = {
-                    multi_select: value.multi_select
-                }
-            } else if (value.type === 'checkbox') {
-                newProperties[key] = {
-                    checkbox: value.checkbox
-                }
-            } else if (value.type === 'date') {
-                newProperties[key] = {
-                    date: value.date
-                }
-            } else if (value.type === 'url') {
-                newProperties[key] = {
-                    url: value.url
-                }
-            } else if (value.type === 'relation') {
-                newProperties[key] = {
-                    relation: value.relation
-                }
-            }
-        }
-
-        // Get the full source page to retrieve icon
-        const fullSourcePage = await this.notionApi.getPage(this.apiKey, sourcePage.id)
-        const sourceIcon = fullSourcePage.icon
-
-        // Get the source page's content blocks
-        const sourceBlocks = await this.notionApi.getPageBlocks(this.apiKey, sourcePage.id)
-        const sourceChildren = this._prepareBlocksForCopying(sourceBlocks.results)
+        const newProperties = this._copyPropertiesFromSource(sourcePage.properties, newStartDateTime)
+        const sourceIcon = await this._getSourceIcon(sourcePage.id)
+        const sourceChildren = await this._getSourceBlocks(sourcePage.id)
 
         await this.notionApi.createPage(this.apiKey, this.dataSourceId, newProperties, sourceIcon, sourceChildren)
     }
 
     async updateEventFromSource(targetPageId, sourcePage, targetStartDateTime) {
-        const sourceProps = sourcePage.properties
-        const updateProperties = {}
+        const updateProperties = this._copyPropertiesFromSource(sourcePage.properties, targetStartDateTime)
+        const sourceIcon = await this._getSourceIcon(sourcePage.id)
+        const sourceChildren = await this._getSourceBlocks(sourcePage.id)
 
-        // Copy all properties from source except Recurring Source
-        for (const [key, value] of Object.entries(sourceProps)) {
-            if (key === 'Recurring Source') {
-                continue
-            }
-
-            if (key === 'Date') {
-                // Calculate end datetime based on source duration
-                let targetEndDateTime = null
-                const sourceStart = sourceProps['Date']?.date?.start
-                const sourceEnd = sourceProps['Date']?.date?.end
-                if (sourceStart && sourceEnd) {
-                    const durationMs = moment.utc(sourceEnd).diff(moment.utc(sourceStart))
-                    targetEndDateTime = moment.utc(targetStartDateTime).add(durationMs, 'milliseconds').toISOString()
-                }
-                updateProperties[key] = {
-                    date: {
-                        start: targetStartDateTime,
-                        ...(targetEndDateTime && { end: targetEndDateTime })
-                    }
-                }
-                continue
-            }
-
-            if (value.type === 'title') {
-                updateProperties[key] = {
-                    title: value.title
-                }
-            } else if (value.type === 'rich_text') {
-                updateProperties[key] = {
-                    rich_text: value.rich_text
-                }
-            } else if (value.type === 'number') {
-                updateProperties[key] = {
-                    number: value.number
-                }
-            } else if (value.type === 'select') {
-                updateProperties[key] = {
-                    select: value.select
-                }
-            } else if (value.type === 'multi_select') {
-                updateProperties[key] = {
-                    multi_select: value.multi_select
-                }
-            } else if (value.type === 'checkbox') {
-                updateProperties[key] = {
-                    checkbox: value.checkbox
-                }
-            } else if (value.type === 'url') {
-                updateProperties[key] = {
-                    url: value.url
-                }
-            } else if (value.type === 'relation') {
-                updateProperties[key] = {
-                    relation: value.relation
-                }
-            }
-        }
-
-        // Keep the target's Recurring Source value as false
-        updateProperties['Recurring Source'] = {
-            checkbox: false
-        }
-
-        // Get the full source page to retrieve icon
-        const fullSourcePage = await this.notionApi.getPage(this.apiKey, sourcePage.id)
-        const sourceIcon = fullSourcePage.icon
-
-        // Update the page with properties and icon
         await this.notionApi.updatePage(this.apiKey, targetPageId, updateProperties, sourceIcon)
-
-        // Get the source page's content blocks and replace target's content
-        const sourceBlocks = await this.notionApi.getPageBlocks(this.apiKey, sourcePage.id)
-        const sourceChildren = this._prepareBlocksForCopying(sourceBlocks.results)
         await this.notionApi.replacePageBlocks(this.apiKey, targetPageId, sourceChildren)
+    }
+
+    _copyPropertiesFromSource(sourceProps, newStartDateTime) {
+        const properties = {}
+
+        for (const [key, value] of Object.entries(sourceProps)) {
+            if (key === 'Date') {
+                properties[key] = this._calculateDateProperty(sourceProps, newStartDateTime)
+            } else if (key === 'Recurring Source') {
+                properties[key] = { checkbox: false }
+            } else {
+                const copiedProperty = this._copyPropertyByType(value)
+                if (copiedProperty) {
+                    properties[key] = copiedProperty
+                }
+            }
+        }
+
+        return properties
+    }
+
+    _calculateDateProperty(sourceProps, newStartDateTime) {
+        let newEndDateTime = null
+        const sourceStart = sourceProps['Date']?.date?.start
+        const sourceEnd = sourceProps['Date']?.date?.end
+
+        if (sourceStart && sourceEnd) {
+            const durationMs = moment.utc(sourceEnd).diff(moment.utc(sourceStart))
+            newEndDateTime = moment.utc(newStartDateTime).add(durationMs, 'milliseconds').toISOString()
+        }
+
+        return {
+            date: {
+                start: newStartDateTime,
+                ...(newEndDateTime && { end: newEndDateTime })
+            }
+        }
+    }
+
+    _copyPropertyByType(value) {
+        const propertyTypeMap = {
+            'title': () => ({ title: value.title }),
+            'rich_text': () => ({ rich_text: value.rich_text }),
+            'number': () => ({ number: value.number }),
+            'select': () => ({ select: value.select }),
+            'multi_select': () => ({ multi_select: value.multi_select }),
+            'checkbox': () => ({ checkbox: value.checkbox }),
+            'date': () => ({ date: value.date }),
+            'url': () => ({ url: value.url }),
+            'relation': () => ({ relation: value.relation })
+        }
+
+        const copyFunction = propertyTypeMap[value.type]
+        return copyFunction ? copyFunction() : null
+    }
+
+    async _getSourceIcon(sourcePageId) {
+        const fullSourcePage = await this.notionApi.getPage(this.apiKey, sourcePageId)
+        return fullSourcePage.icon
+    }
+
+    async _getSourceBlocks(sourcePageId) {
+        const sourceBlocks = await this.notionApi.getPageBlocks(this.apiKey, sourcePageId)
+        return this._prepareBlocksForCopying(sourceBlocks.results)
     }
 
     /* #endregion */
@@ -435,14 +378,14 @@ class RecurringEventsService {
 
     _handleProcessingError(error, result) {
         const errorMessage = error.response?.data?.message || error.message || 'Unknown error'
-        console.error(`Error in processRecurringEvents: ${errorMessage}`)
+        this.logger.error(`Error in processRecurringEvents: ${errorMessage}`)
         result.errors.push(errorMessage)
     }
 
     _validateRecurringEvent(event, result) {
         if (!event.isValid()) {
             const reason = event.getValidationFailureReason()
-            console.log(`Skipping page ${event.name}: ${reason}`)
+            this.logger.log(`Skipping page ${event.name}: ${reason}`)
             result.skipped++
             return false
         }
@@ -588,11 +531,11 @@ class Event {
 
     _applyUpperLimits() {
         if (this.frequency === 'Weekly') {
-            this.cadence = Math.min(this.cadence, 4)
-            this.lookaheadNumber = Math.min(this.lookaheadNumber, 8)
+            this.cadence = Math.min(this.cadence, MAX_WEEKLY_CADENCE)
+            this.lookaheadNumber = Math.min(this.lookaheadNumber, MAX_WEEKLY_LOOKAHEAD)
         } else if (this.frequency === 'Daily') {
-            this.cadence = Math.min(this.cadence, 30)
-            this.lookaheadNumber = Math.min(this.lookaheadNumber, 60)
+            this.cadence = Math.min(this.cadence, MAX_DAILY_CADENCE)
+            this.lookaheadNumber = Math.min(this.lookaheadNumber, MAX_DAILY_LOOKAHEAD)
         }
     }
 

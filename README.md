@@ -18,6 +18,8 @@ MONGODB_BOOKMARK_CONNECTION_STRING=<YOUR KEY>
 SESSION_SECRET=<YOUR KEY>
 YELP_API=<YOUR KEY>
 GOOGLE_API=<YOUR KEY>
+ENCRYPTION_KEY=<YOUR KEY, create from running random hex>
+    - Ex: `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"`
 ```
 
 * Don't use the same Google API as for javascript maps as that is exposed to public
