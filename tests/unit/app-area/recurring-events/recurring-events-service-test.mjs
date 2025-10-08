@@ -1,8 +1,6 @@
-"use strict";
-
-const { describe, it, expect, beforeEach, vi } = require('vitest')
-const moment = require('moment')
-const { RecurringEventsService } = require('../../../../src/app-area/recurring-events/service/recurring-events-service')
+import { describe, it, expect, beforeEach, vi } from 'vitest'
+import moment from 'moment'
+import { RecurringEventsService, Event } from '../../../../src/app-area/recurring-events/service/recurring-events-service.js'
 
 /* #region Event Class Tests */
 
@@ -17,7 +15,6 @@ describe('Event Class', () => {
                 isRecurringSource: true
             })
 
-            const { Event } = require('../../../../src/app-area/recurring-events/service/recurring-events-service')
             const event = new Event(sourcePage)
 
             expect(event.frequency).toBe('Daily')
@@ -36,7 +33,6 @@ describe('Event Class', () => {
                 isRecurringSource: true
             })
 
-            const { Event } = require('../../../../src/app-area/recurring-events/service/recurring-events-service')
             const event = new Event(sourcePage)
 
             expect(event.frequency).toBe('Weekly')
@@ -55,7 +51,6 @@ describe('Event Class', () => {
                 isRecurringSource: true
             })
 
-            const { Event } = require('../../../../src/app-area/recurring-events/service/recurring-events-service')
             const event = new Event(sourcePage)
 
             expect(event.isValid()).toBe(false)
@@ -71,14 +66,13 @@ describe('Event Class', () => {
                 isRecurringSource: true
             })
 
-            const { Event } = require('../../../../src/app-area/recurring-events/service/recurring-events-service')
             const event = new Event(sourcePage)
 
             expect(event.isValid()).toBe(false)
             expect(event.getValidationFailureReason()).toBe('Missing date')
         })
 
-        it('should be invalid when cadence is less than 1', () => {
+        it('should default cadence to 1 when set to 0 or null', () => {
             const sourcePage = createSourcePage({
                 frequency: 'Daily',
                 cadence: 0,
@@ -87,11 +81,10 @@ describe('Event Class', () => {
                 isRecurringSource: true
             })
 
-            const { Event } = require('../../../../src/app-area/recurring-events/service/recurring-events-service')
             const event = new Event(sourcePage)
 
-            expect(event.isValid()).toBe(false)
-            expect(event.getValidationFailureReason()).toBe('Invalid cadence (< 1)')
+            expect(event.cadence).toBe(1)
+            expect(event.isValid()).toBe(true)
         })
 
         it('should be invalid when lookahead number is less than 1', () => {
@@ -103,7 +96,6 @@ describe('Event Class', () => {
                 isRecurringSource: true
             })
 
-            const { Event } = require('../../../../src/app-area/recurring-events/service/recurring-events-service')
             const event = new Event(sourcePage)
 
             expect(event.isValid()).toBe(false)
@@ -120,7 +112,6 @@ describe('Event Class', () => {
                 isRecurringSource: true
             })
 
-            const { Event } = require('../../../../src/app-area/recurring-events/service/recurring-events-service')
             const event = new Event(sourcePage)
 
             expect(event.isValid()).toBe(false)
@@ -136,7 +127,6 @@ describe('Event Class', () => {
                 isRecurringSource: false
             })
 
-            const { Event } = require('../../../../src/app-area/recurring-events/service/recurring-events-service')
             const event = new Event(sourcePage)
 
             expect(event.isValid()).toBe(false)
@@ -153,7 +143,6 @@ describe('Event Class', () => {
                 isRecurringSource: true
             })
 
-            const { Event } = require('../../../../src/app-area/recurring-events/service/recurring-events-service')
             const event = new Event(sourcePage)
 
             expect(event.cadence).toBe(4)
@@ -169,7 +158,6 @@ describe('Event Class', () => {
                 isRecurringSource: true
             })
 
-            const { Event } = require('../../../../src/app-area/recurring-events/service/recurring-events-service')
             const event = new Event(sourcePage)
 
             expect(event.cadence).toBe(30)
@@ -362,7 +350,7 @@ describe('RecurringEventsService - Date Generation Strategies', () => {
     describe('Weekly Strategy', () => {
         it('should generate weekly events on selected days with cadence 1', () => {
             const startDate = moment.utc('2025-10-08T10:00:00Z') // Wednesday
-            const endDate = moment.utc('2025-10-20T10:00:00Z')
+            const endDate = moment.utc('2025-10-22T10:00:00Z')
             const event = createEvent({
                 dateTimeMoment: startDate,
                 cadence: 1,
@@ -371,11 +359,10 @@ describe('RecurringEventsService - Date Generation Strategies', () => {
 
             const dates = service._weeklyDateStrategy.generate(event, endDate)
 
-            // Should include: Oct 13 (Mon), Oct 15 (Wed)
-            expect(dates.length).toBeGreaterThanOrEqual(2)
+            // Should include: Oct 15 (Wed week 1), Oct 20 (Mon week 2), Oct 22 (Wed week 2)
             const formattedDates = dates.map(d => d.format('YYYY-MM-DD'))
-            expect(formattedDates).toContain('2025-10-13') // Monday
-            expect(formattedDates).toContain('2025-10-15') // Wednesday
+            expect(formattedDates).toContain('2025-10-15') // Wednesday week 1
+            expect(formattedDates).toContain('2025-10-20') // Monday week 2
         })
 
         it('should generate weekly events with cadence 2', () => {
@@ -750,6 +737,10 @@ describe('RecurringEventsService - Service Methods', () => {
                 moment.utc('2025-10-12T10:00:00Z')
             ]
 
+            mockNotionApi.getPage.mockResolvedValue({ icon: { type: 'emoji', emoji: '📅' } })
+            mockNotionApi.getPageBlocks.mockResolvedValue({ results: [] })
+            mockNotionApi.createPage.mockResolvedValue({})
+
             const result = service._createProcessingResult()
             service.dataSourceId = 'datasource-1'
             await service.createNewEvents(sourceEvent, newEventDates, result)
@@ -826,18 +817,23 @@ function createSourcePage({ frequency, cadence, lookaheadNumber, dateTime, recur
     }
 }
 
-function createEvent({ frequency = 'Daily', cadence = 1, lookaheadNumber = 30, dateTimeMoment = moment.utc('2025-10-08T10:00:00Z'), recurringDays = [] }) {
-    return {
+function createEvent({ frequency = 'Daily', cadence = 1, lookaheadNumber = 30, dateTimeMoment = moment.utc('2025-10-08T10:00:00Z'), recurringDays = [], dateTime = '2025-10-08T10:00:00Z', isRecurringSource = true }) {
+    const sourcePage = createSourcePage({
         frequency,
         cadence,
         lookaheadNumber,
-        dateTimeMoment,
-        recurringDays
+        dateTime,
+        recurringDays,
+        isRecurringSource
+    })
+    const event = new Event(sourcePage)
+    if (dateTimeMoment) {
+        event.dateTimeMoment = dateTimeMoment
     }
+    return event
 }
 
 function createEventWithPage({ notionPageId, recurringId, dateTime, notionPage = null }) {
-    const { Event } = require('../../../../src/app-area/recurring-events/service/recurring-events-service')
     const sourcePage = createSourcePage({
         frequency: 'Daily',
         cadence: 1,

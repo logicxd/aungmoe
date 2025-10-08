@@ -632,5 +632,6 @@ class Event {
 /* #endregion */
 
 module.exports = {
-    RecurringEventsService
+    RecurringEventsService,
+    Event
 }
