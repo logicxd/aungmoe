@@ -244,11 +244,11 @@ describe('RecurringEventsService - Date Calculation', () => {
             expect(service._shouldGenerateWeeklyEvent(1, 2, mondayDate, recurringDays)).toBe(false)
         })
 
-        it('should return false for week zero or negative', () => {
+        it('should return true for week zero and false for negative weeks', () => {
             const mondayDate = moment.utc('2025-10-13')
             const recurringDays = ['Monday']
 
-            expect(service._shouldGenerateWeeklyEvent(0, 1, mondayDate, recurringDays)).toBe(false)
+            expect(service._shouldGenerateWeeklyEvent(0, 1, mondayDate, recurringDays)).toBe(true)
             expect(service._shouldGenerateWeeklyEvent(-1, 1, mondayDate, recurringDays)).toBe(false)
         })
     })
@@ -363,6 +363,24 @@ describe('RecurringEventsService - Date Generation Strategies', () => {
             const formattedDates = dates.map(d => d.format('YYYY-MM-DD'))
             expect(formattedDates).toContain('2025-10-15') // Wednesday week 1
             expect(formattedDates).toContain('2025-10-20') // Monday week 2
+        })
+
+        it('should generate weekly events on selected days with cadence 1 and lookahead 2', () => {
+            const startDate = moment.utc('2025-10-08T10:00:00Z') // Wednesday
+            const endDate = moment.utc('2025-10-22T10:00:00Z')
+            const event = createEvent({
+                dateTimeMoment: startDate,
+                cadence: 1,
+                lookaheadNumber: 2,
+                recurringDays: ['Tuesday']
+            })
+
+            const dates = service._weeklyDateStrategy.generate(event, endDate)
+
+            // Should include: Oct 14 (Tuesday week 1), Oct 21 (Tuesday week 2)
+            const formattedDates = dates.map(d => d.format('YYYY-MM-DD'))
+            expect(formattedDates).toContain('2025-10-14') // Tuesday week 1
+            expect(formattedDates).toContain('2025-10-21') // Tuesday week 2
         })
 
         it('should generate weekly events with cadence 2', () => {

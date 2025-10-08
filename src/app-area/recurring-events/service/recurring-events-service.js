@@ -521,7 +521,7 @@ class RecurringEventsService {
     }
 
     _shouldGenerateWeeklyEvent(weeksSinceStart, cadence, current, recurringDays) {
-        if (weeksSinceStart <= 0 || weeksSinceStart % cadence !== 0) {
+        if (weeksSinceStart < 0 || weeksSinceStart % cadence !== 0) {
             return false
         }
 
