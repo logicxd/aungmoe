@@ -79,8 +79,8 @@ class RecurringEventsService {
                 await this.processSourcePage(event, result)
                 console.log(`Finished processing`)
             } catch (error) {
-                console.error(`Error processing source page "${event.sourcePageId}": ${error}`)
-                result.errors.push(`Page ${event.sourcePageId}: ${error.message}`)
+                console.error(`Error processing source page "${event.notionPageId}": ${error}`)
+                result.errors.push(`Page ${event.notionPageId}: ${error.message}`)
             }
         }
     }
@@ -167,7 +167,7 @@ class RecurringEventsService {
     async stampRecurringId(event) {
         if (!event.recurringId) {
             event.recurringId = randomUUID()
-            await notionApi.updatePage(this.apiKey, event.sourcePageId, {
+            await notionApi.updatePage(this.apiKey, event.notionPageId, {
                 'Recurring ID': {
                     rich_text: [
                         {
@@ -179,13 +179,13 @@ class RecurringEventsService {
                     ]
                 }
             })
-            console.log(`Generated new Recurring ID for page ${event.sourcePageId}: ${event.recurringId}`)
+            console.log(`Generated new Recurring ID for page ${event.notionPageId}: ${event.recurringId}`)
         }
     }
 
     findFutureEvents(sourceEvent) {
         return this.allEvents.filter(event => {
-            if (event.sourcePageId === sourceEvent.sourcePageId) { return false }
+            if (event.notionPageId === sourceEvent.notionPageId) { return false }
             if (event.recurringId !== sourceEvent.recurringId) { return false }
             return event.dateTimeMoment && event.dateTimeMoment.isAfter(sourceEvent.dateTimeMoment)
         })
@@ -194,11 +194,11 @@ class RecurringEventsService {
     async updateAllFutureEvents(futureEvents, sourceEvent, result) {
         for (const futureEvent of futureEvents) {
             try {
-                await this.updateEventFromSource(futureEvent.sourcePageId, sourceEvent.sourcePage, futureEvent.dateTime)
+                await this.updateEventFromSource(futureEvent.notionPageId, sourceEvent.notionPage, futureEvent.dateTime)
                 result.updated++
             } catch (error) {
-                console.error(`Error updating event ${futureEvent.sourcePageId}: ${error}`)
-                result.errors.push(`Update ${futureEvent.sourcePageId}: ${error.message}`)
+                console.error(`Error updating event ${futureEvent.notionPageId}: ${error}`)
+                result.errors.push(`Update ${futureEvent.notionPageId}: ${error.message}`)
             }
         }
     }
@@ -228,7 +228,7 @@ class RecurringEventsService {
                     continue
                 }
 
-                await this.createEventFromSource(sourceEvent.sourcePage, newEventStartDate.toISOString())
+                await this.createEventFromSource(sourceEvent.notionPage, newEventStartDate.toISOString())
                 result.created++
             } catch (error) {
                 console.error(`Error creating event for ${newEventStartDate.format()}: ${error}`)
@@ -239,13 +239,13 @@ class RecurringEventsService {
 
     async markEventAsProcessed(event) {
         try {
-            await notionApi.updatePage(this.apiKey, event.sourcePageId, {
+            await notionApi.updatePage(this.apiKey, event.notionPageId, {
                 'Recurring Source': {
                     checkbox: false
                 }
             })
         } catch (error) {
-            console.error(`Error clearing Recurring Source flag for page ${event.sourcePageId}: ${error}`)
+            console.error(`Error clearing Recurring Source flag for page ${event.notionPageId}: ${error}`)
         }
     }
 
@@ -528,8 +528,8 @@ class Event {
     constructor(sourcePage) {
         const props = sourcePage.properties
 
-        this.sourcePage = sourcePage
-        this.sourcePageId = sourcePage.id
+        this.notionPage = sourcePage
+        this.notionPageId = sourcePage.id
         this.frequency = props['Recurring Frequency']?.select?.name
         this.cadence = props['Recurring Cadence']?.number || 1
         this.recurringDays = props['Recurring Days']?.multi_select?.map(d => d.name) || []
