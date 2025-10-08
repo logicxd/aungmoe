@@ -133,7 +133,7 @@ describe('Event Class', () => {
             expect(event.getValidationFailureReason()).toBe('Not marked as recurring source')
         })
 
-        it('should enforce upper limit for weekly cadence', () => {
+        it('should enforce upper limit for weekly cadence and still be valid', () => {
             const sourcePage = createSourcePage({
                 frequency: 'Weekly',
                 cadence: 10,
@@ -147,9 +147,10 @@ describe('Event Class', () => {
 
             expect(event.cadence).toBe(4)
             expect(event.lookaheadNumber).toBe(8)
+            expect(event.isValid()).toBe(true)
         })
 
-        it('should enforce upper limit for daily cadence', () => {
+        it('should enforce upper limit for daily cadence and still be valid', () => {
             const sourcePage = createSourcePage({
                 frequency: 'Daily',
                 cadence: 50,
@@ -162,6 +163,7 @@ describe('Event Class', () => {
 
             expect(event.cadence).toBe(30)
             expect(event.lookaheadNumber).toBe(60)
+            expect(event.isValid()).toBe(true)
         })
     })
 })
@@ -172,10 +174,12 @@ describe('Event Class', () => {
 
 describe('RecurringEventsService - Date Calculation', () => {
     let service
+    let mockLogger
 
     beforeEach(() => {
         const mockNotionApi = createMockNotionApi()
-        service = new RecurringEventsService('test-api-key', 'test-db-id', mockNotionApi)
+        mockLogger = { log: vi.fn(), error: vi.fn() }
+        service = new RecurringEventsService('test-api-key', 'test-db-id', mockNotionApi, mockLogger)
     })
 
     describe('_calculateLookaheadEndDate', () => {
@@ -275,10 +279,12 @@ describe('RecurringEventsService - Date Calculation', () => {
 
 describe('RecurringEventsService - Date Generation Strategies', () => {
     let service
+    let mockLogger
 
     beforeEach(() => {
         const mockNotionApi = createMockNotionApi()
-        service = new RecurringEventsService('test-api-key', 'test-db-id', mockNotionApi)
+        mockLogger = { log: vi.fn(), error: vi.fn() }
+        service = new RecurringEventsService('test-api-key', 'test-db-id', mockNotionApi, mockLogger)
     })
 
     describe('Daily Strategy', () => {
@@ -424,10 +430,12 @@ describe('RecurringEventsService - Date Generation Strategies', () => {
 
 describe('RecurringEventsService - Event Filtering and Result Tracking', () => {
     let service
+    let mockLogger
 
     beforeEach(() => {
         const mockNotionApi = createMockNotionApi()
-        service = new RecurringEventsService('test-api-key', 'test-db-id', mockNotionApi)
+        mockLogger = { log: vi.fn(), error: vi.fn() }
+        service = new RecurringEventsService('test-api-key', 'test-db-id', mockNotionApi, mockLogger)
     })
 
     describe('findFutureEvents', () => {
@@ -544,10 +552,12 @@ describe('RecurringEventsService - Event Filtering and Result Tracking', () => {
 
 describe('RecurringEventsService - Block Preparation', () => {
     let service
+    let mockLogger
 
     beforeEach(() => {
         const mockNotionApi = createMockNotionApi()
-        service = new RecurringEventsService('test-api-key', 'test-db-id', mockNotionApi)
+        mockLogger = { log: vi.fn(), error: vi.fn() }
+        service = new RecurringEventsService('test-api-key', 'test-db-id', mockNotionApi, mockLogger)
     })
 
     describe('_prepareBlocksForCopying', () => {
@@ -642,10 +652,40 @@ describe('RecurringEventsService - Block Preparation', () => {
 describe('RecurringEventsService - Service Methods', () => {
     let service
     let mockNotionApi
+    let mockLogger
 
     beforeEach(() => {
         mockNotionApi = createMockNotionApi()
-        service = new RecurringEventsService('test-api-key', 'test-db-id', mockNotionApi)
+        mockLogger = { log: vi.fn(), error: vi.fn() }
+        service = new RecurringEventsService('test-api-key', 'test-db-id', mockNotionApi, mockLogger)
+    })
+
+    describe('getDataSourceId', () => {
+        it('should return data source ID when available', async () => {
+            mockNotionApi.getDatabase.mockResolvedValue({
+                data_sources: [{ id: 'datasource-123' }]
+            })
+
+            const dataSourceId = await service.getDataSourceId()
+
+            expect(dataSourceId).toBe('datasource-123')
+        })
+
+        it('should throw error when no data sources exist', async () => {
+            mockNotionApi.getDatabase.mockResolvedValue({
+                data_sources: []
+            })
+
+            await expect(service.getDataSourceId()).rejects.toThrow('has no data sources')
+        })
+
+        it('should throw error when data_sources is null', async () => {
+            mockNotionApi.getDatabase.mockResolvedValue({
+                id: 'db-123'
+            })
+
+            await expect(service.getDataSourceId()).rejects.toThrow('has no data sources')
+        })
     })
 
     describe('ensureRecurringProperties', () => {
@@ -795,6 +835,77 @@ describe('RecurringEventsService - Service Methods', () => {
 
             expect(result.updated).toBe(2)
             expect(mockNotionApi.updatePage).toHaveBeenCalledTimes(2)
+        })
+    })
+
+    describe('markEventAsProcessed', () => {
+        it('should mark event as processed successfully', async () => {
+            const event = createEventWithPage({
+                notionPageId: 'page-1'
+            })
+
+            const result = service._createProcessingResult()
+            await service.markEventAsProcessed(event, result)
+
+            expect(mockNotionApi.updatePage).toHaveBeenCalledWith(
+                'test-api-key',
+                'page-1',
+                {
+                    'Recurring Source': {
+                        checkbox: false
+                    }
+                }
+            )
+            expect(result.errors).toHaveLength(0)
+        })
+
+        it('should report error when marking event fails', async () => {
+            const event = createEventWithPage({
+                notionPageId: 'page-1'
+            })
+
+            mockNotionApi.updatePage.mockRejectedValue(new Error('API error'))
+
+            const result = service._createProcessingResult()
+            await service.markEventAsProcessed(event, result)
+
+            expect(result.errors).toHaveLength(1)
+            expect(result.errors[0]).toContain('Mark processed page-1')
+            expect(result.errors[0]).toContain('API error')
+        })
+    })
+
+    describe('Logger Integration', () => {
+        it('should use custom logger instead of console', async () => {
+            mockNotionApi.getDatabase.mockResolvedValue({
+                data_sources: [{ id: 'datasource-123' }]
+            })
+            mockNotionApi.getDataSource.mockResolvedValue({
+                properties: {
+                    'Recurring Frequency': {},
+                    'Recurring Cadence': {},
+                    'Recurring Days': {},
+                    'Recurring Lookahead Number': {},
+                    'Recurring Source': {},
+                    'Recurring ID': {}
+                }
+            })
+            mockNotionApi.queryDataSource.mockResolvedValue({
+                results: []
+            })
+
+            await service.processRecurringEvents(null)
+
+            expect(mockLogger.log).toHaveBeenCalled()
+            expect(mockLogger.error).not.toHaveBeenCalled()
+        })
+
+        it('should log errors to custom logger', async () => {
+            mockNotionApi.getDatabase.mockRejectedValue(new Error('Database error'))
+
+            await service.processRecurringEvents(null)
+
+            expect(mockLogger.error).toHaveBeenCalledWith(expect.stringContaining('Database error'))
         })
     })
 })
