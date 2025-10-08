@@ -7,9 +7,10 @@ var notionApi = require('../../../services/notionapiservice')
 /* #region RecurringEventsService */
 
 class RecurringEventsService {
-    constructor(apiKey, databaseId) {
+    constructor(apiKey, databaseId, notionApiService = notionApi) {
         this.apiKey = apiKey
         this.databaseId = databaseId
+        this.notionApi = notionApiService
         this.dataSourceId = null
         this.allEvents = []
     }
@@ -35,7 +36,7 @@ class RecurringEventsService {
     }
 
     async getDataSourceId() {
-        const database = await notionApi.getDatabase(this.apiKey, this.databaseId)
+        const database = await this.notionApi.getDatabase(this.apiKey, this.databaseId)
         return database.data_sources[0]?.id || database.id
     }
 
@@ -46,7 +47,7 @@ class RecurringEventsService {
             : today.clone().subtract(14, 'days').startOf('day').toISOString()
         const endDate = today.clone().add(60, 'days').endOf('day').toISOString()
 
-        const data = await notionApi.queryDataSource(this.apiKey, this.dataSourceId, {
+        const data = await this.notionApi.queryDataSource(this.apiKey, this.dataSourceId, {
             and: [
                 {
                     property: "Date",
@@ -91,7 +92,7 @@ class RecurringEventsService {
     /* #region Setup and Initialization */
 
     async ensureRecurringProperties() {
-        const dataSource = await notionApi.getDataSource(this.apiKey, this.dataSourceId)
+        const dataSource = await this.notionApi.getDataSource(this.apiKey, this.dataSourceId)
         const existingProperties = dataSource.properties || {}
 
         const requiredProperties = {
@@ -147,7 +148,7 @@ class RecurringEventsService {
 
         if (hasNewProperties) {
             console.log('Creating missing Recurring properties in data source...')
-            await notionApi.updateDataSource(this.apiKey, this.dataSourceId, propertiesToCreate)
+            await this.notionApi.updateDataSource(this.apiKey, this.dataSourceId, propertiesToCreate)
             console.log('Successfully created missing properties')
         } else {
             console.log('All required Recurring properties already exist')
@@ -176,7 +177,7 @@ class RecurringEventsService {
     async stampRecurringId(event) {
         if (!event.recurringId) {
             event.recurringId = randomUUID()
-            await notionApi.updatePage(this.apiKey, event.notionPageId, {
+            await this.notionApi.updatePage(this.apiKey, event.notionPageId, {
                 'Recurring ID': {
                     rich_text: [
                         {
@@ -249,7 +250,7 @@ class RecurringEventsService {
 
     async markEventAsProcessed(event) {
         try {
-            await notionApi.updatePage(this.apiKey, event.notionPageId, {
+            await this.notionApi.updatePage(this.apiKey, event.notionPageId, {
                 'Recurring Source': {
                     checkbox: false
                 }
@@ -328,14 +329,14 @@ class RecurringEventsService {
         }
 
         // Get the full source page to retrieve icon
-        const fullSourcePage = await notionApi.getPage(this.apiKey, sourcePage.id)
+        const fullSourcePage = await this.notionApi.getPage(this.apiKey, sourcePage.id)
         const sourceIcon = fullSourcePage.icon
 
         // Get the source page's content blocks
-        const sourceBlocks = await notionApi.getPageBlocks(this.apiKey, sourcePage.id)
+        const sourceBlocks = await this.notionApi.getPageBlocks(this.apiKey, sourcePage.id)
         const sourceChildren = this._prepareBlocksForCopying(sourceBlocks.results)
 
-        await notionApi.createPage(this.apiKey, this.dataSourceId, newProperties, sourceIcon, sourceChildren)
+        await this.notionApi.createPage(this.apiKey, this.dataSourceId, newProperties, sourceIcon, sourceChildren)
     }
 
     async updateEventFromSource(targetPageId, sourcePage, targetStartDateTime) {
@@ -407,16 +408,16 @@ class RecurringEventsService {
         }
 
         // Get the full source page to retrieve icon
-        const fullSourcePage = await notionApi.getPage(this.apiKey, sourcePage.id)
+        const fullSourcePage = await this.notionApi.getPage(this.apiKey, sourcePage.id)
         const sourceIcon = fullSourcePage.icon
 
         // Update the page with properties and icon
-        await notionApi.updatePage(this.apiKey, targetPageId, updateProperties, sourceIcon)
+        await this.notionApi.updatePage(this.apiKey, targetPageId, updateProperties, sourceIcon)
 
         // Get the source page's content blocks and replace target's content
-        const sourceBlocks = await notionApi.getPageBlocks(this.apiKey, sourcePage.id)
+        const sourceBlocks = await this.notionApi.getPageBlocks(this.apiKey, sourcePage.id)
         const sourceChildren = this._prepareBlocksForCopying(sourceBlocks.results)
-        await notionApi.replacePageBlocks(this.apiKey, targetPageId, sourceChildren)
+        await this.notionApi.replacePageBlocks(this.apiKey, targetPageId, sourceChildren)
     }
 
     /* #endregion */
