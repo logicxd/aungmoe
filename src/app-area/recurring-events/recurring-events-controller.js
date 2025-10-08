@@ -188,6 +188,92 @@ function requiredValidators() {
 
 /* #region  Recurring Event Processing */
 
+async function processRecurringEvents(apiKey, databaseId, lastSyncedDate) {
+    const result = createProcessingResult()
+
+    try {
+        const dataSourceId = await getDataSourceId(apiKey, databaseId)
+        await ensureRecurringProperties(apiKey, dataSourceId)
+
+        const allSourcePages = await fetchSourcePages(apiKey, dataSourceId, lastSyncedDate)
+        await processAllSourcePages(apiKey, dataSourceId, allSourcePages, result)
+
+        console.log(`Recurring events processing completed.`)
+    } catch (error) {
+        handleProcessingError(error, result)
+    }
+
+    return result
+}
+
+function createProcessingResult() {
+    return {
+        created: 0,
+        updated: 0,
+        skipped: 0,
+        errors: []
+    }
+}
+
+async function getDataSourceId(apiKey, databaseId) {
+    const database = await notionApi.getDatabase(apiKey, databaseId)
+    return database.data_sources[0]?.id || database.id
+}
+
+async function fetchSourcePages(apiKey, dataSourceId, lastSyncedDate) {
+    const today = moment.utc()
+    const startDate = lastSyncedDate
+        ? moment.utc(lastSyncedDate).toISOString()
+        : today.clone().subtract(14, 'days').startOf('day').toISOString()
+    const endDate = today.clone().add(60, 'days').endOf('day').toISOString()
+
+    const data = await notionApi.queryDataSource(apiKey, dataSourceId, {
+        and: [
+            {
+                property: "Date",
+                date: {
+                    on_or_after: startDate
+                }
+            },
+            {
+                property: "Date",
+                date: {
+                    on_or_before: endDate
+                }
+            }
+        ]
+    }, [
+        {
+            "property": "Date",
+            "direction": "ascending"
+        }
+    ])
+
+    console.log(`Fetched ${data.results.length} page(s) from data source between ${startDate} and ${endDate}`)
+    return data.results
+}
+
+async function processAllSourcePages(apiKey, dataSourceId, allSourcePages, result) {
+    const allRecurringEvents = allSourcePages.map(page => new RecurringEvent(page))
+
+    for (const event of allRecurringEvents) {
+        try {
+            console.log(`Processing source page ${event.name}...`)
+            await processSourcePage(apiKey, dataSourceId, allRecurringEvents, event, result)
+            console.log(`Finished processing`)
+        } catch (error) {
+            console.error(`Error processing source page ${event.sourcePageId}: ${error}`)
+            result.errors.push(`Page ${event.sourcePageId}: ${error.message}`)
+        }
+    }
+}
+
+function handleProcessingError(error, result) {
+    const errorMessage = error.response?.data?.message || error.message || 'Unknown error'
+    console.error(`Error in processRecurringEvents: ${errorMessage}`)
+    result.errors.push(errorMessage)
+}
+
 async function ensureRecurringProperties(apiKey, dataSourceId) {
     const dataSource = await notionApi.getDataSource(apiKey, dataSourceId)
     const existingProperties = dataSource.properties || {}
@@ -252,194 +338,98 @@ async function ensureRecurringProperties(apiKey, dataSourceId) {
     }
 }
 
-async function processRecurringEvents(apiKey, databaseId, lastSyncedDate) {
-    const result = {
-        created: 0,
-        updated: 0,
-        skipped: 0,
-        errors: []
+async function processSourcePage(apiKey, dataSourceId, allRecurringEvents, event, result) {
+    if (!validateRecurringEvent(event, result)) {
+        return
     }
 
-    try {
-        // Get the database to retrieve the data source ID
-        const database = await notionApi.getDatabase(apiKey, databaseId)
-        const dataSourceId = database.data_sources[0]?.id || database.id
+    await stampRecurringId(apiKey, event)
 
-        // Ensure all required properties exist in the data source
-        await ensureRecurringProperties(apiKey, dataSourceId)
+    const futureEvents = findFutureEvents(allRecurringEvents, event)
+    await updateAllFutureEvents(apiKey, futureEvents, event, result)
 
-        // Fetch all pages within date range: from lastSyncedDate (or 14 days before today if not set) to 60 days from today
-        const today = moment.utc()
-        const startDate = lastSyncedDate
-            ? moment.utc(lastSyncedDate).toISOString()
-            : today.clone().subtract(14, 'days').startOf('day').toISOString()
-        const endDate = today.clone().add(60, 'days').endOf('day').toISOString()
+    await generateFutureEvents(apiKey, dataSourceId, allRecurringEvents, event, result)
 
-        const data = await notionApi.queryDataSource(apiKey, dataSourceId, {
-            and: [
-                {
-                    property: "Date",
-                    date: {
-                        on_or_after: startDate
-                    }
-                },
-                {
-                    property: "Date",
-                    date: {
-                        on_or_before: endDate
-                    }
-                }
-            ]
-        }, [
-            {
-                "property": "Date",
-                "direction": "ascending"
-            }
-        ])
-
-        const allSourcePages = data.results
-        console.log(`Fetched ${allSourcePages.length} pages from data source between ${startDate} and ${endDate}`)
-
-        for (const sourcePage of allSourcePages) {
-            try {
-                console.log(`Processing source page ${sourcePage.id}...`)
-                await processSourcePage(apiKey, dataSourceId, allSourcePages, sourcePage, result)
-            } catch (error) {
-                console.error(`Error processing source page ${sourcePage.id}: ${error}`)
-                result.errors.push(`Page ${sourcePage.id}: ${error.message}`)
-            }
-        }
-
-    } catch (error) {
-        const errorMessage = error.response.data.message || error.message || 'Unknown error'
-        console.error(`Error in processRecurringEvents: ${errorMessage}`)
-        result.errors.push(errorMessage)
-    }
-
-    return result
+    await markEventAsProcessed(apiKey, event)
 }
 
-async function processSourcePage(apiKey, dataSourceId, allSourcePages, sourcePage, result) {
-    const props = sourcePage.properties
-    const frequency = props['Recurring Frequency']?.select?.name
-    let cadence = props['Recurring Cadence']?.number || 1
-    const recurringDays = props['Recurring Days']?.multi_select?.map(d => d.name) || []
-    let lookaheadNumber = props['Recurring Lookahead Number']?.number || 0
-    const sourcePageDateTime = props['Date']?.date?.start
-    let recurringId = props['Recurring ID']?.rich_text?.[0]?.plain_text
-    const isRecurringSource = props['Recurring Source']?.checkbox === true
-
-    // Validate
-    if (!frequency || !sourcePageDateTime || cadence < 1 || lookaheadNumber < 1) {
+function validateRecurringEvent(event, result) {
+    if (!event.isValid()) {
+        const reason = event.getValidationFailureReason()
+        console.log(`Skipping page ${event.name}: ${reason}`)
         result.skipped++
-        return
+        return false
     }
+    console.log(`Cadence: ${event.cadence}, lookahead: ${event.lookaheadNumber}`)
+    return true
+}
 
-    // For Weekly frequency, recurringDays is required
-    if (frequency === 'Weekly' && recurringDays.length === 0) {
-        result.skipped++
-        return
-    }
-
-    // Skip if "Recurring Source" is not true
-    if (!isRecurringSource) {
-        result.skipped++
-        return
-    }
-
-    // Apply upper limit to cadence and lookaheadNumber
-    if (frequency === 'Weekly') {
-        cadence = Math.min(cadence, 4)
-        lookaheadNumber = Math.min(lookaheadNumber, 8)
-    } else if (frequency === 'Daily') {
-        cadence = Math.min(cadence, 30)
-        lookaheadNumber = Math.min(lookaheadNumber, 60)
-    }
-    console.log(`Cadence: ${cadence}, lookahead: ${lookaheadNumber}`)
-
-    // Ensure Recurring ID exists
-    if (!recurringId) {
-        recurringId = randomUUID()
-        // Update the source page with the new UUID
-        await notionApi.updatePage(apiKey, sourcePage.id, {
+async function stampRecurringId(apiKey, event) {
+    if (!event.recurringId) {
+        event.recurringId = randomUUID()
+        await notionApi.updatePage(apiKey, event.sourcePageId, {
             'Recurring ID': {
                 rich_text: [
                     {
                         type: 'text',
                         text: {
-                            content: recurringId
+                            content: event.recurringId
                         }
                     }
                 ]
             }
         })
-        console.log(`Generated new Recurring ID for page ${sourcePage.id}: ${recurringId}`)
+        console.log(`Generated new Recurring ID for page ${event.sourcePageId}: ${event.recurringId}`)
     }
+}
 
-    // Since allSourcePages are sorted by date ascending, and this sourcePage has "Recurring Source" = true,
-    // this must be the earliest event with "Recurring Source" marked as true
-    const actualSourcePage = sourcePage
+function findFutureEvents(allRecurringEvents, sourceEvent) {
+    return allRecurringEvents.filter(event => {
+        if (event.sourcePageId === sourceEvent.sourcePageId) { return false }
+        if (event.recurringId !== sourceEvent.recurringId) { return false }
+        return event.dateTime && event.dateTime.isAfter(sourceEvent.dateTime)
+    })
+}
 
-    // Find all future date pages with the same "Recurring ID" (excluding the source page itself)
-    const sourcePageDateTimeMoment = moment.utc(sourcePageDateTime)
-    const futureEvents = allSourcePages
-        .filter(p => {
-            if (p.id === sourcePage.id) { return false }
-            const pRecurringId = p.properties['Recurring ID']?.rich_text?.[0]?.plain_text
-            if (pRecurringId !== recurringId) { return false }
-            const pDateTime = moment.utc(p.properties['Date']?.date?.start)
-            return pDateTime.isAfter(sourcePageDateTimeMoment)
-        })
-
-    // Update all future events based on the actual source
+async function updateAllFutureEvents(apiKey, futureEvents, sourceEvent, result) {
     for (const futureEvent of futureEvents) {
         try {
-            await updateEventFromSource(apiKey, futureEvent.id, actualSourcePage, futureEvent.properties['Date']?.date?.start)
+            await updateEventFromSource(apiKey, futureEvent.sourcePageId, sourceEvent.sourcePage, futureEvent.sourcePageDateTime)
             result.updated++
         } catch (error) {
-            console.error(`Error updating event ${futureEvent.id}: ${error}`)
-            result.errors.push(`Update ${futureEvent.id}: ${error.message}`)
+            console.error(`Error updating event ${futureEvent.sourcePageId}: ${error}`)
+            result.errors.push(`Update ${futureEvent.sourcePageId}: ${error.message}`)
         }
     }
+}
 
-    // Calculate lookahead period
+function calculateLookaheadEndDate(event) {
     const now = moment.utc()
-    let lookaheadEndDate
-    if (frequency === 'Weekly') {
-        lookaheadEndDate = now.clone().add(lookaheadNumber, 'weeks')
-    } else if (frequency === 'Daily') {
-        lookaheadEndDate = now.clone().add(lookaheadNumber, 'days')
-    } else {
-        // Unsupported frequency, skip event generation
-        return
+    if (event.frequency === 'Weekly') {
+        return now.clone().add(event.lookaheadNumber, 'weeks')
+    } else if (event.frequency === 'Daily') {
+        return now.clone().add(event.lookaheadNumber, 'days')
     }
+    return null
+}
 
-    // Generate new events
-    const newEventStartDates = generateRecurringDates(
-        sourcePageDateTimeMoment,
+function generateNewEventDates(event, lookaheadEndDate) {
+    return generateRecurringDates(
+        event.dateTime,
         lookaheadEndDate,
-        frequency,
-        cadence,
-        recurringDays
+        event.frequency,
+        event.cadence,
+        event.recurringDays
     )
+}
 
-    // Get all existing events with the same Recurring ID for checking
-    const existingEventsList = allSourcePages
-        .filter(p => {
-            const pRecurringId = p.properties['Recurring ID']?.rich_text?.[0]?.plain_text
-            return pRecurringId === recurringId
-        })
-        .map(p => ({
-            ...p,
-            dateTime: moment.utc(p.properties['Date']?.date?.start)
-        }))
+async function createNewEvents(apiKey, dataSourceId, allRecurringEvents, sourceEvent, newEventStartDates, result) {
+    const existingEvents = allRecurringEvents.filter(e => e.recurringId === sourceEvent.recurringId)
 
-    // Create new events if they don't already exist
     for (const newEventStartDate of newEventStartDates) {
         try {
-            // Check if event already exists at this exact time
-            const existsAtTime = existingEventsList.some(e =>
-                e.dateTime.format('YYYY-MM-DDTHH:mm') === newEventStartDate.format('YYYY-MM-DDTHH:mm')
+            const existsAtTime = existingEvents.some(e =>
+                e.dateTime && e.dateTime.format('YYYY-MM-DDTHH:mm') === newEventStartDate.format('YYYY-MM-DDTHH:mm')
             )
 
             if (existsAtTime) {
@@ -447,23 +437,35 @@ async function processSourcePage(apiKey, dataSourceId, allSourcePages, sourcePag
                 continue
             }
 
-            await createEventFromSource(apiKey, dataSourceId, actualSourcePage, newEventStartDate.toISOString())
+            await createEventFromSource(apiKey, dataSourceId, sourceEvent.sourcePage, newEventStartDate.toISOString())
             result.created++
         } catch (error) {
             console.error(`Error creating event for ${newEventStartDate.format()}: ${error}`)
             result.errors.push(`Create ${newEventStartDate.format()}: ${error.message}`)
         }
     }
+}
 
-    // Mark "Recurring Source" as false on the source page
+async function generateFutureEvents(apiKey, dataSourceId, allRecurringEvents, event, result) {
+    const lookaheadEndDate = calculateLookaheadEndDate(event)
+    if (!lookaheadEndDate) {
+        console.log(`Unsupported frequency: ${event.frequency}, skipping event generation`)
+        return
+    }
+
+    const newEventStartDates = generateNewEventDates(event, lookaheadEndDate)
+    await createNewEvents(apiKey, dataSourceId, allRecurringEvents, event, newEventStartDates, result)
+}
+
+async function markEventAsProcessed(apiKey, event) {
     try {
-        await notionApi.updatePage(apiKey, sourcePage.id, {
+        await notionApi.updatePage(apiKey, event.sourcePageId, {
             'Recurring Source': {
                 checkbox: false
             }
         })
     } catch (error) {
-        console.error(`Error clearing Recurring Source flag for page ${sourcePage.id}: ${error}`)
+        console.error(`Error clearing Recurring Source flag for page ${event.sourcePageId}: ${error}`)
     }
 }
 
@@ -711,6 +713,64 @@ async function updateEventFromSource(apiKey, targetPageId, sourcePage, targetSta
     const sourceBlocks = await notionApi.getPageBlocks(apiKey, sourcePage.id)
     const sourceChildren = prepareBlocksForCopying(sourceBlocks.results)
     await notionApi.replacePageBlocks(apiKey, targetPageId, sourceChildren)
+}
+
+class RecurringEvent {
+    constructor(sourcePage) {
+        const props = sourcePage.properties
+
+        this.sourcePage = sourcePage
+        this.sourcePageId = sourcePage.id
+        this.frequency = props['Recurring Frequency']?.select?.name
+        this.cadence = props['Recurring Cadence']?.number || 1
+        this.recurringDays = props['Recurring Days']?.multi_select?.map(d => d.name) || []
+        this.lookaheadNumber = props['Recurring Lookahead Number']?.number || 0
+        this.sourcePageDateTime = props['Date']?.date?.start
+        this.recurringId = props['Recurring ID']?.rich_text?.[0]?.plain_text
+        this.isRecurringSource = props['Recurring Source']?.checkbox === true
+        this.name = props['Name']?.title?.[0]?.plain_text
+        this.dateTime = this.sourcePageDateTime ? moment.utc(this.sourcePageDateTime) : null
+
+        this._applyUpperLimits()
+    }
+
+    _applyUpperLimits() {
+        if (this.frequency === 'Weekly') {
+            this.cadence = Math.min(this.cadence, 4)
+            this.lookaheadNumber = Math.min(this.lookaheadNumber, 8)
+        } else if (this.frequency === 'Daily') {
+            this.cadence = Math.min(this.cadence, 30)
+            this.lookaheadNumber = Math.min(this.lookaheadNumber, 60)
+        }
+    }
+
+    isValid() {
+        if (!this.frequency || !this.sourcePageDateTime || this.cadence < 1 || this.lookaheadNumber < 1) {
+            return false
+        }
+
+        if (this.frequency === 'Weekly' && this.recurringDays.length === 0) {
+            return false
+        }
+
+        if (!this.isRecurringSource) {
+            return false
+        }
+
+        return true
+    }
+
+    getValidationFailureReason() {
+        if (!this.frequency) return 'Missing frequency'
+        if (!this.sourcePageDateTime) return 'Missing date'
+        if (this.cadence < 1) return 'Invalid cadence (< 1)'
+        if (this.lookaheadNumber < 1) return 'Invalid lookahead number (< 1)'
+        if (this.frequency === 'Weekly' && this.recurringDays.length === 0) {
+            return 'Weekly frequency requires recurring days'
+        }
+        if (!this.isRecurringSource) return 'Not marked as recurring source'
+        return 'Unknown'
+    }
 }
 
 /* #endregion */
