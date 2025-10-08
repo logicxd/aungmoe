@@ -6,6 +6,7 @@ var router = express.Router()
 var path = require('path')
 var utility = require('../utility')
 var googleApiService = require('../../services/googleapiservice')
+var notionApi = require('../../services/notionapiservice')
 var axios = require('axios')
 var moment = require('moment')
 var { body, param, validationResult } = require('express-validator')
@@ -322,31 +323,19 @@ function requiredNotionMapValidators() {
 
 /* #endregion */
 
-/* #region  Notion API */
+/* #region  Notion API (using shared service) */
 
 async function notionFetchDataFromTable(apiKey, databaseId) {
-    const options = {
-        method: 'POST',
-        url: `https://api.notion.com/v1/databases/${databaseId}/query`,
-        headers: {
-            'Authorization': `Bearer ${apiKey}`,
-            'Accept': 'application/json',
-            'Notion-Version': '2022-02-22', // Don't upgrade to 2022-06-28. It doesn't seem like it's a stable change
-            'Content-Type': 'application/json'
-        },
-        data: {
-            page_size: 100, // TODO: need to handle pagination
-            sorts: [
-                {
-                    "property": "Last Edited",
-                    "direction": "descending"
-                }
-            ]
-        }
-    }
-
-    let res = await axios(options)
-    return res
+    // Using legacy API version for backward compatibility
+    const data = await notionApi.queryDatabase(apiKey, databaseId, {
+        sorts: [
+            {
+                "property": "Last Edited",
+                "direction": "descending"
+            }
+        ]
+    }, notionApi.LEGACY_NOTION_VERSION)
+    return { data }
 }
 
 function notionExtractLocations(data) {
@@ -449,22 +438,9 @@ async function notionUpdateWithLocation(apiKey, location) {
         checkbox: true
     }
 
-    const options = {
-        method: 'PATCH',
-        url: `https://api.notion.com/v1/pages/${location.id}`,
-        headers: {
-            'Authorization': `Bearer ${apiKey}`,
-            'Accept': 'application/json',
-            'Notion-Version': '2022-02-22', // Don't upgrade to 2022-06-28. It doesn't seem like it's a stable change
-            'Content-Type': 'application/json'
-        },
-        data: {
-            "properties": properties
-        }
-    }
-
-    let res = await axios(options)
-    return res
+    // Using legacy API version for backward compatibility
+    const data = await notionApi.updatePage(apiKey, location.id, properties, null, notionApi.LEGACY_NOTION_VERSION)
+    return { data }
 }
 
 /* #endregion */

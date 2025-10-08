@@ -1,8 +1,7 @@
-# Aungmoe Personal Website
-
-## Project Overview
+# Project Overview
 
 This is a personal website built with Node.js and Express.js. It includes features like:
+
 - Personal website/portfolio
 - Map-It-Notion integration (syncing with Notion API)
 - MongoDB for bookmarks
@@ -10,47 +9,88 @@ This is a personal website built with Node.js and Express.js. It includes featur
 - Markdown rendering with syntax highlighting
 
 ## Tech Stack
-- **Backend**: Node.js (v20+), Express.js
-- **Database**: MongoDB (Mongoose)
-- **Template Engine**: Handlebars (express-handlebars)
-- **Authentication**: Passport.js with local strategy
-- **Styling**: Sass
-- **Markdown**: markdown-it with emoji support and syntax highlighting (highlight.js)
 
-## Environment Setup
-- Requires `.env` file with:
-  - `MONGODB_BOOKMARK_CONNECTION_STRING`
-  - `SESSION_SECRET`
-  - `YELP_API`
-  - `GOOGLE_API` (local development only, not the same as client-side Maps API)
-- Node version: >=20.0.0
-- NPM version: >=8.15.x
+### Web
+
+- Backend - Node.js (v20+), Express.js
+- Database -MongoDB (Mongoose)
+- Template Engine - Handlebars (express-handlebars)
+- Authentication - Passport.js with local strategy
+- Styling - Sass
+- Markdown - markdown-it with emoji support and syntax highlighting (highlight.js)
 
 ## Development Workflow
-- **Start dev server**: `npm run nodemon`
-- **Start production**: `npm start`
-- **Watch Sass**: `npm run sass`
-- **Deploy**: Using fly.io
 
-## Code Style Preferences
-- Use modern ES6+ JavaScript features
+- Start dev server: `npm run nodemon`
+- Start production: `npm start`
+- Watch Sass: `npm run sass`
+- Deploy: Using [fly.io](http://fly.io/)
+
+## Design Principles
+
+1. Small, focused functions that do one thing well 
+2. Keep files and classes small; organize top-down: high-level idea to details
+3. Reduce coupling, increase cohesion
+    - Keep related code close together and unrelated code apart
+4. Fail fast with clear errors
+    - Prefer exceptions to error codes
+    - Provide informative messages and preserve context
+    - Don’t return or accept null unless it’s an intentional, handled case
+5. Comments are a last resort
+    - Prefer self-explanatory code and names over comments (ex: extract them out into codes)
+    - When comments are necessary, make them accurate, brief, and maintained
+    - Avoid noise comments and redundant doc blocks
+6. Data vs. objects
+    - Keep data structures simple and transparent when behavior isn’t needed
+    - Encapsulate behavior with data when invariants matter
+7. Defensive boundaries and APIs
+    - Design clear module boundaries with narrow, stable interfaces
+    - Validate inputs at boundaries; avoid leaking internal representations
+    - Hide implementation details; expose minimal surface area
+8. Error handling is part of the logic
+    - Keep try/catch blocks small; extract to dedicated functions when possible
+
+## Code Style Preference
+
+### Web
+
 - Prefer async/await over callbacks
-- Keep code modular and organized in `/src` directory
 
-## Important Notes
+## Security
+
 - Never commit API keys or `.env` file
-- Don't use the same Google API key for server-side and client-side (client-side is exposed)
-
-## Testing
-
-- Don't write unit tests; it's okay for a personal project.
+- Sanitize inputs that will go into databases
+- Handle rate limiting when appropriate
 
 ## Project Structure
 
-Preference:
-- Keep features separated in a sub-folder of app-area
-- Feature should separate by css, js, media, page, view
-- More re-usable code should be outside of that, in appropriate folders within src like database, global, or services
+### Web
+
+- Keep features separated in a sub-folder called “app-area”
+- Each feature should have sub-folders to type like: css, js, media, page, view
+- More re-usable code underneath src, alongside app-area like database, global, or services
+
+Example:
+
+- src
+    - app-area
+        - featureA
+            - css
+            - js
+            - view
+            feature-controller.js
+        - featureB
+    - database
+        - model
+            - MyDbModel.js
+        - database.js
+    - global
+        - css
+        - js
+        - media
+        - view
+    - services
+        - api-service.js
 
 Current structure:
 **aungmoe/**
