@@ -79,7 +79,6 @@ class RecurringEventsService {
             try {
                 console.log(`Processing source page "${event.name}" ...`)
                 await this.processSourcePage(event, result)
-                console.log(`Finished processing`)
             } catch (error) {
                 console.error(`Error processing source page "${event.notionPageId}": ${error}`)
                 result.errors.push(`Page ${event.notionPageId}: ${error.message}`)
@@ -239,6 +238,7 @@ class RecurringEventsService {
                 }
 
                 await this.createEventFromSource(sourceEvent.notionPage, newEventStartDate.toISOString())
+                console.log(`Created new event on ${newEventStartDate.format()} from source ${sourceEvent.Name}`)
                 result.created++
             } catch (error) {
                 console.error(`Error creating event for ${newEventStartDate.format()}: ${error}`)
@@ -336,7 +336,6 @@ class RecurringEventsService {
         const sourceChildren = prepareBlocksForCopying(sourceBlocks.results)
 
         await notionApi.createPage(this.apiKey, this.dataSourceId, newProperties, sourceIcon, sourceChildren)
-        console.log(`Created new event on ${newStartDateTime} from source ${sourcePage.title}`)
     }
 
     async updateEventFromSource(targetPageId, sourcePage, targetStartDateTime) {
@@ -467,67 +466,78 @@ function calculateLookaheadEndDate(event) {
 }
 
 function generateNewEventDates(event, lookaheadEndDate) {
-    const dates = []
-    const sourceHour = event.dateTimeMoment.hours()
-    const sourceMinute = event.dateTimeMoment.minutes()
+    const strategy = getDateGenerationStrategy(event.frequency)
+    return strategy.generate(event, lookaheadEndDate)
+}
 
-    if (event.frequency === 'Daily') {
-        const current = event.dateTimeMoment.clone().add(event.cadence, 'days')
+function getDateGenerationStrategy(frequency) {
+    const strategies = {
+        'Daily': dailyDateStrategy,
+        'Weekly': weeklyDateStrategy
+    }
+    return strategies[frequency]
+}
+
+const dailyDateStrategy = {
+    generate(event, lookaheadEndDate) {
+        const dates = []
+        const current = event.dateTimeMoment.clone().add(1, 'day')
+        let daysSinceStart = 0
 
         while (current.isSameOrBefore(lookaheadEndDate)) {
-            const eventDate = current.clone()
-            eventDate.hours(sourceHour)
-            eventDate.minutes(sourceMinute)
-            eventDate.seconds(0)
-            eventDate.milliseconds(0)
+            daysSinceStart = Math.floor(current.diff(event.dateTimeMoment, 'days', true))
 
-            dates.push(eventDate)
-            current.add(event.cadence, 'days')
+            if (shouldGenerateDailyEvent(daysSinceStart, event.cadence)) {
+                dates.push(createEventDateWithTime(current, event.dateTimeMoment))
+            }
+
+            current.add(1, 'day')
         }
-    } else if (event.frequency === 'Weekly') {
+
+        return dates
+    }
+}
+
+function shouldGenerateDailyEvent(daysSinceStart, cadence) {
+    return daysSinceStart > 0 && daysSinceStart % cadence === 0
+}
+
+const weeklyDateStrategy = {
+    generate(event, lookaheadEndDate) {
+        const dates = []
         const current = event.dateTimeMoment.clone().add(1, 'day')
         let weeksSinceStart = 0
 
         while (current.isSameOrBefore(lookaheadEndDate)) {
             weeksSinceStart = Math.floor(current.diff(event.dateTimeMoment, 'weeks', true))
 
-            if (weeksSinceStart > 0 && weeksSinceStart % event.cadence === 0) {
-                const dayName = current.format('dddd')
-
-                if (event.recurringDays.includes(dayName)) {
-                    const eventDate = current.clone()
-                    eventDate.hours(sourceHour)
-                    eventDate.minutes(sourceMinute)
-                    eventDate.seconds(0)
-                    eventDate.milliseconds(0)
-
-                    dates.push(eventDate)
-                }
+            if (shouldGenerateWeeklyEvent(weeksSinceStart, event.cadence, current, event.recurringDays)) {
+                dates.push(createEventDateWithTime(current, event.dateTimeMoment))
             }
 
             current.add(1, 'day')
         }
-    } else {
-        const current = event.dateTimeMoment.clone().add(1, 'day')
 
-        while (current.isSameOrBefore(lookaheadEndDate)) {
-            const dayName = current.format('dddd')
+        return dates
+    }
+}
 
-            if (event.recurringDays.includes(dayName)) {
-                const eventDate = current.clone()
-                eventDate.hours(sourceHour)
-                eventDate.minutes(sourceMinute)
-                eventDate.seconds(0)
-                eventDate.milliseconds(0)
-
-                dates.push(eventDate)
-            }
-
-            current.add(1, 'day')
-        }
+function shouldGenerateWeeklyEvent(weeksSinceStart, cadence, current, recurringDays) {
+    if (weeksSinceStart <= 0 || weeksSinceStart % cadence !== 0) {
+        return false
     }
 
-    return dates
+    const dayName = current.format('dddd')
+    return recurringDays.includes(dayName)
+}
+
+function createEventDateWithTime(current, sourceDateTime) {
+    const eventDate = current.clone()
+    eventDate.hours(sourceDateTime.hours())
+    eventDate.minutes(sourceDateTime.minutes())
+    eventDate.seconds(0)
+    eventDate.milliseconds(0)
+    return eventDate
 }
 
 /* #endregion */
@@ -587,6 +597,10 @@ class Event {
 
     isValid() {
         if (!this.frequency || !this.dateTime || this.cadence < 1 || this.lookaheadNumber < 1) {
+            return false
+        }
+
+        if (this.frequency !== 'Daily' && this.frequency !== 'Weekly') {
             return false
         }
 
