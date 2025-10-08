@@ -166,14 +166,15 @@ router.put('/map-data/:id/refresh', async function (req, res) {
             throw `Notion map not found with id ${id}`
         }
 
-        let notionRawResponse = await notionFetchDataFromTable(notionMap.secretKey, notionMap.databaseId)
+        const decryptedSecretKey = notionMap.getDecryptedSecretKey()
+        let notionRawResponse = await notionFetchDataFromTable(decryptedSecretKey, notionMap.databaseId)
         let locations = notionExtractLocations(notionRawResponse.data)
         let locationsSinceLastSynced = getLocationsSinceLastSynced(locations, notionMap.lastSyncedDate)
         console.log(`Locations since last synced: ${Object.keys(locationsSinceLastSynced).length}`)
 
         await getInfoFromYelpIfNeeded(locationsSinceLastSynced)
         await getInfoFromGoogleMapIfNeeded(locationsSinceLastSynced)
-        await updateNotionWithLatestInfo(notionMap.secretKey, locationsSinceLastSynced)
+        await updateNotionWithLatestInfo(decryptedSecretKey, locationsSinceLastSynced)
         console.log(`Locations: ${Object.values(locationsSinceLastSynced).map(x => x.title)}`)
 
         notionMap.buildings = updatedNotionMapBuildings(notionMap.buildings ?? {}, locationsSinceLastSynced)
@@ -234,7 +235,8 @@ router.put('/map-data/:id/cleanup', async function (req, res) {
             throw `Notion map not found with id ${id}`
         }
 
-        let notionRawResponse = await notionFetchDataFromTable(notionMap.secretKey, notionMap.databaseId)
+        const decryptedSecretKey = notionMap.getDecryptedSecretKey()
+        let notionRawResponse = await notionFetchDataFromTable(decryptedSecretKey, notionMap.databaseId)
         let locations = notionExtractLocations(notionRawResponse.data)
 
         for (let [key, location] of Object.entries(notionMap.buildings)) {
