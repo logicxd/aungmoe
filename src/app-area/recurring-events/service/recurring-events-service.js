@@ -75,11 +75,11 @@ class RecurringEventsService {
 
         for (const event of this.allEvents) {
             try {
-                console.log(`Processing source page ${event.name}...`)
+                console.log(`Processing source page "${event.name}" ...`)
                 await this.processSourcePage(event, result)
                 console.log(`Finished processing`)
             } catch (error) {
-                console.error(`Error processing source page ${event.sourcePageId}: ${error}`)
+                console.error(`Error processing source page "${event.sourcePageId}": ${error}`)
                 result.errors.push(`Page ${event.sourcePageId}: ${error.message}`)
             }
         }
@@ -322,6 +322,7 @@ class RecurringEventsService {
         const sourceChildren = prepareBlocksForCopying(sourceBlocks.results)
 
         await notionApi.createPage(this.apiKey, this.dataSourceId, newProperties, sourceIcon, sourceChildren)
+        console.log(`Created new event on ${newStartDateTime} from source ${sourcePage.title}`)
     }
 
     async updateEventFromSource(targetPageId, sourcePage, targetStartDateTime) {
@@ -421,7 +422,6 @@ function handleProcessingError(error, result) {
     result.errors.push(errorMessage)
 }
 
-
 function validateRecurringEvent(event, result) {
     if (!event.isValid()) {
         const reason = event.getValidationFailureReason()
@@ -429,10 +429,8 @@ function validateRecurringEvent(event, result) {
         result.skipped++
         return false
     }
-    console.log(`Cadence: ${event.cadence}, lookahead: ${event.lookaheadNumber}`)
     return true
 }
-
 
 function calculateLookaheadEndDate(event) {
     const now = moment.utc()
@@ -445,28 +443,14 @@ function calculateLookaheadEndDate(event) {
 }
 
 function generateNewEventDates(event, lookaheadEndDate) {
-    return generateRecurringDates(
-        event.dateTimeMoment,
-        lookaheadEndDate,
-        event.frequency,
-        event.cadence,
-        event.recurringDays
-    )
-}
-
-
-
-function generateRecurringDates(startDate, endDate, frequency, cadence, recurringDays) {
     const dates = []
-    const sourceHour = startDate.hours()
-    const sourceMinute = startDate.minutes()
+    const sourceHour = event.dateTimeMoment.hours()
+    const sourceMinute = event.dateTimeMoment.minutes()
 
-    if (frequency === 'Daily') {
-        // For Daily frequency, use cadence to determine interval
-        const current = startDate.clone().add(cadence, 'days')
+    if (event.frequency === 'Daily') {
+        const current = event.dateTimeMoment.clone().add(event.cadence, 'days')
 
-        while (current.isSameOrBefore(endDate)) {
-            // Set the time from source
+        while (current.isSameOrBefore(lookaheadEndDate)) {
             const eventDate = current.clone()
             eventDate.hours(sourceHour)
             eventDate.minutes(sourceMinute)
@@ -474,23 +458,19 @@ function generateRecurringDates(startDate, endDate, frequency, cadence, recurrin
             eventDate.milliseconds(0)
 
             dates.push(eventDate)
-            current.add(cadence, 'days')
+            current.add(event.cadence, 'days')
         }
-    } else if (frequency === 'Weekly') {
-        // For Weekly frequency, use cadence to skip weeks
-        const current = startDate.clone().add(1, 'day')
+    } else if (event.frequency === 'Weekly') {
+        const current = event.dateTimeMoment.clone().add(1, 'day')
         let weeksSinceStart = 0
 
-        while (current.isSameOrBefore(endDate)) {
-            // Calculate how many weeks have passed since the start date
-            weeksSinceStart = Math.floor(current.diff(startDate, 'weeks', true))
+        while (current.isSameOrBefore(lookaheadEndDate)) {
+            weeksSinceStart = Math.floor(current.diff(event.dateTimeMoment, 'weeks', true))
 
-            // Only process days that fall on a cadence week (e.g., every 2nd week if cadence is 2)
-            if (weeksSinceStart > 0 && weeksSinceStart % cadence === 0) {
+            if (weeksSinceStart > 0 && weeksSinceStart % event.cadence === 0) {
                 const dayName = current.format('dddd')
 
-                if (recurringDays.includes(dayName)) {
-                    // Set the time from source
+                if (event.recurringDays.includes(dayName)) {
                     const eventDate = current.clone()
                     eventDate.hours(sourceHour)
                     eventDate.minutes(sourceMinute)
@@ -504,14 +484,12 @@ function generateRecurringDates(startDate, endDate, frequency, cadence, recurrin
             current.add(1, 'day')
         }
     } else {
-        // For other frequencies, use recurringDays without cadence
-        const current = startDate.clone().add(1, 'day')
+        const current = event.dateTimeMoment.clone().add(1, 'day')
 
-        while (current.isSameOrBefore(endDate)) {
+        while (current.isSameOrBefore(lookaheadEndDate)) {
             const dayName = current.format('dddd')
 
-            if (recurringDays.includes(dayName)) {
-                // Set the time from source
+            if (event.recurringDays.includes(dayName)) {
                 const eventDate = current.clone()
                 eventDate.hours(sourceHour)
                 eventDate.minutes(sourceMinute)
@@ -545,7 +523,6 @@ function prepareBlocksForCopying(blocks) {
         return cleanBlock
     })
 }
-
 
 class Event {
     constructor(sourcePage) {

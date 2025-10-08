@@ -36,10 +36,10 @@ This is a personal website built with Node.js and Express.js. It includes featur
     - Prefer exceptions to error codes
     - Provide informative messages and preserve context
     - Don’t return or accept null unless it’s an intentional, handled case
-5. Comments are a last resort
+5. Use comments sparingly
     - Prefer self-explanatory code and names over comments (ex: extract them out into codes)
-    - When comments are necessary, make them accurate, brief, and maintained
-    - Avoid noise comments and redundant doc blocks
+    - Comments are OK to explain the why if the code is complex
+    - Make them brief
 6. Data vs. objects
     - Keep data structures simple and transparent when behavior isn’t needed
     - Encapsulate behavior with data when invariants matter
