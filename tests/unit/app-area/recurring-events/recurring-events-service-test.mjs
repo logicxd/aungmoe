@@ -72,7 +72,7 @@ describe('Event Class', () => {
             expect(event.getValidationFailureReason()).toBe('Missing date')
         })
 
-        it('should default cadence to 1 when set to 0 or null', () => {
+        it('should be invalid when cadence is 0', () => {
             const sourcePage = createSourcePage({
                 frequency: 'Daily',
                 cadence: 0,
@@ -83,8 +83,8 @@ describe('Event Class', () => {
 
             const event = new Event(sourcePage)
 
-            expect(event.cadence).toBe(1)
-            expect(event.isValid()).toBe(true)
+            expect(event.isValid()).toBe(false)
+            expect(event.getValidationFailureReason()).toBe('Invalid cadence (< 1)')
         })
 
         it('should be invalid when lookahead number is less than 1', () => {

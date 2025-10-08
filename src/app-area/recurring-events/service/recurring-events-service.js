@@ -574,9 +574,9 @@ class Event {
         this.notionPage = sourcePage
         this.notionPageId = sourcePage.id
         this.frequency = props['Recurring Frequency']?.select?.name
-        this.cadence = props['Recurring Cadence']?.number || 1
+        this.cadence = props['Recurring Cadence']?.number ?? 0
         this.recurringDays = props['Recurring Days']?.multi_select?.map(d => d.name) || []
-        this.lookaheadNumber = props['Recurring Lookahead Number']?.number || 0
+        this.lookaheadNumber = props['Recurring Lookahead Number']?.number ?? 0
         this.dateTime = props['Date']?.date?.start
         this.recurringId = props['Recurring ID']?.rich_text?.[0]?.plain_text
         this.isRecurringSource = props['Recurring Source']?.checkbox === true
