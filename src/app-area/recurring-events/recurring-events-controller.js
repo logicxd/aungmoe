@@ -34,7 +34,8 @@ router.get('/', async function (req, res) {
             }
         })
     } catch (error) {
-        console.error(error)
+        console.error('Error fetching recurring configs:', error)
+        return res.status(500).render('error', { message: 'Failed to load recurring events configurations' })
     }
 
     return res.render(path.join(__dirname, 'view/recurring-events'), {
@@ -67,8 +68,8 @@ router.post('/', requiredValidators(), async function (req, res) {
         })
         return res.status(204).end()
     } catch (error) {
-        console.error(error)
-        return res.status(500).send('Unhandled exception')
+        console.error('Error creating recurring config:', error)
+        return res.status(500).send('Failed to create configuration')
     }
 })
 /* #endregion */
@@ -83,7 +84,7 @@ router.get('/:id', async function (req, res) {
 
     let config = {}
     try {
-        config = await NotionRecurringModel.findOne({ 
+        config = await NotionRecurringModel.findOne({
             _id: new mongoose.Types.ObjectId(id),
             user: req.user._id  // Add ownership check
         })
@@ -93,7 +94,11 @@ router.get('/:id', async function (req, res) {
         }
 
     } catch (error) {
-        console.error(error)
+        if (error.name === 'CastError' || error.name === 'BSONError') {
+            console.error(`Invalid ID format: ${id}`)
+            return res.status(400).render('error', { message: 'Invalid configuration ID format' })
+        }
+        console.error(`Error fetching config ${id}:`, error)
         res.status(404)
         return res.render(path.join(__dirname, 'view/recurring-events-unknown-page'), {
             title: 'Recurring Events - Not Found',
@@ -127,7 +132,11 @@ router.get('/:id/embed', async function (req, res) {
         }
 
     } catch (error) {
-        console.error(error)
+        if (error.name === 'CastError' || error.name === 'BSONError') {
+            console.error(`Invalid ID format: ${id}`)
+            return res.status(400).render('error', { message: 'Invalid configuration ID format' })
+        }
+        console.error(`Error fetching config ${id}:`, error)
         res.status(404)
         return res.render(path.join(__dirname, 'view/recurring-events-unknown-page'), {
             title: 'Recurring Events - Not Found',
