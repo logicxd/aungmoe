@@ -4,7 +4,7 @@ var moment = require('moment')
 var { randomUUID } = require('crypto')
 var notionApi = require('../../../services/notionapiservice')
 
-/* #region  Recurring Event Processing */
+/* #region RecurringEventsService */
 
 class RecurringEventsService {
     constructor(apiKey, databaseId) {
@@ -13,6 +13,8 @@ class RecurringEventsService {
         this.dataSourceId = null
         this.allEvents = []
     }
+
+    /* #region Main Processing */
 
     async processRecurringEvents(lastSyncedDate) {
         const result = createProcessingResult()
@@ -85,6 +87,10 @@ class RecurringEventsService {
         }
     }
 
+    /* #endregion */
+
+    /* #region Setup and Initialization */
+
     async ensureRecurringProperties() {
         const dataSource = await notionApi.getDataSource(this.apiKey, this.dataSourceId)
         const existingProperties = dataSource.properties || {}
@@ -148,6 +154,10 @@ class RecurringEventsService {
             console.log('All required Recurring properties already exist')
         }
     }
+
+    /* #endregion */
+
+    /* #region Source Page Processing */
 
     async processSourcePage(event, result) {
         if (!validateRecurringEvent(event, result)) {
@@ -248,6 +258,10 @@ class RecurringEventsService {
             console.error(`Error clearing Recurring Source flag for page ${event.notionPageId}: ${error}`)
         }
     }
+
+    /* #endregion */
+
+    /* #region Event Creation and Update */
 
     async createEventFromSource(sourcePage, newStartDateTime) {
         const sourceProps = sourcePage.properties
@@ -405,7 +419,13 @@ class RecurringEventsService {
         const sourceChildren = prepareBlocksForCopying(sourceBlocks.results)
         await notionApi.replacePageBlocks(this.apiKey, targetPageId, sourceChildren)
     }
+
+    /* #endregion */
 }
+
+/* #endregion */
+
+/* #region Helper Functions */
 
 function createProcessingResult() {
     return {
@@ -431,6 +451,10 @@ function validateRecurringEvent(event, result) {
     }
     return true
 }
+
+/* #endregion */
+
+/* #region Date Generation */
 
 function calculateLookaheadEndDate(event) {
     const now = moment.utc()
@@ -506,6 +530,10 @@ function generateNewEventDates(event, lookaheadEndDate) {
     return dates
 }
 
+/* #endregion */
+
+/* #region Block Utilities */
+
 function prepareBlocksForCopying(blocks) {
     if (!blocks || blocks.length === 0) {
         return []
@@ -523,6 +551,10 @@ function prepareBlocksForCopying(blocks) {
         return cleanBlock
     })
 }
+
+/* #endregion */
+
+/* #region Event Class */
 
 class Event {
     constructor(sourcePage) {
