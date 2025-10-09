@@ -6,8 +6,8 @@ var notionApi = require('../../../services/notionapiservice')
 
 /* #region Constants */
 
-const DEFAULT_LOOKBACK_DAYS = 14
-const DEFAULT_LOOKAHEAD_DAYS = 60
+const MAX_LOOKBACK_DAYS = 14
+const MAX_LOOKAHEAD_DAYS = 60
 const MAX_WEEKLY_CADENCE = 4
 const MAX_WEEKLY_LOOKAHEAD = 8
 const MAX_DAILY_CADENCE = 30
@@ -59,10 +59,8 @@ class RecurringEventsService {
 
     async fetchSourcePages(lastSyncedDate) {
         const today = moment.utc()
-        const startDate = lastSyncedDate
-            ? moment.utc(lastSyncedDate).toISOString()
-            : today.clone().subtract(DEFAULT_LOOKBACK_DAYS, 'days').startOf('day').toISOString()
-        const endDate = today.clone().add(DEFAULT_LOOKAHEAD_DAYS, 'days').endOf('day').toISOString()
+        const startDate = today.clone().subtract(MAX_LOOKBACK_DAYS, 'days').startOf('day').toISOString()
+        const endDate = today.clone().add(MAX_LOOKAHEAD_DAYS, 'days').endOf('day').toISOString()
 
         const data = await this.notionApi.queryDataSource(this.apiKey, this.dataSourceId, {
             and: [
