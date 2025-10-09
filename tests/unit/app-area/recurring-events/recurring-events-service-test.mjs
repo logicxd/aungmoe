@@ -770,6 +770,22 @@ describe('RecurringEventsService - Service Methods', () => {
             expect(event.recurringId).toBe('existing-uuid')
             expect(mockNotionApi.updatePage).not.toHaveBeenCalled()
         })
+
+        it('should update notionPage.properties with new Recurring ID', async () => {
+            const event = createEventWithPage({
+                notionPageId: 'page-1',
+                recurringId: null,
+                notionPage: createNotionPage(null)
+            })
+
+            // Verify notionPage doesn't have Recurring ID initially
+            expect(event.notionPage.properties['Recurring ID'].rich_text).toEqual([])
+
+            await service.stampRecurringId(event)
+
+            // Verify notionPage.properties is updated with the new Recurring ID
+            expect(event.recurringId).not.toBeNull()
+        })
     })
 
     describe('createNewEvents', () => {
@@ -807,6 +823,95 @@ describe('RecurringEventsService - Service Methods', () => {
             expect(result.created).toBe(1)
             expect(mockNotionApi.createPage).toHaveBeenCalledTimes(1)
         })
+
+        it('should set Recurring ID on cloned events from source event', async () => {
+            const sourceEvent = createEventWithPage({
+                notionPageId: 'page-1',
+                recurringId: 'recurring-123',
+                dateTime: '2025-10-08T10:00:00Z',
+                notionPage: createNotionPage('recurring-123')
+            })
+
+            service.allEvents = [sourceEvent]
+
+            const newEventDates = [moment.utc('2025-10-10T10:00:00Z')]
+
+            mockNotionApi.getPage.mockResolvedValue({ icon: { type: 'emoji', emoji: '📅' } })
+            mockNotionApi.getPageBlocks.mockResolvedValue({ results: [] })
+            mockNotionApi.createPage.mockResolvedValue({})
+
+            const result = service._createProcessingResult()
+            service.dataSourceId = 'datasource-1'
+            await service.createNewEvents(sourceEvent, newEventDates, result)
+
+            expect(result.created).toBe(1)
+            expect(mockNotionApi.createPage).toHaveBeenCalledWith(
+                'test-api-key',
+                'datasource-1',
+                expect.objectContaining({
+                    'Recurring ID': {
+                        rich_text: [
+                            {
+                                "text": {
+                                    "content": "recurring-123"
+                                },
+                                "type": "text"
+                            }
+                        ]
+                    }
+                }),
+                expect.anything(),
+                expect.anything()
+            )
+        })
+
+        it('should set newly generated Recurring ID on cloned events for first-time source', async () => {
+            // Source event with NO Recurring ID (first time being processed)
+            const sourceEvent = createEventWithPage({
+                notionPageId: 'page-1',
+                recurringId: null,
+                dateTime: '2025-10-08T10:00:00Z',
+                notionPage: createNotionPage(null)
+            })
+
+            service.allEvents = [sourceEvent]
+
+            const newEventDates = [moment.utc('2025-10-10T10:00:00Z')]
+
+            mockNotionApi.getPage.mockResolvedValue({ icon: { type: 'emoji', emoji: '📅' } })
+            mockNotionApi.getPageBlocks.mockResolvedValue({ results: [] })
+            mockNotionApi.createPage.mockResolvedValue({})
+
+            const result = service._createProcessingResult()
+            service.dataSourceId = 'datasource-1'
+
+            // First stamp the Recurring ID (simulating processSourcePage flow)
+            await service.stampRecurringId(sourceEvent)
+
+            // Then create new events
+            await service.createNewEvents(sourceEvent, newEventDates, result)
+
+            expect(result.created).toBe(1)
+            // Verify the newly generated Recurring ID is used for cloned events
+            expect(mockNotionApi.createPage).toHaveBeenCalledWith(
+                'test-api-key',
+                'datasource-1',
+                expect.objectContaining({
+                    'Recurring ID': {
+                        rich_text: [
+                            {
+                                "text": {
+                                    "content": sourceEvent.recurringId
+                                },
+                                "type": "text"
+                            }
+                        ]
+                    }
+                }),
+                expect.anything(),
+                expect.anything()
+            )
+        })
     })
 
     describe('updateAllFutureEvents', () => {
@@ -827,7 +932,7 @@ describe('RecurringEventsService - Service Methods', () => {
                 })
             ]
 
-            mockNotionApi.getPage.mockResolvedValue({ icon: { type: 'emoji', emoji: '=�' } })
+            mockNotionApi.getPage.mockResolvedValue({ icon: { type: 'emoji', emoji: '📅' } })
             mockNotionApi.getPageBlocks.mockResolvedValue({ results: [] })
 
             const result = service._createProcessingResult()
@@ -835,6 +940,48 @@ describe('RecurringEventsService - Service Methods', () => {
 
             expect(result.updated).toBe(2)
             expect(mockNotionApi.updatePage).toHaveBeenCalledTimes(2)
+        })
+
+        it('should preserve Recurring ID when updating future events', async () => {
+            const sourceEvent = createEventWithPage({
+                notionPageId: 'page-1',
+                recurringId: 'recurring-123',
+                dateTime: '2025-10-08T10:00:00Z',
+                notionPage: createNotionPage('recurring-123')
+            })
+
+            const futureEvents = [
+                createEventWithPage({
+                    notionPageId: 'page-2',
+                    recurringId: 'recurring-123',
+                    dateTime: '2025-10-10T10:00:00Z'
+                })
+            ]
+
+            mockNotionApi.getPage.mockResolvedValue({ icon: { type: 'emoji', emoji: '📅' } })
+            mockNotionApi.getPageBlocks.mockResolvedValue({ results: [] })
+
+            const result = service._createProcessingResult()
+            await service.updateAllFutureEvents(futureEvents, sourceEvent, result)
+
+            expect(result.updated).toBe(1)
+            expect(mockNotionApi.updatePage).toHaveBeenCalledWith(
+                'test-api-key',
+                'page-2',
+                expect.objectContaining({
+                    'Recurring ID': {
+                        rich_text: [
+                            {
+                                "text": {
+                                    "content": "recurring-123"
+                                },
+                                "type": "text"
+                            }
+                        ]
+                    }
+                }),
+                expect.anything()
+            )
         })
     })
 
@@ -912,6 +1059,220 @@ describe('RecurringEventsService - Service Methods', () => {
 
 /* #endregion */
 
+/* #region Integration Tests - Past Source Events */
+
+describe('RecurringEventsService - Past Source Events', () => {
+    let service
+    let mockNotionApi
+    let mockLogger
+
+    beforeEach(() => {
+        mockNotionApi = createMockNotionApi()
+        mockLogger = { log: vi.fn(), error: vi.fn() }
+        service = new RecurringEventsService('test-api-key', 'test-db-id', mockNotionApi, mockLogger)
+    })
+
+    describe('Weekly recurring event with source date in the past', () => {
+        it('should generate future events from a source event that is 3 days old', async () => {
+            // Given: A weekly recurring event that started 3 days ago on a Wednesday
+            const threeDaysAgo = moment.utc().subtract(3, 'days').hours(10).minutes(0).seconds(0).milliseconds(0)
+            const sourcePage = createSourcePage({
+                frequency: 'Weekly',
+                cadence: 1,
+                lookaheadNumber: 4, // 4 weeks ahead
+                dateTime: threeDaysAgo.toISOString(),
+                recurringDays: ['Wednesday', 'Friday'],
+                isRecurringSource: true,
+                recurringId: 'recurring-past-123'
+            })
+
+            const sourceEvent = new Event(sourcePage)
+            sourceEvent.notionPage = sourcePage
+
+            // When: Processing the source event
+            service.dataSourceId = 'datasource-1'
+            service.allEvents = [sourceEvent]
+
+            mockNotionApi.getPage.mockResolvedValue({ icon: { type: 'emoji', emoji: '📅' } })
+            mockNotionApi.getPageBlocks.mockResolvedValue({ results: [] })
+            mockNotionApi.createPage.mockResolvedValue({})
+            mockNotionApi.updatePage.mockResolvedValue({})
+
+            const result = service._createProcessingResult()
+            await service.stampRecurringId(sourceEvent)
+            const futureEvents = service.findFutureEvents(sourceEvent)
+            await service.updateAllFutureEvents(futureEvents, sourceEvent, result)
+            await service.generateFutureEvents(sourceEvent, result)
+
+            // Then: Should generate future events for the next 4 weeks
+            // Should create events for Wed/Fri in weeks that match the cadence
+            expect(result.created).toBeGreaterThan(0)
+            expect(mockNotionApi.createPage).toHaveBeenCalled()
+
+            // Verify all created events are in the future (after the source event)
+            const createCalls = mockNotionApi.createPage.mock.calls
+            createCalls.forEach(call => {
+                const properties = call[2]
+                const eventDateTime = moment.utc(properties['Date'].date.start)
+                expect(eventDateTime.isAfter(threeDaysAgo)).toBe(true)
+            })
+
+            // Verify events are within the lookahead window
+            const fourWeeksFromNow = moment.utc().add(4, 'weeks')
+            createCalls.forEach(call => {
+                const properties = call[2]
+                const eventDateTime = moment.utc(properties['Date'].date.start)
+                expect(eventDateTime.isSameOrBefore(fourWeeksFromNow)).toBe(true)
+            })
+
+            // Verify all events are on the correct days (Wednesday or Friday)
+            createCalls.forEach(call => {
+                const properties = call[2]
+                const eventDateTime = moment.utc(properties['Date'].date.start)
+                const dayName = eventDateTime.format('dddd')
+                expect(['Wednesday', 'Friday']).toContain(dayName)
+            })
+        })
+
+        it('should generate future events from a daily recurring event that is 5 days old', async () => {
+            // Given: A daily recurring event (every 2 days) that started 5 days ago
+            const fiveDaysAgo = moment.utc().subtract(5, 'days').hours(14).minutes(30).seconds(0).milliseconds(0)
+            const sourcePage = createSourcePage({
+                frequency: 'Daily',
+                cadence: 2,
+                lookaheadNumber: 10, // 10 days ahead
+                dateTime: fiveDaysAgo.toISOString(),
+                isRecurringSource: true,
+                recurringId: 'recurring-daily-past'
+            })
+
+            const sourceEvent = new Event(sourcePage)
+            sourceEvent.notionPage = sourcePage
+
+            // When: Processing the source event
+            service.dataSourceId = 'datasource-1'
+            service.allEvents = [sourceEvent]
+
+            mockNotionApi.getPage.mockResolvedValue({ icon: { type: 'emoji', emoji: '⏰' } })
+            mockNotionApi.getPageBlocks.mockResolvedValue({ results: [] })
+            mockNotionApi.createPage.mockResolvedValue({})
+            mockNotionApi.updatePage.mockResolvedValue({})
+
+            const result = service._createProcessingResult()
+            await service.stampRecurringId(sourceEvent)
+            const futureEvents = service.findFutureEvents(sourceEvent)
+            await service.updateAllFutureEvents(futureEvents, sourceEvent, result)
+            await service.generateFutureEvents(sourceEvent, result)
+
+            // Then: Should generate future events every 2 days for the next 10 days
+            expect(result.created).toBeGreaterThan(0)
+            expect(mockNotionApi.createPage).toHaveBeenCalled()
+
+            // Verify all created events are in the future
+            const createCalls = mockNotionApi.createPage.mock.calls
+            createCalls.forEach(call => {
+                const properties = call[2]
+                const eventDateTime = moment.utc(properties['Date'].date.start)
+                expect(eventDateTime.isAfter(fiveDaysAgo)).toBe(true)
+            })
+
+            // Verify time is preserved from source event
+            createCalls.forEach(call => {
+                const properties = call[2]
+                const eventDateTime = moment.utc(properties['Date'].date.start)
+                expect(eventDateTime.hours()).toBe(14)
+                expect(eventDateTime.minutes()).toBe(30)
+            })
+        })
+    })
+
+    describe('fetchSourcePages with lookback window', () => {
+        it('should use MAX_LOOKBACK_DAYS when lastSyncedDate is null', async () => {
+            // Given: No last synced date
+            const lastSyncedDate = null
+
+            mockNotionApi.getDatabase.mockResolvedValue({
+                data_sources: [{ id: 'datasource-123' }]
+            })
+            mockNotionApi.queryDataSource.mockResolvedValue({
+                results: []
+            })
+
+            service.dataSourceId = 'datasource-123'
+
+            // When: Fetching source pages
+            await service.fetchSourcePages(lastSyncedDate)
+
+            // Then: Should query with startDate = today - MAX_LOOKBACK_DAYS (14 days)
+            const queryCall = mockNotionApi.queryDataSource.mock.calls[0]
+            const filter = queryCall[2]
+            const startDate = filter.and[0].property === 'Date' ? filter.and[0].date.on_or_after : null
+
+            const expectedStartDate = moment.utc().subtract(14, 'days').startOf('day')
+            const actualStartDate = moment.utc(startDate)
+
+            expect(actualStartDate.format('YYYY-MM-DD')).toBe(expectedStartDate.format('YYYY-MM-DD'))
+        })
+
+        it('should use MAX_LOOKBACK_DAYS when lastSyncedDate is more recent', async () => {
+            // Given: Last synced 2 days ago (more recent than MAX_LOOKBACK_DAYS)
+            const lastSyncedDate = moment.utc().subtract(2, 'days').toDate()
+
+            mockNotionApi.getDatabase.mockResolvedValue({
+                data_sources: [{ id: 'datasource-123' }]
+            })
+            mockNotionApi.queryDataSource.mockResolvedValue({
+                results: []
+            })
+
+            service.dataSourceId = 'datasource-123'
+
+            // When: Fetching source pages
+            await service.fetchSourcePages(lastSyncedDate)
+
+            // Then: Should query with startDate = today - MAX_LOOKBACK_DAYS (14 days)
+            // to ensure we catch any past recurring sources within the lookback window
+            const queryCall = mockNotionApi.queryDataSource.mock.calls[0]
+            const filter = queryCall[2]
+            const startDate = filter.and[0].property === 'Date' ? filter.and[0].date.on_or_after : null
+
+            const expectedStartDate = moment.utc().subtract(14, 'days').startOf('day')
+            const actualStartDate = moment.utc(startDate)
+
+            expect(actualStartDate.format('YYYY-MM-DD')).toBe(expectedStartDate.format('YYYY-MM-DD'))
+        })
+
+        it('lastSyncedDate should not matter when it is older than MAX_LOOKBACK_DAYS', async () => {
+            // Given: Last synced 30 days ago (older than MAX_LOOKBACK_DAYS)
+            const lastSyncedDate = moment.utc().subtract(30, 'days').toDate()
+
+            mockNotionApi.getDatabase.mockResolvedValue({
+                data_sources: [{ id: 'datasource-123' }]
+            })
+            mockNotionApi.queryDataSource.mockResolvedValue({
+                results: []
+            })
+
+            service.dataSourceId = 'datasource-123'
+
+            // When: Fetching source pages
+            await service.fetchSourcePages(lastSyncedDate)
+
+            // Then: Should query with MAX_LOOKBACK_DAYS (14 days)
+            const queryCall = mockNotionApi.queryDataSource.mock.calls[0]
+            const filter = queryCall[2]
+            const startDate = filter.and[0].property === 'Date' ? filter.and[0].date.on_or_after : null
+
+            const expectedStartDate = moment.utc().subtract(14, 'days').startOf('day')
+            const actualStartDate = moment.utc(startDate)
+
+            expect(actualStartDate.format('YYYY-MM-DD')).toBe(expectedStartDate.format('YYYY-MM-DD'))
+        })
+    })
+})
+
+/* #endregion */
+
 /* #region Test Helper Functions */
 
 function createSourcePage({ frequency, cadence, lookaheadNumber, dateTime, recurringDays = [], isRecurringSource = false, recurringId = null, name = 'Test Event' }) {
@@ -979,13 +1340,14 @@ function createEventWithPage({ notionPageId, recurringId, dateTime, notionPage =
     return event
 }
 
-function createNotionPage() {
+function createNotionPage(recurringId = null) {
     return {
         id: 'notion-page-id',
         properties: {
-            'Name': { title: [{ plain_text: 'Test' }] },
-            'Date': { date: { start: '2025-10-08T10:00:00Z' } },
-            'Recurring Source': { checkbox: true }
+            'Name': { type: 'title', title: [{ plain_text: 'Test' }] },
+            'Date': { type: 'date', date: { start: '2025-10-08T10:00:00Z' } },
+            'Recurring Source': { type: 'checkbox', checkbox: true },
+            'Recurring ID': { type: 'rich_text', rich_text: recurringId ? [{ plain_text: recurringId }] : [] }
         }
     }
 }

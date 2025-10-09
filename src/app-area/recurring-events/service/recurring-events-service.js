@@ -6,8 +6,8 @@ var notionApi = require('../../../services/notionapiservice')
 
 /* #region Constants */
 
-const DEFAULT_LOOKBACK_DAYS = 14
-const DEFAULT_LOOKAHEAD_DAYS = 60
+const MAX_LOOKBACK_DAYS = 14
+const MAX_LOOKAHEAD_DAYS = 60
 const MAX_WEEKLY_CADENCE = 4
 const MAX_WEEKLY_LOOKAHEAD = 8
 const MAX_DAILY_CADENCE = 30
@@ -59,10 +59,8 @@ class RecurringEventsService {
 
     async fetchSourcePages(lastSyncedDate) {
         const today = moment.utc()
-        const startDate = lastSyncedDate
-            ? moment.utc(lastSyncedDate).toISOString()
-            : today.clone().subtract(DEFAULT_LOOKBACK_DAYS, 'days').startOf('day').toISOString()
-        const endDate = today.clone().add(DEFAULT_LOOKAHEAD_DAYS, 'days').endOf('day').toISOString()
+        const startDate = today.clone().subtract(MAX_LOOKBACK_DAYS, 'days').startOf('day').toISOString()
+        const endDate = today.clone().add(MAX_LOOKAHEAD_DAYS, 'days').endOf('day').toISOString()
 
         const data = await this.notionApi.queryDataSource(this.apiKey, this.dataSourceId, {
             and: [
@@ -221,7 +219,7 @@ class RecurringEventsService {
     async updateAllFutureEvents(futureEvents, sourceEvent, result) {
         for (const futureEvent of futureEvents) {
             try {
-                await this.updateEventFromSource(futureEvent.notionPageId, sourceEvent.notionPage, futureEvent.dateTime)
+                await this.updateEventFromSource(futureEvent.notionPageId, sourceEvent, futureEvent.dateTime)
                 result.updated++
             } catch (error) {
                 this.logger.error(`Error updating event ${futureEvent.notionPageId}: ${error}`)
@@ -255,11 +253,11 @@ class RecurringEventsService {
                     continue
                 }
 
-                await this.createEventFromSource(sourceEvent.notionPage, newEventStartDate.toISOString())
+                await this.createEventFromSource(sourceEvent, newEventStartDate.toISOString())
                 this.logger.log(`Created new event on ${newEventStartDate.format()} from source ${sourceEvent.name}`)
                 result.created++
             } catch (error) {
-                this.logger.error(`Error creating event for ${newEventStartDate.format()}: ${error}`)
+                this.logger.error(`Error creating event for ${newEventStartDate.format()}: ${error.response.data.message || error}`)
                 result.errors.push(`Create ${newEventStartDate.format()}: ${error.message}`)
             }
         }
@@ -282,24 +280,25 @@ class RecurringEventsService {
 
     /* #region Event Creation and Update */
 
-    async createEventFromSource(sourcePage, newStartDateTime) {
-        const newProperties = this._copyPropertiesFromSource(sourcePage.properties, newStartDateTime)
-        const sourceIcon = await this._getSourceIcon(sourcePage.id)
-        const sourceChildren = await this._getSourceBlocks(sourcePage.id)
+    async createEventFromSource(sourceEvent, newStartDateTime) {
+        const newProperties = this._copyPropertiesFromSource(sourceEvent, newStartDateTime)
+        const sourceIcon = await this._getSourceIcon(sourceEvent.notionPageId)
+        const sourceChildren = await this._getSourceBlocks(sourceEvent.notionPageId)
 
         await this.notionApi.createPage(this.apiKey, this.dataSourceId, newProperties, sourceIcon, sourceChildren)
     }
 
-    async updateEventFromSource(targetPageId, sourcePage, targetStartDateTime) {
-        const updateProperties = this._copyPropertiesFromSource(sourcePage.properties, targetStartDateTime)
-        const sourceIcon = await this._getSourceIcon(sourcePage.id)
-        const sourceChildren = await this._getSourceBlocks(sourcePage.id)
+    async updateEventFromSource(targetPageId, sourceEvent, targetStartDateTime) {
+        const updateProperties = this._copyPropertiesFromSource(sourceEvent, targetStartDateTime)
+        const sourceIcon = await this._getSourceIcon(sourceEvent.notionPageId)
+        const sourceChildren = await this._getSourceBlocks(sourceEvent.notionPageId)
 
         await this.notionApi.updatePage(this.apiKey, targetPageId, updateProperties, sourceIcon)
         await this.notionApi.replacePageBlocks(this.apiKey, targetPageId, sourceChildren)
     }
 
-    _copyPropertiesFromSource(sourceProps, newStartDateTime) {
+    _copyPropertiesFromSource(sourceEvent, newStartDateTime) {
+        const sourceProps = sourceEvent.notionPage.properties
         const properties = {}
 
         for (const [key, value] of Object.entries(sourceProps)) {
@@ -307,6 +306,17 @@ class RecurringEventsService {
                 properties[key] = this._calculateDateProperty(sourceProps, newStartDateTime)
             } else if (key === 'Recurring Source') {
                 properties[key] = { checkbox: false }
+            } else if (key === 'Recurring ID') {
+                properties[key] = {
+                    rich_text: [
+                        {
+                            type: 'text',
+                            text: {
+                                content: sourceEvent.recurringId
+                            }
+                        }
+                    ]
+                }
             } else {
                 const copiedProperty = this._copyPropertyByType(value)
                 if (copiedProperty) {
