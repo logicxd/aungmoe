@@ -204,15 +204,6 @@ class RecurringEventsService {
                     ]
                 }
             })
-
-            // Update the event's notionPage.properties so cloned events get the new Recurring ID
-            if (event.notionPage && event.notionPage.properties) {
-                event.notionPage.properties['Recurring ID'] = {
-                    type: 'rich_text',
-                    rich_text: [{ plain_text: event.recurringId }]
-                }
-            }
-
             this.logger.log(`Generated new Recurring ID for page ${event.notionPageId}: ${event.recurringId}`)
         }
     }
@@ -228,7 +219,7 @@ class RecurringEventsService {
     async updateAllFutureEvents(futureEvents, sourceEvent, result) {
         for (const futureEvent of futureEvents) {
             try {
-                await this.updateEventFromSource(futureEvent.notionPageId, sourceEvent.notionPage, futureEvent.dateTime)
+                await this.updateEventFromSource(futureEvent.notionPageId, sourceEvent, futureEvent.dateTime)
                 result.updated++
             } catch (error) {
                 this.logger.error(`Error updating event ${futureEvent.notionPageId}: ${error}`)
@@ -262,11 +253,11 @@ class RecurringEventsService {
                     continue
                 }
 
-                await this.createEventFromSource(sourceEvent.notionPage, newEventStartDate.toISOString())
+                await this.createEventFromSource(sourceEvent, newEventStartDate.toISOString())
                 this.logger.log(`Created new event on ${newEventStartDate.format()} from source ${sourceEvent.name}`)
                 result.created++
             } catch (error) {
-                this.logger.error(`Error creating event for ${newEventStartDate.format()}: ${error}`)
+                this.logger.error(`Error creating event for ${newEventStartDate.format()}: ${error.response.data.message || error}`)
                 result.errors.push(`Create ${newEventStartDate.format()}: ${error.message}`)
             }
         }
@@ -289,24 +280,25 @@ class RecurringEventsService {
 
     /* #region Event Creation and Update */
 
-    async createEventFromSource(sourcePage, newStartDateTime) {
-        const newProperties = this._copyPropertiesFromSource(sourcePage.properties, newStartDateTime)
-        const sourceIcon = await this._getSourceIcon(sourcePage.id)
-        const sourceChildren = await this._getSourceBlocks(sourcePage.id)
+    async createEventFromSource(sourceEvent, newStartDateTime) {
+        const newProperties = this._copyPropertiesFromSource(sourceEvent, newStartDateTime)
+        const sourceIcon = await this._getSourceIcon(sourceEvent.notionPageId)
+        const sourceChildren = await this._getSourceBlocks(sourceEvent.notionPageId)
 
         await this.notionApi.createPage(this.apiKey, this.dataSourceId, newProperties, sourceIcon, sourceChildren)
     }
 
-    async updateEventFromSource(targetPageId, sourcePage, targetStartDateTime) {
-        const updateProperties = this._copyPropertiesFromSource(sourcePage.properties, targetStartDateTime)
-        const sourceIcon = await this._getSourceIcon(sourcePage.id)
-        const sourceChildren = await this._getSourceBlocks(sourcePage.id)
+    async updateEventFromSource(targetPageId, sourceEvent, targetStartDateTime) {
+        const updateProperties = this._copyPropertiesFromSource(sourceEvent, targetStartDateTime)
+        const sourceIcon = await this._getSourceIcon(sourceEvent.notionPageId)
+        const sourceChildren = await this._getSourceBlocks(sourceEvent.notionPageId)
 
         await this.notionApi.updatePage(this.apiKey, targetPageId, updateProperties, sourceIcon)
         await this.notionApi.replacePageBlocks(this.apiKey, targetPageId, sourceChildren)
     }
 
-    _copyPropertiesFromSource(sourceProps, newStartDateTime) {
+    _copyPropertiesFromSource(sourceEvent, newStartDateTime) {
+        const sourceProps = sourceEvent.notionPage.properties
         const properties = {}
 
         for (const [key, value] of Object.entries(sourceProps)) {
@@ -314,6 +306,17 @@ class RecurringEventsService {
                 properties[key] = this._calculateDateProperty(sourceProps, newStartDateTime)
             } else if (key === 'Recurring Source') {
                 properties[key] = { checkbox: false }
+            } else if (key === 'Recurring ID') {
+                properties[key] = {
+                    rich_text: [
+                        {
+                            type: 'text',
+                            text: {
+                                content: sourceEvent.recurringId
+                            }
+                        }
+                    ]
+                }
             } else {
                 const copiedProperty = this._copyPropertyByType(value)
                 if (copiedProperty) {

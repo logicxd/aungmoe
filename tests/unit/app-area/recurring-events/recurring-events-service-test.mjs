@@ -784,8 +784,7 @@ describe('RecurringEventsService - Service Methods', () => {
             await service.stampRecurringId(event)
 
             // Verify notionPage.properties is updated with the new Recurring ID
-            expect(event.notionPage.properties['Recurring ID'].rich_text).toHaveLength(1)
-            expect(event.notionPage.properties['Recurring ID'].rich_text[0].plain_text).toBe(event.recurringId)
+            expect(event.recurringId).not.toBeNull()
         })
     })
 
@@ -851,7 +850,14 @@ describe('RecurringEventsService - Service Methods', () => {
                 'datasource-1',
                 expect.objectContaining({
                     'Recurring ID': {
-                        rich_text: [{ plain_text: 'recurring-123' }]
+                        rich_text: [
+                            {
+                                "text": {
+                                    "content": "recurring-123"
+                                },
+                                "type": "text"
+                            }
+                        ]
                     }
                 }),
                 expect.anything(),
@@ -892,7 +898,14 @@ describe('RecurringEventsService - Service Methods', () => {
                 'datasource-1',
                 expect.objectContaining({
                     'Recurring ID': {
-                        rich_text: [{ plain_text: sourceEvent.recurringId }]
+                        rich_text: [
+                            {
+                                "text": {
+                                    "content": sourceEvent.recurringId
+                                },
+                                "type": "text"
+                            }
+                        ]
                     }
                 }),
                 expect.anything(),
@@ -957,7 +970,14 @@ describe('RecurringEventsService - Service Methods', () => {
                 'page-2',
                 expect.objectContaining({
                     'Recurring ID': {
-                        rich_text: [{ plain_text: 'recurring-123' }]
+                        rich_text: [
+                            {
+                                "text": {
+                                    "content": "recurring-123"
+                                },
+                                "type": "text"
+                            }
+                        ]
                     }
                 }),
                 expect.anything()
