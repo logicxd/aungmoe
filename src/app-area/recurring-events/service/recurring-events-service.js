@@ -204,6 +204,15 @@ class RecurringEventsService {
                     ]
                 }
             })
+
+            // Update the event's notionPage.properties so cloned events get the new Recurring ID
+            if (event.notionPage && event.notionPage.properties) {
+                event.notionPage.properties['Recurring ID'] = {
+                    type: 'rich_text',
+                    rich_text: [{ plain_text: event.recurringId }]
+                }
+            }
+
             this.logger.log(`Generated new Recurring ID for page ${event.notionPageId}: ${event.recurringId}`)
         }
     }

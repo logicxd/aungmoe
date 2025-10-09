@@ -770,6 +770,23 @@ describe('RecurringEventsService - Service Methods', () => {
             expect(event.recurringId).toBe('existing-uuid')
             expect(mockNotionApi.updatePage).not.toHaveBeenCalled()
         })
+
+        it('should update notionPage.properties with new Recurring ID', async () => {
+            const event = createEventWithPage({
+                notionPageId: 'page-1',
+                recurringId: null,
+                notionPage: createNotionPage(null)
+            })
+
+            // Verify notionPage doesn't have Recurring ID initially
+            expect(event.notionPage.properties['Recurring ID'].rich_text).toEqual([])
+
+            await service.stampRecurringId(event)
+
+            // Verify notionPage.properties is updated with the new Recurring ID
+            expect(event.notionPage.properties['Recurring ID'].rich_text).toHaveLength(1)
+            expect(event.notionPage.properties['Recurring ID'].rich_text[0].plain_text).toBe(event.recurringId)
+        })
     })
 
     describe('createNewEvents', () => {
@@ -807,6 +824,81 @@ describe('RecurringEventsService - Service Methods', () => {
             expect(result.created).toBe(1)
             expect(mockNotionApi.createPage).toHaveBeenCalledTimes(1)
         })
+
+        it('should set Recurring ID on cloned events from source event', async () => {
+            const sourceEvent = createEventWithPage({
+                notionPageId: 'page-1',
+                recurringId: 'recurring-123',
+                dateTime: '2025-10-08T10:00:00Z',
+                notionPage: createNotionPage('recurring-123')
+            })
+
+            service.allEvents = [sourceEvent]
+
+            const newEventDates = [moment.utc('2025-10-10T10:00:00Z')]
+
+            mockNotionApi.getPage.mockResolvedValue({ icon: { type: 'emoji', emoji: '📅' } })
+            mockNotionApi.getPageBlocks.mockResolvedValue({ results: [] })
+            mockNotionApi.createPage.mockResolvedValue({})
+
+            const result = service._createProcessingResult()
+            service.dataSourceId = 'datasource-1'
+            await service.createNewEvents(sourceEvent, newEventDates, result)
+
+            expect(result.created).toBe(1)
+            expect(mockNotionApi.createPage).toHaveBeenCalledWith(
+                'test-api-key',
+                'datasource-1',
+                expect.objectContaining({
+                    'Recurring ID': {
+                        rich_text: [{ plain_text: 'recurring-123' }]
+                    }
+                }),
+                expect.anything(),
+                expect.anything()
+            )
+        })
+
+        it('should set newly generated Recurring ID on cloned events for first-time source', async () => {
+            // Source event with NO Recurring ID (first time being processed)
+            const sourceEvent = createEventWithPage({
+                notionPageId: 'page-1',
+                recurringId: null,
+                dateTime: '2025-10-08T10:00:00Z',
+                notionPage: createNotionPage(null)
+            })
+
+            service.allEvents = [sourceEvent]
+
+            const newEventDates = [moment.utc('2025-10-10T10:00:00Z')]
+
+            mockNotionApi.getPage.mockResolvedValue({ icon: { type: 'emoji', emoji: '📅' } })
+            mockNotionApi.getPageBlocks.mockResolvedValue({ results: [] })
+            mockNotionApi.createPage.mockResolvedValue({})
+
+            const result = service._createProcessingResult()
+            service.dataSourceId = 'datasource-1'
+
+            // First stamp the Recurring ID (simulating processSourcePage flow)
+            await service.stampRecurringId(sourceEvent)
+
+            // Then create new events
+            await service.createNewEvents(sourceEvent, newEventDates, result)
+
+            expect(result.created).toBe(1)
+            // Verify the newly generated Recurring ID is used for cloned events
+            expect(mockNotionApi.createPage).toHaveBeenCalledWith(
+                'test-api-key',
+                'datasource-1',
+                expect.objectContaining({
+                    'Recurring ID': {
+                        rich_text: [{ plain_text: sourceEvent.recurringId }]
+                    }
+                }),
+                expect.anything(),
+                expect.anything()
+            )
+        })
     })
 
     describe('updateAllFutureEvents', () => {
@@ -827,7 +919,7 @@ describe('RecurringEventsService - Service Methods', () => {
                 })
             ]
 
-            mockNotionApi.getPage.mockResolvedValue({ icon: { type: 'emoji', emoji: '=�' } })
+            mockNotionApi.getPage.mockResolvedValue({ icon: { type: 'emoji', emoji: '📅' } })
             mockNotionApi.getPageBlocks.mockResolvedValue({ results: [] })
 
             const result = service._createProcessingResult()
@@ -835,6 +927,41 @@ describe('RecurringEventsService - Service Methods', () => {
 
             expect(result.updated).toBe(2)
             expect(mockNotionApi.updatePage).toHaveBeenCalledTimes(2)
+        })
+
+        it('should preserve Recurring ID when updating future events', async () => {
+            const sourceEvent = createEventWithPage({
+                notionPageId: 'page-1',
+                recurringId: 'recurring-123',
+                dateTime: '2025-10-08T10:00:00Z',
+                notionPage: createNotionPage('recurring-123')
+            })
+
+            const futureEvents = [
+                createEventWithPage({
+                    notionPageId: 'page-2',
+                    recurringId: 'recurring-123',
+                    dateTime: '2025-10-10T10:00:00Z'
+                })
+            ]
+
+            mockNotionApi.getPage.mockResolvedValue({ icon: { type: 'emoji', emoji: '📅' } })
+            mockNotionApi.getPageBlocks.mockResolvedValue({ results: [] })
+
+            const result = service._createProcessingResult()
+            await service.updateAllFutureEvents(futureEvents, sourceEvent, result)
+
+            expect(result.updated).toBe(1)
+            expect(mockNotionApi.updatePage).toHaveBeenCalledWith(
+                'test-api-key',
+                'page-2',
+                expect.objectContaining({
+                    'Recurring ID': {
+                        rich_text: [{ plain_text: 'recurring-123' }]
+                    }
+                }),
+                expect.anything()
+            )
         })
     })
 
@@ -1193,13 +1320,14 @@ function createEventWithPage({ notionPageId, recurringId, dateTime, notionPage =
     return event
 }
 
-function createNotionPage() {
+function createNotionPage(recurringId = null) {
     return {
         id: 'notion-page-id',
         properties: {
-            'Name': { title: [{ plain_text: 'Test' }] },
-            'Date': { date: { start: '2025-10-08T10:00:00Z' } },
-            'Recurring Source': { checkbox: true }
+            'Name': { type: 'title', title: [{ plain_text: 'Test' }] },
+            'Date': { type: 'date', date: { start: '2025-10-08T10:00:00Z' } },
+            'Recurring Source': { type: 'checkbox', checkbox: true },
+            'Recurring ID': { type: 'rich_text', rich_text: recurringId ? [{ plain_text: recurringId }] : [] }
         }
     }
 }
