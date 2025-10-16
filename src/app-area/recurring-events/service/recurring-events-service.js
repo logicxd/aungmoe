@@ -334,8 +334,8 @@ class RecurringEventsService {
         const sourceEnd = sourceProps['Date']?.date?.end
 
         if (sourceStart && sourceEnd) {
-            const durationMs = moment.utc(sourceEnd).diff(moment.utc(sourceStart))
-            newEndDateTime = moment.utc(newStartDateTime).add(durationMs, 'milliseconds').toISOString()
+            const durationMs = moment.parseZone(sourceEnd).diff(moment.parseZone(sourceStart))
+            newEndDateTime = moment.parseZone(newStartDateTime).add(durationMs, 'milliseconds').toISOString()
         }
 
         return {
@@ -407,7 +407,8 @@ class RecurringEventsService {
     /* #region Date Calculation and Generation Strategy */
 
     _calculateLookaheadEndDate(event) {
-        const now = moment.utc()
+        // Use the event's timezone for calculating lookahead
+        const now = moment().utcOffset(event.dateTimeMoment.utcOffset())
         if (event.frequency === 'Weekly') {
             return now.clone().add(event.lookaheadNumber, 'weeks')
         } else if (event.frequency === 'Daily') {
@@ -534,7 +535,7 @@ class Event {
         this.recurringId = props['Recurring ID']?.rich_text?.[0]?.plain_text
         this.isRecurringSource = props['Recurring Source']?.checkbox === true
         this.name = props['Name']?.title?.[0]?.plain_text
-        this.dateTimeMoment = this.dateTime ? moment.utc(this.dateTime) : null
+        this.dateTimeMoment = this.dateTime ? moment.parseZone(this.dateTime) : null
 
         this._applyUpperLimits()
     }

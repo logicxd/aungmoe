@@ -288,6 +288,30 @@ describe('RecurringEventsService - Date Generation Strategies', () => {
     })
 
     describe('Daily Strategy', () => {
+        it('should generate daily events with cadence 1 without being off by one day', () => {
+            const startDate = moment.utc('2025-10-08T10:00:00Z')
+            const endDate = moment.utc('2025-10-12T10:00:00Z')
+            const event = createEvent({
+                dateTimeMoment: startDate,
+                cadence: 1
+            })
+
+            const dates = service._dailyDateStrategy.generate(event, endDate)
+
+            // Verify the correct number of events
+            expect(dates).toHaveLength(4)
+
+            // Verify each date is exactly 1 day apart from the previous, starting from source date + 1 day
+            expect(dates[0].format('YYYY-MM-DD')).toBe('2025-10-09') // startDate + 1 day
+            expect(dates[1].format('YYYY-MM-DD')).toBe('2025-10-10') // startDate + 2 days
+            expect(dates[2].format('YYYY-MM-DD')).toBe('2025-10-11') // startDate + 3 days
+            expect(dates[3].format('YYYY-MM-DD')).toBe('2025-10-12') // startDate + 4 days
+
+            // Verify no off-by-one error: the first event should be exactly 1 day after source
+            const daysDiff = dates[0].diff(startDate, 'days')
+            expect(daysDiff).toBe(1)
+        })
+
         it('should generate daily events with cadence 1', () => {
             const startDate = moment.utc('2025-10-08T10:00:00Z')
             const endDate = moment.utc('2025-10-12T10:00:00Z')
@@ -354,6 +378,31 @@ describe('RecurringEventsService - Date Generation Strategies', () => {
     })
 
     describe('Weekly Strategy', () => {
+        it('should generate weekly events without being off by one day', () => {
+            const startDate = moment.utc('2025-10-08T10:00:00Z') // Wednesday
+            const endDate = moment.utc('2025-10-22T10:00:00Z')
+            const event = createEvent({
+                dateTimeMoment: startDate,
+                cadence: 1,
+                recurringDays: ['Wednesday']
+            })
+
+            const dates = service._weeklyDateStrategy.generate(event, endDate)
+
+            // First generated event should be exactly 7 days (1 week) after the start date
+            expect(dates[0].format('YYYY-MM-DD')).toBe('2025-10-15') // Oct 8 + 7 days = Oct 15
+            expect(dates[0].format('dddd')).toBe('Wednesday')
+
+            // Verify no off-by-one error: should be exactly 7 days apart
+            const daysDiff = dates[0].diff(startDate, 'days')
+            expect(daysDiff).toBe(7)
+
+            // Second event should be exactly 14 days after start
+            expect(dates[1].format('YYYY-MM-DD')).toBe('2025-10-22')
+            const secondDaysDiff = dates[1].diff(startDate, 'days')
+            expect(secondDaysDiff).toBe(14)
+        })
+
         it('should generate weekly events on selected days with cadence 1', () => {
             const startDate = moment.utc('2025-10-08T10:00:00Z') // Wednesday
             const endDate = moment.utc('2025-10-22T10:00:00Z')
