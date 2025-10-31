@@ -1322,6 +1322,171 @@ describe('RecurringEventsService - Past Source Events', () => {
 
 /* #endregion */
 
+/* #region Time and Day Change Tests */
+
+describe('RecurringEventsService - Time and Day Change Updates', () => {
+    let service
+    let mockNotionApi
+    let mockLogger
+
+    beforeEach(() => {
+        mockNotionApi = createMockNotionApi()
+        mockLogger = { log: vi.fn(), error: vi.fn() }
+        service = new RecurringEventsService('test-api-key', 'test-db-id', mockNotionApi, mockLogger)
+    })
+
+    describe('When source event time changes', () => {
+        it('should update existing future events to new time without creating duplicates', async () => {
+            // Given: A Weekly recurring event TODAY at 10:00 AM with Recurring Days [Wednesday, Friday]
+            // Use today's date to avoid generating events in the past
+            const today = moment.utc().hours(10).minutes(0).seconds(0).milliseconds(0)
+            const sourcePage = createSourcePage({
+                frequency: 'Weekly',
+                cadence: 1,
+                lookaheadNumber: 2,
+                dateTime: today.toISOString(),
+                recurringDays: [today.format('dddd')], // Use today's day of week
+                isRecurringSource: true,
+                recurringId: 'recurring-time-change'
+            })
+
+            const sourceEvent = new Event(sourcePage)
+            sourceEvent.notionPage = sourcePage
+
+            // Create 3 existing future events at the OLD time (10:00 AM)
+            const existingFutureEvents = [
+                createEventWithPage({
+                    notionPageId: 'page-future-1',
+                    recurringId: 'recurring-time-change',
+                    dateTime: today.clone().add(1, 'week').toISOString() // 1 week from today at 10:00
+                }),
+                createEventWithPage({
+                    notionPageId: 'page-future-2',
+                    recurringId: 'recurring-time-change',
+                    dateTime: today.clone().add(2, 'weeks').toISOString() // 2 weeks from today at 10:00
+                }),
+                createEventWithPage({
+                    notionPageId: 'page-future-3',
+                    recurringId: 'recurring-time-change',
+                    dateTime: today.clone().add(3, 'weeks').toISOString() // 3 weeks from today at 10:00
+                })
+            ]
+
+            service.allEvents = [sourceEvent, ...existingFutureEvents]
+            service.dataSourceId = 'datasource-1'
+
+            mockNotionApi.getPage.mockResolvedValue({ icon: { type: 'emoji', emoji: '📅' } })
+            mockNotionApi.getPageBlocks.mockResolvedValue({ results: [] })
+            mockNotionApi.createPage.mockResolvedValue({})
+            mockNotionApi.updatePage.mockResolvedValue({})
+
+            // When: Source event time changes to 14:00 (2:00 PM) - same day, just different time
+            sourceEvent.dateTimeMoment = today.clone().hours(14).minutes(0)
+            sourceEvent.dateTime = sourceEvent.dateTimeMoment.toISOString()
+            sourceEvent.notionPage.properties['Date'].date.start = sourceEvent.dateTime
+
+            const result = service._createProcessingResult()
+            const futureEvents = service.findFutureEvents(sourceEvent)
+            await service.updateAllFutureEvents(futureEvents, sourceEvent, result)
+            await service.generateFutureEvents(sourceEvent, result)
+
+            // Then: Should update 3 existing events (since lookahead is 2 weeks, only 2 events should exist within that window)
+            // The 3rd event (3 weeks out) is beyond the lookahead, so it gets updated but not re-created
+            expect(result.updated).toBe(2) // Only update events within lookahead window
+            expect(result.created).toBe(0) // No duplicates
+            expect(mockNotionApi.updatePage).toHaveBeenCalledTimes(2)
+            expect(mockNotionApi.createPage).not.toHaveBeenCalled()
+
+            // Verify the updates have the correct NEW times (14:00 instead of 10:00)
+            const updateCalls = mockNotionApi.updatePage.mock.calls
+            const updateProperties = updateCalls.map(call => call[2])
+
+            // Should update to: 1 week from today at 14:00, 2 weeks from today at 14:00
+            const expectedDate1 = today.clone().add(1, 'week').hours(14).minutes(0)
+            const expectedDate2 = today.clone().add(2, 'weeks').hours(14).minutes(0)
+
+            expect(moment.utc(updateProperties[0]['Date'].date.start).format('YYYY-MM-DD HH:mm')).toBe(expectedDate1.format('YYYY-MM-DD HH:mm'))
+            expect(moment.utc(updateProperties[1]['Date'].date.start).format('YYYY-MM-DD HH:mm')).toBe(expectedDate2.format('YYYY-MM-DD HH:mm'))
+        })
+
+        it('should update existing future events when recurring days change', async () => {
+            // Given: A Weekly recurring event on Wednesday 10:00 AM with Recurring Days [Wednesday]
+            const sourceDate = moment.utc('2025-10-08T10:00:00Z') // Wednesday
+            const sourcePage = createSourcePage({
+                frequency: 'Weekly',
+                cadence: 1,
+                lookaheadNumber: 3,
+                dateTime: sourceDate.toISOString(),
+                recurringDays: ['Wednesday'],
+                isRecurringSource: true,
+                recurringId: 'recurring-day-change'
+            })
+
+            const sourceEvent = new Event(sourcePage)
+            sourceEvent.notionPage = sourcePage
+
+            // Create 3 existing future events at Wednesdays
+            const existingFutureEvents = [
+                createEventWithPage({
+                    notionPageId: 'page-future-1',
+                    recurringId: 'recurring-day-change',
+                    dateTime: '2025-10-15T10:00:00Z' // Wednesday Oct 15
+                }),
+                createEventWithPage({
+                    notionPageId: 'page-future-2',
+                    recurringId: 'recurring-day-change',
+                    dateTime: '2025-10-22T10:00:00Z' // Wednesday Oct 22
+                }),
+                createEventWithPage({
+                    notionPageId: 'page-future-3',
+                    recurringId: 'recurring-day-change',
+                    dateTime: '2025-10-29T10:00:00Z' // Wednesday Oct 29
+                })
+            ]
+
+            service.allEvents = [sourceEvent, ...existingFutureEvents]
+            service.dataSourceId = 'datasource-1'
+
+            mockNotionApi.getPage.mockResolvedValue({ icon: { type: 'emoji', emoji: '📅' } })
+            mockNotionApi.getPageBlocks.mockResolvedValue({ results: [] })
+            mockNotionApi.createPage.mockResolvedValue({})
+            mockNotionApi.updatePage.mockResolvedValue({})
+
+            // When: Source event changes to Thursday with Recurring Days [Thursday]
+            sourceEvent.dateTimeMoment = moment.utc('2025-10-09T10:00:00Z') // Thursday
+            sourceEvent.dateTime = '2025-10-09T10:00:00Z'
+            sourceEvent.recurringDays = ['Thursday']
+            sourceEvent.notionPage.properties['Date'].date.start = '2025-10-09T10:00:00Z'
+            sourceEvent.notionPage.properties['Recurring Days'].multi_select = [{ name: 'Thursday' }]
+
+            const result = service._createProcessingResult()
+            const futureEvents = service.findFutureEvents(sourceEvent)
+            await service.updateAllFutureEvents(futureEvents, sourceEvent, result)
+            await service.generateFutureEvents(sourceEvent, result)
+
+            // Then: Should update 3 existing events to Thursdays
+            expect(result.updated).toBe(3)
+            expect(mockNotionApi.updatePage).toHaveBeenCalledTimes(3)
+
+            // Verify the updates moved to Thursdays (chronologically matched)
+            const updateCalls = mockNotionApi.updatePage.mock.calls
+            const updateProperties = updateCalls.map(call => call[2])
+
+            // Should update to: Oct 16 (Thu), Oct 23 (Thu), Oct 30 (Thu)
+            expect(moment.utc(updateProperties[0]['Date'].date.start).format('YYYY-MM-DD')).toBe('2025-10-16')
+            expect(moment.utc(updateProperties[0]['Date'].date.start).format('dddd')).toBe('Thursday')
+
+            expect(moment.utc(updateProperties[1]['Date'].date.start).format('YYYY-MM-DD')).toBe('2025-10-23')
+            expect(moment.utc(updateProperties[1]['Date'].date.start).format('dddd')).toBe('Thursday')
+
+            expect(moment.utc(updateProperties[2]['Date'].date.start).format('YYYY-MM-DD')).toBe('2025-10-30')
+            expect(moment.utc(updateProperties[2]['Date'].date.start).format('dddd')).toBe('Thursday')
+        })
+    })
+})
+
+/* #endregion */
+
 /* #region Test Helper Functions */
 
 function createSourcePage({ frequency, cadence, lookaheadNumber, dateTime, recurringDays = [], isRecurringSource = false, recurringId = null, name = 'Test Event' }) {

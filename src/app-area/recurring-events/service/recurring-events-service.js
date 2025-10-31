@@ -217,15 +217,48 @@ class RecurringEventsService {
     }
 
     async updateAllFutureEvents(futureEvents, sourceEvent, result) {
-        for (const futureEvent of futureEvents) {
+        // Sort future events chronologically
+        const sortedFutureEvents = futureEvents.sort((a, b) =>
+            a.dateTimeMoment.valueOf() - b.dateTimeMoment.valueOf()
+        )
+
+        // Generate expected future dates based on source's current Recurring Days pattern
+        const lookaheadEndDate = this._calculateLookaheadEndDate(sourceEvent)
+        if (!lookaheadEndDate) {
+            this.logger.log(`Cannot calculate lookahead for frequency: ${sourceEvent.frequency}, skipping updates`)
+            return []
+        }
+
+        const expectedFutureDates = this._generateNewEventDates(sourceEvent, lookaheadEndDate)
+
+        // Match existing events with new expected dates chronologically
+        const updateCount = Math.min(sortedFutureEvents.length, expectedFutureDates.length)
+        const updatedDates = []
+
+        for (let i = 0; i < updateCount; i++) {
+            const futureEvent = sortedFutureEvents[i]
+            const newExpectedDate = expectedFutureDates[i]
+
             try {
-                await this.updateEventFromSource(futureEvent.notionPageId, sourceEvent, futureEvent.dateTime)
+                await this.updateEventFromSource(
+                    futureEvent.notionPageId,
+                    sourceEvent,
+                    newExpectedDate.toISOString()
+                )
+
+                // Update the event's dateTime in allEvents to reflect the new time
+                futureEvent.dateTime = newExpectedDate.toISOString()
+                futureEvent.dateTimeMoment = newExpectedDate
+
+                updatedDates.push(newExpectedDate.format('YYYY-MM-DDTHH:mm'))
                 result.updated++
             } catch (error) {
                 this.logger.error(`Error updating event ${futureEvent.notionPageId}: ${error}`)
                 result.errors.push(`Update ${futureEvent.notionPageId}: ${error.message}`)
             }
         }
+
+        return updatedDates
     }
 
     async generateFutureEvents(event, result) {
