@@ -1,6 +1,6 @@
 "use strict";
 
-var moment = require('moment')
+var moment = require('moment-timezone')
 var { randomUUID } = require('crypto')
 var notionApi = require('../../../services/notionapiservice')
 
@@ -147,6 +147,19 @@ class RecurringEventsService {
             },
             'Recurring ID': {
                 rich_text: {}
+            },
+            'Recurring Timezone': {
+                select: {
+                    options: [
+                        { name: 'America/New_York', color: 'blue' },
+                        { name: 'America/Chicago', color: 'green' },
+                        { name: 'America/Denver', color: 'yellow' },
+                        { name: 'America/Phoenix', color: 'orange' },
+                        { name: 'America/Los_Angeles', color: 'red' },
+                        { name: 'America/Anchorage', color: 'purple' },
+                        { name: 'Pacific/Honolulu', color: 'pink' }
+                    ]
+                }
             }
         }
 
@@ -217,15 +230,48 @@ class RecurringEventsService {
     }
 
     async updateAllFutureEvents(futureEvents, sourceEvent, result) {
-        for (const futureEvent of futureEvents) {
+        // Sort future events chronologically
+        const sortedFutureEvents = futureEvents.sort((a, b) =>
+            a.dateTimeMoment.valueOf() - b.dateTimeMoment.valueOf()
+        )
+
+        // Generate expected future dates based on source's current Recurring Days pattern
+        const lookaheadEndDate = this._calculateLookaheadEndDate(sourceEvent)
+        if (!lookaheadEndDate) {
+            this.logger.log(`Cannot calculate lookahead for frequency: ${sourceEvent.frequency}, skipping updates`)
+            return []
+        }
+
+        const expectedFutureDates = this._generateNewEventDates(sourceEvent, lookaheadEndDate)
+
+        // Match existing events with new expected dates chronologically
+        const updateCount = Math.min(sortedFutureEvents.length, expectedFutureDates.length)
+        const updatedDates = []
+
+        for (let i = 0; i < updateCount; i++) {
+            const futureEvent = sortedFutureEvents[i]
+            const newExpectedDate = expectedFutureDates[i]
+
             try {
-                await this.updateEventFromSource(futureEvent.notionPageId, sourceEvent, futureEvent.dateTime)
+                await this.updateEventFromSource(
+                    futureEvent.notionPageId,
+                    sourceEvent,
+                    newExpectedDate.toISOString(true)
+                )
+
+                // Update the event's dateTime in allEvents to reflect the new time
+                futureEvent.dateTime = newExpectedDate.toISOString(true)
+                futureEvent.dateTimeMoment = newExpectedDate
+
+                updatedDates.push(newExpectedDate.format('YYYY-MM-DDTHH:mm'))
                 result.updated++
             } catch (error) {
                 this.logger.error(`Error updating event ${futureEvent.notionPageId}: ${error}`)
                 result.errors.push(`Update ${futureEvent.notionPageId}: ${error.message}`)
             }
         }
+
+        return updatedDates
     }
 
     async generateFutureEvents(event, result) {
@@ -253,7 +299,7 @@ class RecurringEventsService {
                     continue
                 }
 
-                await this.createEventFromSource(sourceEvent, newEventStartDate.toISOString())
+                await this.createEventFromSource(sourceEvent, newEventStartDate.toISOString(true))
                 this.logger.log(`Created new event on ${newEventStartDate.format()} from source ${sourceEvent.name}`)
                 result.created++
             } catch (error) {
@@ -335,7 +381,7 @@ class RecurringEventsService {
 
         if (sourceStart && sourceEnd) {
             const durationMs = moment.parseZone(sourceEnd).diff(moment.parseZone(sourceStart))
-            newEndDateTime = moment.parseZone(newStartDateTime).add(durationMs, 'milliseconds').toISOString()
+            newEndDateTime = moment.parseZone(newStartDateTime).add(durationMs, 'milliseconds').toISOString(true)
         }
 
         return {
@@ -408,7 +454,7 @@ class RecurringEventsService {
 
     _calculateLookaheadEndDate(event) {
         // Use the event's timezone for calculating lookahead
-        const now = moment().utcOffset(event.dateTimeMoment.utcOffset())
+        const now = event.timezone ? moment.tz(event.timezone) : moment().utcOffset(event.dateTimeMoment.utcOffset())
         if (event.frequency === 'Weekly') {
             return now.clone().add(event.lookaheadNumber, 'weeks')
         } else if (event.frequency === 'Daily') {
@@ -489,6 +535,9 @@ class RecurringEventsService {
         eventDate.minutes(sourceDateTime.minutes())
         eventDate.seconds(0)
         eventDate.milliseconds(0)
+
+        // Ensure the event date preserves the timezone from source
+        // If source has timezone, the clone will automatically handle DST transitions
         return eventDate
     }
 
@@ -535,7 +584,16 @@ class Event {
         this.recurringId = props['Recurring ID']?.rich_text?.[0]?.plain_text
         this.isRecurringSource = props['Recurring Source']?.checkbox === true
         this.name = props['Name']?.title?.[0]?.plain_text
-        this.dateTimeMoment = this.dateTime ? moment.parseZone(this.dateTime) : null
+        this.timezone = props['Recurring Timezone']?.select?.name
+
+        // Create timezone-aware moment if timezone is specified, otherwise fallback to parseZone
+        if (this.dateTime && this.timezone) {
+            this.dateTimeMoment = moment.tz(this.dateTime, this.timezone)
+        } else if (this.dateTime) {
+            this.dateTimeMoment = moment.parseZone(this.dateTime)
+        } else {
+            this.dateTimeMoment = null
+        }
 
         this._applyUpperLimits()
     }
