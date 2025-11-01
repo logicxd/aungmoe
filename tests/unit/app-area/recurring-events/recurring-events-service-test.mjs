@@ -1,5 +1,5 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest'
-import moment from 'moment'
+import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest'
+import moment from 'moment-timezone'
 import { RecurringEventsService, Event } from '../../../../src/app-area/recurring-events/service/recurring-events-service.js'
 
 /* #region Event Class Tests */
@@ -278,6 +278,99 @@ describe('RecurringEventsService - Date Calculation', () => {
             expect(result.minutes()).toBe(30)
             expect(result.seconds()).toBe(0)
             expect(result.milliseconds()).toBe(0)
+        })
+
+        it('should preserve timezone offset from source event when creating new event date', () => {
+            // Source event has a timezone offset of -420 minutes (UTC-7)
+            const currentDate = moment.parseZone('2025-10-15T00:00:00-07:00')
+            const sourceDateTime = moment.parseZone('2025-10-08T14:30:00-07:00')
+
+            const result = service._createEventDateWithTime(currentDate, sourceDateTime)
+
+            // Result should preserve the same timezone offset as the source
+            expect(result.utcOffset()).toBe(sourceDateTime.utcOffset())
+            expect(result.format('YYYY-MM-DD')).toBe('2025-10-15')
+            expect(result.hours()).toBe(14)
+            expect(result.minutes()).toBe(30)
+            expect(result.format()).toBe('2025-10-15T14:30:00-07:00')
+        })
+
+        it('should create future events in source timezone for daily cadence', () => {
+            // Source event with timezone offset (UTC-7)
+            const startDate = moment.parseZone('2025-10-08T10:00:00-07:00')
+            const endDate = moment.parseZone('2025-10-12T10:00:00-07:00')
+            const event = createEvent({
+                dateTimeMoment: startDate,
+                cadence: 1
+            })
+
+            const dates = service._dailyDateStrategy.generate(event, endDate)
+
+            // All generated dates should preserve the source timezone offset
+            const expectedOffset = startDate.utcOffset()
+            dates.forEach(date => {
+                expect(date.utcOffset()).toBe(expectedOffset)
+            })
+
+            // Verify specific dates and times maintain timezone
+            expect(dates[0].format()).toBe('2025-10-09T10:00:00-07:00')
+            expect(dates[1].format()).toBe('2025-10-10T10:00:00-07:00')
+        })
+
+        it('should create future events in source timezone for weekly cadence', () => {
+            // Source event with timezone offset (UTC-5)
+            const startDate = moment.parseZone('2025-10-08T14:30:00-05:00') // Wednesday
+            const endDate = moment.parseZone('2025-10-22T14:30:00-05:00')
+            const event = createEvent({
+                dateTimeMoment: startDate,
+                cadence: 1,
+                recurringDays: ['Wednesday']
+            })
+
+            const dates = service._weeklyDateStrategy.generate(event, endDate)
+
+            // All generated dates should preserve the source timezone offset
+            const expectedOffset = startDate.utcOffset()
+            dates.forEach(date => {
+                expect(date.utcOffset()).toBe(expectedOffset)
+            })
+
+            // Verify specific dates and times maintain timezone
+            expect(dates[0].format()).toBe('2025-10-15T14:30:00-05:00') // Next Wednesday
+            expect(dates[1].format()).toBe('2025-10-22T14:30:00-05:00') // Following Wednesday
+        })
+
+        it('should preserve timezone when converting to ISO string format for daily events', () => {
+            // Source event in PDT (UTC-7)
+            const startDate = moment.parseZone('2025-10-08T10:00:00-07:00')
+            const endDate = moment.parseZone('2025-10-10T10:00:00-07:00')
+            const event = createEvent({
+                dateTimeMoment: startDate,
+                cadence: 1
+            })
+
+            const dates = service._dailyDateStrategy.generate(event, endDate)
+
+            // When converting to ISO string, timezone should be preserved, not converted to UTC
+            expect(dates[0].toISOString(true)).toBe('2025-10-09T10:00:00.000-07:00')
+            expect(dates[1].toISOString(true)).toBe('2025-10-10T10:00:00.000-07:00')
+        })
+
+        it('should preserve timezone when converting to ISO string format for weekly events', () => {
+            // Source event in EST (UTC-5)
+            const startDate = moment.parseZone('2025-10-08T14:30:00-05:00') // Wednesday
+            const endDate = moment.parseZone('2025-10-22T14:30:00-05:00')
+            const event = createEvent({
+                dateTimeMoment: startDate,
+                cadence: 1,
+                recurringDays: ['Wednesday']
+            })
+
+            const dates = service._weeklyDateStrategy.generate(event, endDate)
+
+            // When converting to ISO string, timezone should be preserved, not converted to UTC
+            expect(dates[0].toISOString(true)).toBe('2025-10-15T14:30:00.000-05:00')
+            expect(dates[1].toISOString(true)).toBe('2025-10-22T14:30:00.000-05:00')
         })
     })
 })
@@ -764,7 +857,8 @@ describe('RecurringEventsService - Service Methods', () => {
                     'Recurring Days': expect.any(Object),
                     'Recurring Lookahead Number': expect.any(Object),
                     'Recurring Source': expect.any(Object),
-                    'Recurring ID': expect.any(Object)
+                    'Recurring ID': expect.any(Object),
+                    'Recurring Timezone': expect.any(Object)
                 })
             )
         })
@@ -777,7 +871,8 @@ describe('RecurringEventsService - Service Methods', () => {
                     'Recurring Days': {},
                     'Recurring Lookahead Number': {},
                     'Recurring Source': {},
-                    'Recurring ID': {}
+                    'Recurring ID': {},
+                    'Recurring Timezone': {}
                 }
             })
 
@@ -1513,9 +1608,229 @@ describe('RecurringEventsService - Time and Day Change Updates', () => {
 
 /* #endregion */
 
+/* #region Integration Tests - Timezone Preservation */
+
+describe('RecurringEventsService - Timezone Preservation in Create/Update', () => {
+    let service
+    let mockNotionApi
+    let mockLogger
+
+    beforeEach(() => {
+        mockNotionApi = createMockNotionApi()
+        mockLogger = { log: vi.fn(), error: vi.fn() }
+        service = new RecurringEventsService('test-api-key', 'test-db-id', mockNotionApi, mockLogger)
+    })
+
+    describe('createNewEvents with timezone', () => {
+        it('should create events with timezone preserved from source event', async () => {
+            // Source event in PDT (UTC-7)
+            const sourceEvent = createEventWithPage({
+                notionPageId: 'page-1',
+                recurringId: 'recurring-123',
+                dateTime: '2025-10-08T10:00:00-07:00',
+                notionPage: createNotionPage('recurring-123')
+            })
+
+            // Override the dateTimeMoment to use parseZone for timezone preservation
+            sourceEvent.dateTimeMoment = moment.parseZone('2025-10-08T10:00:00-07:00')
+            sourceEvent.dateTime = '2025-10-08T10:00:00-07:00'
+            sourceEvent.notionPage.properties['Date'].date.start = '2025-10-08T10:00:00-07:00'
+
+            service.allEvents = [sourceEvent]
+            service.dataSourceId = 'datasource-1'
+
+            // New event dates in PDT timezone
+            const newEventDates = [
+                moment.parseZone('2025-10-10T10:00:00-07:00'),
+                moment.parseZone('2025-10-12T10:00:00-07:00')
+            ]
+
+            mockNotionApi.getPage.mockResolvedValue({ icon: { type: 'emoji', emoji: '📅' } })
+            mockNotionApi.getPageBlocks.mockResolvedValue({ results: [] })
+            mockNotionApi.createPage.mockResolvedValue({})
+
+            const result = service._createProcessingResult()
+            await service.createNewEvents(sourceEvent, newEventDates, result)
+
+            expect(result.created).toBe(2)
+            expect(mockNotionApi.createPage).toHaveBeenCalledTimes(2)
+
+            // Verify the created events preserve the timezone (should have -07:00, not Z for UTC)
+            const firstCallProperties = mockNotionApi.createPage.mock.calls[0][2]
+            const secondCallProperties = mockNotionApi.createPage.mock.calls[1][2]
+
+            expect(firstCallProperties['Date'].date.start).toBe('2025-10-10T10:00:00.000-07:00')
+            expect(secondCallProperties['Date'].date.start).toBe('2025-10-12T10:00:00.000-07:00')
+        })
+    })
+
+    describe('updateAllFutureEvents with timezone', () => {
+        it('should update events with timezone preserved from source event', async () => {
+            // Source event in EST (UTC-5)
+            const sourceEvent = createEventWithPage({
+                notionPageId: 'page-1',
+                recurringId: 'recurring-456',
+                dateTime: '2025-10-08T14:30:00-05:00',
+                notionPage: createNotionPage('recurring-456')
+            })
+
+            // Override to use parseZone for timezone
+            sourceEvent.dateTimeMoment = moment.parseZone('2025-10-08T14:30:00-05:00')
+            sourceEvent.dateTime = '2025-10-08T14:30:00-05:00'
+            sourceEvent.notionPage.properties['Date'].date.start = '2025-10-08T14:30:00-05:00'
+            sourceEvent.frequency = 'Daily'
+            sourceEvent.cadence = 1
+            sourceEvent.lookaheadNumber = 5
+
+            const futureEvents = [
+                createEventWithPage({
+                    notionPageId: 'page-2',
+                    recurringId: 'recurring-456',
+                    dateTime: '2025-10-10T14:30:00-05:00'
+                })
+            ]
+
+            service.allEvents = [sourceEvent, ...futureEvents]
+            service.dataSourceId = 'datasource-1'
+
+            mockNotionApi.getPage.mockResolvedValue({ icon: { type: 'emoji', emoji: '📅' } })
+            mockNotionApi.getPageBlocks.mockResolvedValue({ results: [] })
+            mockNotionApi.updatePage.mockResolvedValue({})
+
+            const result = service._createProcessingResult()
+            await service.updateAllFutureEvents(futureEvents, sourceEvent, result)
+
+            expect(result.updated).toBe(1)
+            expect(mockNotionApi.updatePage).toHaveBeenCalledTimes(1)
+
+            // Verify the updated event preserves the timezone (should have -05:00, not Z for UTC)
+            const updateCallProperties = mockNotionApi.updatePage.mock.calls[0][2]
+
+            // The updated date should be in EST timezone
+            expect(updateCallProperties['Date'].date.start).toContain('-05:00')
+            expect(updateCallProperties['Date'].date.start).not.toContain('Z')
+        })
+    })
+})
+
+/* #endregion */
+
+/* #region DST (Daylight Saving Time) Transition Tests */
+
+describe('RecurringEventsService - DST Transitions with Timezone Property', () => {
+    let service
+    let mockLogger
+
+    beforeEach(() => {
+        const mockNotionApi = createMockNotionApi()
+        mockLogger = { log: vi.fn(), error: vi.fn() }
+        service = new RecurringEventsService('test-api-key', 'test-db-id', mockNotionApi, mockLogger)
+    })
+
+    describe('Daily events across DST boundary', () => {
+        it('should handle DST transition from PDT to PST (fall back) using America/Los_Angeles timezone', () => {
+            // DST ends in 2025 on November 2 at 2:00 AM (clocks fall back to 1:00 AM)
+            // Event on Oct 30 (PDT, UTC-7) should generate events that transition to PST (UTC-8)
+
+            const sourcePage = createSourcePage({
+                frequency: 'Daily',
+                cadence: 1,
+                lookaheadNumber: 7,
+                dateTime: '2025-10-30T10:00:00-07:00',
+                isRecurringSource: true,
+                timezone: 'America/Los_Angeles'
+            })
+
+            const event = new Event(sourcePage)
+            const endDate = moment.tz('2025-11-05', 'America/Los_Angeles').endOf('day')
+
+            const dates = service._dailyDateStrategy.generate(event, endDate)
+
+            // Oct 31 - still PDT (UTC-7)
+            expect(dates[0].format()).toBe('2025-10-31T10:00:00-07:00')
+
+            // Nov 1 - still PDT (UTC-7)
+            expect(dates[1].format()).toBe('2025-11-01T10:00:00-07:00')
+
+            // Nov 2 - DST ends, now PST (UTC-8) - but still 10:00 AM local time
+            expect(dates[2].format()).toBe('2025-11-02T10:00:00-08:00')
+
+            // Nov 3 onwards - PST (UTC-8)
+            expect(dates[3].format()).toBe('2025-11-03T10:00:00-08:00')
+            expect(dates[4].format()).toBe('2025-11-04T10:00:00-08:00')
+            expect(dates[5].format()).toBe('2025-11-05T10:00:00-08:00')
+        })
+
+        it('should handle DST transition from PST to PDT (spring forward) using America/Los_Angeles timezone', () => {
+            // DST begins in 2025 on March 9 at 2:00 AM (clocks spring forward to 3:00 AM)
+            // Event on March 6 (PST, UTC-8) should generate events that transition to PDT (UTC-7)
+
+            const sourcePage = createSourcePage({
+                frequency: 'Daily',
+                cadence: 1,
+                lookaheadNumber: 7,
+                dateTime: '2025-03-06T10:00:00-08:00',
+                isRecurringSource: true,
+                timezone: 'America/Los_Angeles'
+            })
+
+            const event = new Event(sourcePage)
+            const endDate = moment.tz('2025-03-12', 'America/Los_Angeles').endOf('day')
+
+            const dates = service._dailyDateStrategy.generate(event, endDate)
+
+            // March 7-8 - still PST (UTC-8)
+            expect(dates[0].format()).toBe('2025-03-07T10:00:00-08:00')
+            expect(dates[1].format()).toBe('2025-03-08T10:00:00-08:00')
+
+            // March 9 - DST begins, now PDT (UTC-7) - but still 10:00 AM local time
+            expect(dates[2].format()).toBe('2025-03-09T10:00:00-07:00')
+
+            // March 10 onwards - PDT (UTC-7)
+            expect(dates[3].format()).toBe('2025-03-10T10:00:00-07:00')
+            expect(dates[4].format()).toBe('2025-03-11T10:00:00-07:00')
+            expect(dates[5].format()).toBe('2025-03-12T10:00:00-07:00')
+        })
+    })
+
+    describe('Weekly events across DST boundary', () => {
+        it('should handle DST transition for weekly recurring events using America/Los_Angeles timezone', () => {
+            // Weekly event every Wednesday, starting Oct 22 (PDT) through Nov 19 (PST)
+            const sourcePage = createSourcePage({
+                frequency: 'Weekly',
+                cadence: 1,
+                lookaheadNumber: 5,
+                dateTime: '2025-10-22T14:30:00-07:00',
+                recurringDays: ['Wednesday'],
+                isRecurringSource: true,
+                timezone: 'America/Los_Angeles'
+            })
+
+            const event = new Event(sourcePage)
+            const endDate = moment.tz('2025-11-19', 'America/Los_Angeles').endOf('day')
+
+            const dates = service._weeklyDateStrategy.generate(event, endDate)
+
+            // Oct 29 - still PDT (UTC-7)
+            expect(dates[0].format()).toBe('2025-10-29T14:30:00-07:00')
+
+            // Nov 5 - after DST ends, now PST (UTC-8) - but still 14:30 local time
+            expect(dates[1].format()).toBe('2025-11-05T14:30:00-08:00')
+
+            // Nov 12 - PST (UTC-8)
+            expect(dates[2].format()).toBe('2025-11-12T14:30:00-08:00')
+
+            // Nov 19 - PST (UTC-8)
+            expect(dates[3].format()).toBe('2025-11-19T14:30:00-08:00')
+        })
+    })
+})
+
+/* #endregion */
+
 /* #region Test Helper Functions */
 
-function createSourcePage({ frequency, cadence, lookaheadNumber, dateTime, recurringDays = [], isRecurringSource = false, recurringId = null, name = 'Test Event' }) {
+function createSourcePage({ frequency, cadence, lookaheadNumber, dateTime, recurringDays = [], isRecurringSource = false, recurringId = null, name = 'Test Event', timezone = null }) {
     return {
         id: 'test-page-id',
         properties: {
@@ -1542,6 +1857,9 @@ function createSourcePage({ frequency, cadence, lookaheadNumber, dateTime, recur
             },
             'Recurring Source': {
                 checkbox: isRecurringSource
+            },
+            'Recurring Timezone': {
+                select: timezone ? { name: timezone } : null
             }
         }
     }
