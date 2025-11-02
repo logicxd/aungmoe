@@ -402,7 +402,7 @@ class RecurringEventsService {
             'checkbox': () => ({ checkbox: value.checkbox }),
             'date': () => ({ date: value.date }),
             'url': () => ({ url: value.url }),
-            'relation': () => ({ relation: value.relation })
+            'relation': () => ({ relation: value.relation })    // If relation is not showing up, check that the database has given permission to the connection
         }
 
         const copyFunction = propertyTypeMap[value.type]
