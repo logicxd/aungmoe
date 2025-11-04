@@ -12,6 +12,7 @@ var passport = require('passport')
 var cookieParser = require('cookie-parser')
 var cookieSession = require('cookie-session')
 var database = require('./src/database/database')
+var recurringEventsScheduler = require('./src/app-area/recurring-events/scheduler/recurring-events-scheduler')
 /* #endregion */
 
 /* #region View Engine Setup to handlebars and set up view paths */
@@ -112,6 +113,9 @@ global.configs = {
 
 app.listen(PORT, function () {
     console.log('Server has started on port ' + PORT);
+
+    // Start the recurring events scheduler
+    recurringEventsScheduler.start();
 });
 
 module.exports = app;

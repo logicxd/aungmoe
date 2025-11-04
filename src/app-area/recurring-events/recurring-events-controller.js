@@ -79,6 +79,99 @@ router.post('/', requiredValidators(), async function (req, res) {
 })
 /* #endregion */
 
+/* #region  POST /recurring-events/scheduler/sync-all */
+router.post('/scheduler/sync-all', async function (req, res) {
+    // Authenticate using secret token
+    const authHeader = req.headers['x-scheduler-token']
+    const schedulerToken = process.env.RECURRING_EVENTS_SCHEDULER_TOKEN
+
+    if (!schedulerToken) {
+        console.error('RECURRING_EVENTS_SCHEDULER_TOKEN not configured')
+        return res.status(500).json({
+            success: false,
+            error: 'Scheduler not configured'
+        })
+    }
+
+    if (authHeader !== schedulerToken) {
+        console.warn('Unauthorized scheduler sync attempt')
+        return res.status(401).json({
+            success: false,
+            error: 'Unauthorized'
+        })
+    }
+
+    try {
+        const allConfigs = await NotionRecurringModel.find({}).lean()
+        console.log(`Scheduler: Processing ${allConfigs.length} recurring event configuration(s)`)
+
+        const results = []
+        let totalCreated = 0
+        let totalUpdated = 0
+        let totalSkipped = 0
+        let totalErrors = []
+
+        for (const config of allConfigs) {
+            try {
+                const fullConfig = await NotionRecurringModel.findById(config._id)
+                const decryptedSecretKey = fullConfig.getDecryptedSecretKey()
+                const service = new RecurringEventsService(decryptedSecretKey, fullConfig.databaseId)
+                const result = await service.processRecurringEvents(fullConfig.lastSyncedDate)
+
+                fullConfig.lastSyncedDate = new Date()
+                await fullConfig.save()
+
+                totalCreated += result.created
+                totalUpdated += result.updated
+                totalSkipped += result.skipped
+                totalErrors.push(...result.errors)
+
+                results.push({
+                    configId: config._id,
+                    title: config.title,
+                    success: true,
+                    created: result.created,
+                    updated: result.updated,
+                    skipped: result.skipped,
+                    errors: result.errors
+                })
+
+                console.log(`Scheduler: Processed config "${config.title}" - Created: ${result.created}, Updated: ${result.updated}, Skipped: ${result.skipped}`)
+            } catch (error) {
+                console.error(`Scheduler: Error processing config ${config._id}:`, error)
+                results.push({
+                    configId: config._id,
+                    title: config.title,
+                    success: false,
+                    error: error.message || 'Unknown error'
+                })
+                totalErrors.push(`Config ${config._id}: ${error.message}`)
+            }
+        }
+
+        console.log(`Scheduler: Completed - Total Created: ${totalCreated}, Updated: ${totalUpdated}, Skipped: ${totalSkipped}, Errors: ${totalErrors.length}`)
+
+        return res.status(200).json({
+            success: true,
+            summary: {
+                totalConfigs: allConfigs.length,
+                totalCreated,
+                totalUpdated,
+                totalSkipped,
+                totalErrors: totalErrors.length
+            },
+            results
+        })
+    } catch (error) {
+        console.error('Scheduler: Fatal error during sync-all:', error)
+        return res.status(500).json({
+            success: false,
+            error: error.message || 'Unknown error'
+        })
+    }
+})
+/* #endregion */
+
 /* #region  GET /recurring-events/{id} */
 router.get('/:id', async function (req, res) {
     if (!req.isAuthenticated()) {

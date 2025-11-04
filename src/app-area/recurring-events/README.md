@@ -166,10 +166,12 @@ If you delete future events manually:
 - `GET /recurring-events` - List all configurations
 - `POST /recurring-events` - Create new configuration
 - `GET /recurring-events/:id` - View specific configuration
-- `PUT /recurring-events/:id/sync` - Trigger sync for configuration
+- `POST /recurring-events/:id/sync` - Trigger sync for specific configuration
+- `POST /recurring-events/scheduler/sync-all` - Sync all configurations (requires authentication token)
 
 ## Sync Response Format
 
+### Single Configuration Sync
 ```json
 {
   "success": true,
@@ -180,9 +182,116 @@ If you delete future events manually:
 }
 ```
 
+### All Configurations Sync (Scheduler)
+```json
+{
+  "success": true,
+  "summary": {
+    "totalConfigs": 3,
+    "totalCreated": 10,
+    "totalUpdated": 5,
+    "totalSkipped": 8,
+    "totalErrors": 0
+  },
+  "results": [
+    {
+      "configId": "...",
+      "title": "Work Events",
+      "success": true,
+      "created": 5,
+      "updated": 2,
+      "skipped": 3,
+      "errors": []
+    }
+  ]
+}
+```
+
+## Automated Scheduler
+
+The system now includes an automated scheduler that runs daily to sync all recurring event configurations automatically.
+
+### Environment Variables
+
+Configure the scheduler using the following environment variables in your `.env` file:
+
+| Variable | Required | Default | Description |
+|----------|----------|---------|-------------|
+| `RECURRING_EVENTS_SCHEDULER_ENABLED` | Yes | `false` | Set to `true` to enable the scheduler |
+| `RECURRING_EVENTS_SCHEDULER_TOKEN` | Yes | - | Secret token for authenticating scheduler requests (generate a secure random string) |
+| `RECURRING_EVENTS_SCHEDULER_CRON` | No | `0 2 * * *` | Cron expression for schedule (default: 2 AM daily) |
+
+### Example Configuration
+
+Add these to your `.env` file:
+
+```env
+# Enable the scheduler
+RECURRING_EVENTS_SCHEDULER_ENABLED=true
+
+# Set a secure random token (generate your own!)
+RECURRING_EVENTS_SCHEDULER_TOKEN=your-secret-token-here
+
+# Optional: Custom schedule (runs at 3 AM daily)
+RECURRING_EVENTS_SCHEDULER_CRON=0 3 * * *
+```
+
+### Cron Expression Examples
+
+| Schedule | Cron Expression | Description |
+|----------|----------------|-------------|
+| Every day at 2 AM | `0 2 * * *` | Default |
+| Every day at 6 AM | `0 6 * * *` | Morning sync |
+| Every 12 hours | `0 */12 * * *` | Twice daily |
+| Every Sunday at 1 AM | `0 1 * * 0` | Weekly |
+| Every hour | `0 * * * *` | Hourly (not recommended) |
+
+### Fly.io Configuration
+
+On Fly.io, set the environment variables using:
+
+```bash
+# Enable scheduler
+fly secrets set RECURRING_EVENTS_SCHEDULER_ENABLED=true
+
+# Set scheduler token
+fly secrets set RECURRING_EVENTS_SCHEDULER_TOKEN=your-secret-token-here
+
+# Optional: Set custom schedule
+fly secrets set RECURRING_EVENTS_SCHEDULER_CRON="0 3 * * *"
+```
+
+### Manual Trigger
+
+You can also manually trigger the scheduler endpoint:
+
+```bash
+curl -X POST https://your-domain.com/recurring-events/scheduler/sync-all \
+  -H "x-scheduler-token: your-secret-token-here"
+```
+
+### Monitoring
+
+The scheduler logs all operations to the console. Check your application logs to monitor:
+- Scheduler start/stop events
+- Scheduled sync executions
+- Success/failure summaries
+- Individual configuration results
+
+Example log output:
+```
+Recurring Events Scheduler: STARTED with schedule "0 2 * * *"
+Recurring Events Scheduler: Starting scheduled sync...
+Scheduler: Processing 3 recurring event configuration(s)
+Scheduler: Processed config "Work Events" - Created: 5, Updated: 2, Skipped: 3
+Scheduler: SUCCESS - Configs: 3, Created: 10, Updated: 5, Skipped: 8, Errors: 0
+```
+
 ## Future Enhancements
 
-- [ ] Automated scheduled sync (cron job)
+- [x] Automated scheduled sync (cron job)
+- [ ] Support for Daily frequency (currently only Weekly is supported)
+- [ ] Event deletion within lookahead window
 
 ## Troubleshooting
 
