@@ -207,85 +207,157 @@ If you delete future events manually:
 }
 ```
 
-## Automated Scheduler
+## Automated Scheduling
 
-The system now includes an automated scheduler that runs daily to sync all recurring event configurations automatically.
+There are multiple ways to automate the syncing of recurring events. Choose the approach that best fits your infrastructure:
 
-### Environment Variables
+### Option 1: Fly.io Scheduled Machines (Recommended)
 
-Configure the scheduler using the following environment variables in your `.env` file:
+**Best for**: Fly.io deployments wanting cost-effective, infrastructure-native scheduling
 
-| Variable | Required | Default | Description |
-|----------|----------|---------|-------------|
-| `RECURRING_EVENTS_SCHEDULER_ENABLED` | Yes | `false` | Set to `true` to enable the scheduler |
-| `RECURRING_EVENTS_SCHEDULER_TOKEN` | Yes | - | Secret token for authenticating scheduler requests (generate a secure random string) |
-| `RECURRING_EVENTS_SCHEDULER_CRON` | No | `0 2 * * *` | Cron expression for schedule (default: 2 AM daily) |
+Fly.io Scheduled Machines spin up only when needed, run the sync, then shut down. This is the most cost-effective option as you only pay for actual sync time.
 
-### Example Configuration
+#### Setup
 
-Add these to your `.env` file:
+1. **Deploy your application first:**
+   ```bash
+   fly deploy
+   ```
 
-```env
-# Enable the scheduler
-RECURRING_EVENTS_SCHEDULER_ENABLED=true
+2. **Create a scheduled machine:**
+   ```bash
+   # Daily sync at 2 AM UTC
+   fly machine run \
+     --schedule daily \
+     --app aungmoe \
+     --dockerfile Dockerfile \
+     --entrypoint "node src/app-area/recurring-events/scheduler/sync-recurring-events.js"
+   ```
 
-# Set a secure random token (generate your own!)
-RECURRING_EVENTS_SCHEDULER_TOKEN=your-secret-token-here
+3. **View scheduled machines:**
+   ```bash
+   fly machine list --app aungmoe
+   ```
 
-# Optional: Custom schedule (runs at 3 AM daily)
-RECURRING_EVENTS_SCHEDULER_CRON=0 3 * * *
+4. **Monitor logs:**
+   ```bash
+   fly logs --app aungmoe
+   ```
+
+#### Available Schedules
+- `hourly` - Every hour on the hour
+- `daily` - Every day at midnight UTC
+- `weekly` - Every Monday at midnight UTC
+- `monthly` - First day of every month at midnight UTC
+
+**Note**: The standalone script at `src/app-area/recurring-events/scheduler/sync-recurring-events.js` connects directly to MongoDB and processes all configurations.
+
+---
+
+### Option 2: External Cron / GitHub Actions
+
+**Best for**: Multi-cloud deployments or when you want scheduling separate from the application
+
+Use an external scheduler to call the HTTP endpoint.
+
+#### GitHub Actions Example
+
+Create `.github/workflows/sync-recurring-events.yml`:
+
+```yaml
+name: Sync Notion Recurring Events
+
+on:
+  schedule:
+    # Runs at 2 AM UTC daily
+    - cron: '0 2 * * *'
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Sync
+        run: |
+          curl -X POST https://aungmoe.fly.dev/recurring-events/scheduler/sync-all \
+            -H "x-scheduler-token: ${{ secrets.RECURRING_EVENTS_SCHEDULER_TOKEN }}" \
+            -f || exit 1
 ```
 
-### Cron Expression Examples
-
-| Schedule | Cron Expression | Description |
-|----------|----------------|-------------|
-| Every day at 2 AM | `0 2 * * *` | Default |
-| Every day at 6 AM | `0 6 * * *` | Morning sync |
-| Every 12 hours | `0 */12 * * *` | Twice daily |
-| Every Sunday at 1 AM | `0 1 * * 0` | Weekly |
-| Every hour | `0 * * * *` | Hourly (not recommended) |
-
-### Fly.io Configuration
-
-On Fly.io, set the environment variables using:
+#### External Cron Example
 
 ```bash
-# Enable scheduler
-fly secrets set RECURRING_EVENTS_SCHEDULER_ENABLED=true
-
-# Set scheduler token
-fly secrets set RECURRING_EVENTS_SCHEDULER_TOKEN=your-secret-token-here
-
-# Optional: Set custom schedule
-fly secrets set RECURRING_EVENTS_SCHEDULER_CRON="0 3 * * *"
+# Add to crontab
+0 2 * * * curl -X POST https://aungmoe.fly.dev/recurring-events/scheduler/sync-all \
+  -H "x-scheduler-token: YOUR_TOKEN_HERE" >> /var/log/notion-sync.log 2>&1
 ```
 
-### Manual Trigger
+#### Required Setup
 
-You can also manually trigger the scheduler endpoint:
-
+Set the authentication token secret:
 ```bash
-curl -X POST https://your-domain.com/recurring-events/scheduler/sync-all \
-  -H "x-scheduler-token: your-secret-token-here"
+fly secrets set RECURRING_EVENTS_SCHEDULER_TOKEN=$(openssl rand -hex 32)
 ```
+
+---
+
+### Option 3: Manual Execution
+
+**Best for**: Testing or one-off syncs
+
+#### Via HTTP Endpoint
+```bash
+curl -X POST https://aungmoe.fly.dev/recurring-events/scheduler/sync-all \
+  -H "x-scheduler-token: YOUR_TOKEN_HERE"
+```
+
+#### Via Fly.io SSH
+```bash
+fly ssh console --app aungmoe
+node src/app-area/recurring-events/scheduler/sync-recurring-events.js
+```
+
+---
 
 ### Monitoring
 
-The scheduler logs all operations to the console. Check your application logs to monitor:
-- Scheduler start/stop events
-- Scheduled sync executions
-- Success/failure summaries
-- Individual configuration results
+All scheduling methods produce detailed logs:
 
-Example log output:
 ```
-Recurring Events Scheduler: STARTED with schedule "0 2 * * *"
-Recurring Events Scheduler: Starting scheduled sync...
-Scheduler: Processing 3 recurring event configuration(s)
-Scheduler: Processed config "Work Events" - Created: 5, Updated: 2, Skipped: 3
-Scheduler: SUCCESS - Configs: 3, Created: 10, Updated: 5, Skipped: 8, Errors: 0
+==========================================================
+Scheduled Sync: Starting recurring events sync...
+Time: 2025-01-15T02:00:00.000Z
+==========================================================
+Found 3 recurring event configuration(s)
+
+Processing: "Work Events" (507f1f77bcf86cd799439011)
+------------------------------------------------------------
+✓ Success: Created 5, Updated 2, Skipped 3
+
+Processing: "Personal Tasks" (507f1f77bcf86cd799439012)
+------------------------------------------------------------
+✓ Success: Created 3, Updated 1, Skipped 5
+
+==========================================================
+SUMMARY
+==========================================================
+Total Configurations: 3
+Total Created: 10
+Total Updated: 5
+Total Skipped: 8
+Total Errors: 0
+==========================================================
 ```
+
+### Comparing Options
+
+| Feature | Fly Scheduled Machines | External Cron | Manual |
+|---------|----------------------|---------------|--------|
+| **Cost** | Pay only during sync | Free (GitHub) / Minimal | Free |
+| **Setup Complexity** | Low | Medium | N/A |
+| **Reliability** | High (Fly.io managed) | High | N/A |
+| **Flexibility** | Limited schedules | Full cron syntax | Full control |
+| **Best For** | Production on Fly.io | Multi-cloud / CI/CD | Testing |
 
 ## Future Enhancements
 
