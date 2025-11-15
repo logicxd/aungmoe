@@ -857,8 +857,7 @@ describe('RecurringEventsService - Service Methods', () => {
                     'Recurring Days': expect.any(Object),
                     'Recurring Lookahead Number': expect.any(Object),
                     'Recurring Source': expect.any(Object),
-                    'Recurring ID': expect.any(Object),
-                    'Recurring Timezone': expect.any(Object)
+                    'Recurring ID': expect.any(Object)
                 })
             )
         })
@@ -955,13 +954,13 @@ describe('RecurringEventsService - Service Methods', () => {
                 createEventWithPage({
                     notionPageId: 'page-2',
                     recurringId: 'recurring-123',
-                    dateTime: '2025-10-10T10:00:00Z'
+                    dateTime: '2025-10-10T10:00:00-07:00'
                 })
             ]
 
             const newEventDates = [
-                moment.utc('2025-10-10T10:00:00Z'),
-                moment.utc('2025-10-12T10:00:00Z')
+                moment.tz('2025-10-10T10:00:00', 'America/Los_Angeles'),
+                moment.tz('2025-10-12T10:00:00', 'America/Los_Angeles')
             ]
 
             mockNotionApi.getPage.mockResolvedValue({ icon: { type: 'emoji', emoji: '📅' } })
