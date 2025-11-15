@@ -8,6 +8,7 @@ var notionApi = require('../../../services/notionapiservice')
 
 const MAX_LOOKBACK_DAYS = 14
 const MAX_LOOKAHEAD_DAYS = 60
+const DEFAULT_TIMEZONE = 'America/Los_Angeles'
 const MAX_WEEKLY_CADENCE = 4
 const MAX_WEEKLY_LOOKAHEAD = 8
 const MAX_DAILY_CADENCE = 30
@@ -147,20 +148,22 @@ class RecurringEventsService {
             },
             'Recurring ID': {
                 rich_text: {}
-            },
-            'Recurring Timezone': {
-                select: {
-                    options: [
-                        { name: 'America/New_York', color: 'blue' },
-                        { name: 'America/Chicago', color: 'green' },
-                        { name: 'America/Denver', color: 'yellow' },
-                        { name: 'America/Phoenix', color: 'orange' },
-                        { name: 'America/Los_Angeles', color: 'red' },
-                        { name: 'America/Anchorage', color: 'purple' },
-                        { name: 'Pacific/Honolulu', color: 'pink' }
-                    ]
-                }
             }
+            // 'Recurring Timezone': Property no longer needed - timezone is now hardcoded to DEFAULT_TIMEZONE
+            // Original property definition preserved for future reference:
+            // 'Recurring Timezone': {
+            //     select: {
+            //         options: [
+            //             { name: 'America/New_York', color: 'blue' },
+            //             { name: 'America/Chicago', color: 'green' },
+            //             { name: 'America/Denver', color: 'yellow' },
+            //             { name: 'America/Phoenix', color: 'orange' },
+            //             { name: 'America/Los_Angeles', color: 'red' },
+            //             { name: 'America/Anchorage', color: 'purple' },
+            //             { name: 'Pacific/Honolulu', color: 'pink' }
+            //         ]
+            //     }
+            // }
         }
 
         const propertiesToCreate = {}
@@ -584,7 +587,10 @@ class Event {
         this.recurringId = props['Recurring ID']?.rich_text?.[0]?.plain_text
         this.isRecurringSource = props['Recurring Source']?.checkbox === true
         this.name = props['Name']?.title?.[0]?.plain_text
-        this.timezone = props['Recurring Timezone']?.select?.name
+        // Original: Read timezone from Notion property
+        // this.timezone = props['Recurring Timezone']?.select?.name
+        // Hardcoded to DEFAULT_TIMEZONE (America/Los_Angeles)
+        this.timezone = DEFAULT_TIMEZONE
 
         // Create timezone-aware moment if timezone is specified, otherwise fallback to parseZone
         if (this.dateTime && this.timezone) {
