@@ -21,10 +21,10 @@ function setupEmbedSyncButton() {
 
                 // Build compact status message
                 const parts = []
-                if (result.created > 0) parts.push(`✓ ${result.created}`)
-                if (result.updated > 0) parts.push(`↻ ${result.updated}`)
-                if (result.skipped > 0) parts.push(`⊘ ${result.skipped}`)
-                if (result.errors && result.errors.length > 0) parts.push(`✗ ${result.errors.length}`)
+                if (result.created > 0) parts.push(`Created ${result.created}`)
+                if (result.updated > 0) parts.push(`Updated ${result.updated}`)
+                // if (result.skipped > 0) parts.push(`Skipped ${result.skipped}`)
+                if (result.errors && result.errors.length > 0) parts.push(`Errors ${result.errors.length}`)
 
                 const message = parts.length > 0 ? parts.join(' • ') : 'Synced!'
 
@@ -32,10 +32,10 @@ function setupEmbedSyncButton() {
                 $button.removeClass('disabled')
                 $button.html(message)
 
-                // Reset button after 3 seconds
+                // Reset button after 5 seconds
                 setTimeout(() => {
                     $button.html('Sync Events')
-                }, 3000)
+                }, 10000)
 
             } else {
                 throw new Error(response.data.error || 'Unknown error')
