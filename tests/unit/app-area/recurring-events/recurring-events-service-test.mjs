@@ -1364,12 +1364,12 @@ describe('RecurringEventsService - Past Source Events', () => {
             // When: Fetching source pages
             await service.fetchSourcePages(lastSyncedDate)
 
-            // Then: Should query with startDate = today - MAX_LOOKBACK_DAYS (14 days)
+            // Then: Should query with startDate = today - MAX_LOOKBACK_DAYS (60 days)
             const queryCall = mockNotionApi.queryDataSource.mock.calls[0]
             const filter = queryCall[2]
             const startDate = filter.and[0].property === 'Date' ? filter.and[0].date.on_or_after : null
 
-            const expectedStartDate = testBaseDate.clone().subtract(14, 'days').startOf('day')
+            const expectedStartDate = testBaseDate.clone().subtract(60, 'days').startOf('day')
             const actualStartDate = moment.utc(startDate)
 
             expect(actualStartDate.format('YYYY-MM-DD')).toBe(expectedStartDate.format('YYYY-MM-DD'))
@@ -1392,22 +1392,22 @@ describe('RecurringEventsService - Past Source Events', () => {
             // When: Fetching source pages
             await service.fetchSourcePages(lastSyncedDate)
 
-            // Then: Should query with startDate = today - MAX_LOOKBACK_DAYS (14 days)
+            // Then: Should query with startDate = today - MAX_LOOKBACK_DAYS (60 days)
             // to ensure we catch any past recurring sources within the lookback window
             const queryCall = mockNotionApi.queryDataSource.mock.calls[0]
             const filter = queryCall[2]
             const startDate = filter.and[0].property === 'Date' ? filter.and[0].date.on_or_after : null
 
-            const expectedStartDate = testBaseDate.clone().subtract(14, 'days').startOf('day')
+            const expectedStartDate = testBaseDate.clone().subtract(60, 'days').startOf('day')
             const actualStartDate = moment.utc(startDate)
 
             expect(actualStartDate.format('YYYY-MM-DD')).toBe(expectedStartDate.format('YYYY-MM-DD'))
         })
 
         it('lastSyncedDate should not matter when it is older than MAX_LOOKBACK_DAYS', async () => {
-            // Given: Last synced 30 days ago (older than MAX_LOOKBACK_DAYS)
+            // Given: Last synced 90 days ago (older than MAX_LOOKBACK_DAYS)
             const testBaseDate = moment.utc('2025-10-08T00:00:00Z')
-            const lastSyncedDate = moment.utc('2025-09-08T00:00:00Z').toDate() // 30 days before base date
+            const lastSyncedDate = moment.utc('2025-07-10T00:00:00Z').toDate() // 90 days before base date
 
             mockNotionApi.getDatabase.mockResolvedValue({
                 data_sources: [{ id: 'datasource-123' }]
@@ -1421,12 +1421,12 @@ describe('RecurringEventsService - Past Source Events', () => {
             // When: Fetching source pages
             await service.fetchSourcePages(lastSyncedDate)
 
-            // Then: Should query with MAX_LOOKBACK_DAYS (14 days)
+            // Then: Should query with MAX_LOOKBACK_DAYS (60 days)
             const queryCall = mockNotionApi.queryDataSource.mock.calls[0]
             const filter = queryCall[2]
             const startDate = filter.and[0].property === 'Date' ? filter.and[0].date.on_or_after : null
 
-            const expectedStartDate = testBaseDate.clone().subtract(14, 'days').startOf('day')
+            const expectedStartDate = testBaseDate.clone().subtract(60, 'days').startOf('day')
             const actualStartDate = moment.utc(startDate)
 
             expect(actualStartDate.format('YYYY-MM-DD')).toBe(expectedStartDate.format('YYYY-MM-DD'))
