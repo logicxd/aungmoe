@@ -150,7 +150,7 @@ router.post('/:id/sync', async function (req, res) {
 
         const decryptedSecretKey = config.getDecryptedSecretKey()
         const service = new RecurringEventsService(decryptedSecretKey, config.databaseId)
-        const result = await service.processRecurringEvents(config.lastSyncedDate)
+        const result = await service.processRecurringEvents()
 
         config.lastSyncedDate = new Date()
         await config.save()
@@ -164,6 +164,34 @@ router.post('/:id/sync', async function (req, res) {
         })
     } catch (error) {
         console.error(`Error syncing recurring events:`, error)
+        const statusCode = error.statusCode || 500
+        return res.status(statusCode).json({
+            success: false,
+            error: error.message || 'Unknown error'
+        })
+    }
+})
+/* #endregion */
+
+/* #region  POST /recurring-events/{id}/auto-sync */
+router.post('/:id/auto-sync', async function (req, res) {
+    try {
+        const id = req.params['id']
+        const config = await findConfigById(id)
+
+        const decryptedSecretKey = config.getDecryptedSecretKey()
+        const service = new RecurringEventsService(decryptedSecretKey, config.databaseId)
+        const result = await service.processRecurringEventsAutomatic()
+
+        return res.status(200).json({
+            success: true,
+            created: result.created,
+            updated: result.updated,
+            skipped: result.skipped,
+            errors: result.errors
+        })
+    } catch (error) {
+        console.error(`Error in auto-sync recurring events:`, error)
         const statusCode = error.statusCode || 500
         return res.status(statusCode).json({
             success: false,
