@@ -13,6 +13,7 @@ const MAX_WEEKLY_CADENCE = 4
 const MAX_WEEKLY_LOOKAHEAD = 8
 const MAX_DAILY_CADENCE = 30
 const MAX_DAILY_LOOKAHEAD = 60
+const AUTO_SYNC_ROLLOUT_DATE = '2026-01-18' // Only process events from this date onwards for automatic sync
 
 /* #endregion */
 
@@ -133,8 +134,17 @@ class RecurringEventsService {
 
         this.logger.log(`Found ${latestEvents.length} unique recurring event groups`)
 
+        const rolloutDate = moment.tz(AUTO_SYNC_ROLLOUT_DATE, DEFAULT_TIMEZONE).startOf('day')
+
         for (const event of latestEvents) {
             try {
+                // Skip events before rollout date
+                if (event.dateTimeMoment && event.dateTimeMoment.isBefore(rolloutDate)) {
+                    this.logger.log(`Skipping event "${event.name}" (${event.dateTimeMoment.format('YYYY-MM-DD')}): before rollout date ${AUTO_SYNC_ROLLOUT_DATE}`)
+                    result.skipped++
+                    continue
+                }
+
                 this.logger.log(`Processing latest event for Recurring ID "${event.recurringId}": ${event.name}`)
 
                 if (!this._validateRecurringEventForAutoSync(event, result)) {

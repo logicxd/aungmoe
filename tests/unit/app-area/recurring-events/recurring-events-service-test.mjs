@@ -2112,7 +2112,7 @@ describe('RecurringEventsService - Automatic Sync', () => {
                     frequency: 'Daily',
                     cadence: 1,
                     lookaheadNumber: 30,
-                    dateTime: '2025-10-08T10:00:00Z',
+                    dateTime: '2026-02-08T10:00:00Z',
                     isRecurringSource: false,
                     recurringId: 'recurring-123'
                 }),
@@ -2120,7 +2120,7 @@ describe('RecurringEventsService - Automatic Sync', () => {
                     frequency: 'Daily',
                     cadence: 1,
                     lookaheadNumber: 30,
-                    dateTime: '2025-10-15T10:00:00Z', // Latest for recurring-123
+                    dateTime: '2026-02-15T10:00:00Z', // Latest for recurring-123
                     isRecurringSource: false,
                     recurringId: 'recurring-123'
                 }),
@@ -2128,7 +2128,7 @@ describe('RecurringEventsService - Automatic Sync', () => {
                     frequency: 'Weekly',
                     cadence: 1,
                     lookaheadNumber: 4,
-                    dateTime: '2025-10-20T10:00:00Z', // Latest for recurring-456
+                    dateTime: '2026-02-20T10:00:00Z', // Latest for recurring-456
                     recurringDays: ['Monday'],
                     isRecurringSource: false,
                     recurringId: 'recurring-456'
@@ -2189,12 +2189,15 @@ describe('RecurringEventsService - Automatic Sync', () => {
         })
 
         it('should handle errors per event and continue processing', async () => {
+            // Set system time to be around the event dates so lookahead will generate future events
+            vi.setSystemTime(new Date('2026-02-08T10:00:00Z'))
+
             const sourcePages = [
                 createSourcePage({
                     frequency: 'Daily',
                     cadence: 1,
                     lookaheadNumber: 30,
-                    dateTime: '2025-10-08T10:00:00Z',
+                    dateTime: '2026-02-08T10:00:00Z',
                     isRecurringSource: false,
                     recurringId: 'recurring-123'
                 }),
@@ -2202,15 +2205,17 @@ describe('RecurringEventsService - Automatic Sync', () => {
                     frequency: 'Daily',
                     cadence: 1,
                     lookaheadNumber: 30,
-                    dateTime: '2025-10-15T10:00:00Z',
+                    dateTime: '2026-02-15T10:00:00Z',
                     isRecurringSource: false,
                     recurringId: 'recurring-456'
                 })
             ]
 
             service.dataSourceId = 'datasource-1'
+            // First event (recurring-123) will fail when getting page icon
             mockNotionApi.getPage.mockRejectedValueOnce(new Error('API error'))
-            mockNotionApi.getPage.mockResolvedValueOnce({ icon: { type: 'emoji', emoji: '📅' } })
+            // Second event (recurring-456) will succeed
+            mockNotionApi.getPage.mockResolvedValue({ icon: { type: 'emoji', emoji: '📅' } })
             mockNotionApi.getPageBlocks.mockResolvedValue({ results: [] })
             mockNotionApi.createPage.mockResolvedValue({})
             mockNotionApi.updatePage.mockResolvedValue({})
@@ -2220,6 +2225,53 @@ describe('RecurringEventsService - Automatic Sync', () => {
 
             expect(result.errors.length).toBeGreaterThan(0)
             expect(mockLogger.error).toHaveBeenCalled()
+        })
+
+        it('should skip events before rollout date (2026-01-18)', async () => {
+            const sourcePages = [
+                createSourcePage({
+                    frequency: 'Daily',
+                    cadence: 1,
+                    lookaheadNumber: 30,
+                    dateTime: '2025-12-15T10:00:00Z', // Before rollout date
+                    isRecurringSource: false,
+                    recurringId: 'recurring-old'
+                }),
+                createSourcePage({
+                    frequency: 'Daily',
+                    cadence: 1,
+                    lookaheadNumber: 30,
+                    dateTime: '2026-01-18T10:00:00Z', // On rollout date
+                    isRecurringSource: false,
+                    recurringId: 'recurring-new1'
+                }),
+                createSourcePage({
+                    frequency: 'Daily',
+                    cadence: 1,
+                    lookaheadNumber: 30,
+                    dateTime: '2026-02-01T10:00:00Z', // After rollout date
+                    isRecurringSource: false,
+                    recurringId: 'recurring-new2'
+                })
+            ]
+
+            service.dataSourceId = 'datasource-1'
+            mockNotionApi.getPage.mockResolvedValue({ icon: { type: 'emoji', emoji: '📅' } })
+            mockNotionApi.getPageBlocks.mockResolvedValue({ results: [] })
+            mockNotionApi.createPage.mockResolvedValue({})
+            mockNotionApi.updatePage.mockResolvedValue({})
+
+            const result = service._createProcessingResult()
+            await service.processAllSourcePagesAutomatic(sourcePages, result)
+
+            // Should skip 1 event (before rollout date)
+            expect(result.skipped).toBe(1)
+            // Should log rollout date skip message
+            expect(mockLogger.log).toHaveBeenCalledWith(
+                expect.stringContaining('before rollout date 2026-01-18')
+            )
+            // Should process 2 events (on and after rollout date)
+            expect(mockNotionApi.updatePage).toHaveBeenCalled()
         })
     })
 
@@ -2288,7 +2340,7 @@ describe('RecurringEventsService - Automatic Sync', () => {
                     frequency: 'Daily',
                     cadence: 1,
                     lookaheadNumber: 30,
-                    dateTime: '2025-10-08T10:00:00Z',
+                    dateTime: '2026-02-08T10:00:00Z',
                     isRecurringSource: true, // Checkbox checked
                     recurringId: 'recurring-123'
                 }),
@@ -2296,7 +2348,7 @@ describe('RecurringEventsService - Automatic Sync', () => {
                     frequency: 'Daily',
                     cadence: 1,
                     lookaheadNumber: 30,
-                    dateTime: '2025-10-15T10:00:00Z', // Latest
+                    dateTime: '2026-02-15T10:00:00Z', // Latest
                     isRecurringSource: false, // Checkbox NOT checked
                     recurringId: 'recurring-123'
                 })
@@ -2311,7 +2363,7 @@ describe('RecurringEventsService - Automatic Sync', () => {
             const result = service._createProcessingResult()
             await service.processAllSourcePagesAutomatic(sourcePages, result)
 
-            // Should process the latest event (Oct 15) even though checkbox is false
+            // Should process the latest event (Feb 15) even though checkbox is false
             expect(mockLogger.log).toHaveBeenCalledWith('Found 1 unique recurring event groups')
             expect(result.skipped).toBe(0) // Should not skip due to checkbox
         })
