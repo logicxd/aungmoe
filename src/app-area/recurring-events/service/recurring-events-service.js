@@ -6,7 +6,7 @@ var notionApi = require('../../../services/notionapiservice')
 
 /* #region Constants */
 
-const MAX_LOOKBACK_DAYS = 60
+const MAX_LOOKBACK_DAYS = 30
 const MAX_LOOKAHEAD_DAYS = 60
 const DEFAULT_TIMEZONE = 'America/Los_Angeles'
 const MAX_WEEKLY_CADENCE = 4
