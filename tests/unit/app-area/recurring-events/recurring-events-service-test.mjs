@@ -2227,7 +2227,7 @@ describe('RecurringEventsService - Automatic Sync', () => {
             expect(mockLogger.error).toHaveBeenCalled()
         })
 
-        it('should skip events before rollout date (2026-01-18)', async () => {
+        it('should skip events before rollout date (2026-01-11)', async () => {
             const sourcePages = [
                 createSourcePage({
                     frequency: 'Daily',
@@ -2268,7 +2268,7 @@ describe('RecurringEventsService - Automatic Sync', () => {
             expect(result.skipped).toBe(1)
             // Should log rollout date skip message
             expect(mockLogger.log).toHaveBeenCalledWith(
-                expect.stringContaining('before rollout date 2026-01-18')
+                expect.stringContaining('before rollout date 2026-01-11')
             )
             // Should process 2 events (on and after rollout date)
             expect(mockNotionApi.updatePage).toHaveBeenCalled()
