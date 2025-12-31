@@ -6,13 +6,14 @@ var notionApi = require('../../../services/notionapiservice')
 
 /* #region Constants */
 
-const MAX_LOOKBACK_DAYS = 60
+const MAX_LOOKBACK_DAYS = 30
 const MAX_LOOKAHEAD_DAYS = 60
 const DEFAULT_TIMEZONE = 'America/Los_Angeles'
 const MAX_WEEKLY_CADENCE = 4
 const MAX_WEEKLY_LOOKAHEAD = 8
 const MAX_DAILY_CADENCE = 30
 const MAX_DAILY_LOOKAHEAD = 60
+const RECURRING_SYNC_ROLLOUT_DATE = '2026-01-11' // Only process events from this date onwards for automatic sync
 
 /* #endregion */
 
@@ -30,17 +31,35 @@ class RecurringEventsService {
 
     /* #region Main Processing */
 
-    async processRecurringEvents(lastSyncedDate) {
+    async processRecurringEvents() {
         const result = this._createProcessingResult()
 
         try {
             this.dataSourceId = await this.getDataSourceId()
             await this.ensureRecurringProperties()
 
-            const allSourcePages = await this.fetchSourcePages(lastSyncedDate)
+            const allSourcePages = await this.fetchSourcePages()
             await this.processAllSourcePages(allSourcePages, result)
 
             this.logger.log(`Recurring events processing completed.`)
+        } catch (error) {
+            this._handleProcessingError(error, result)
+        }
+
+        return result
+    }
+
+    async processRecurringEventsAutomatic() {
+        const result = this._createProcessingResult()
+
+        try {
+            this.dataSourceId = await this.getDataSourceId()
+            await this.ensureRecurringProperties()
+
+            const allSourcePages = await this.fetchSourcePages()
+            await this.processAllSourcePagesAutomatic(allSourcePages, result)
+
+            this.logger.log(`Automatic recurring events processing completed.`)
         } catch (error) {
             this._handleProcessingError(error, result)
         }
@@ -58,7 +77,7 @@ class RecurringEventsService {
         return database.data_sources[0].id
     }
 
-    async fetchSourcePages(lastSyncedDate) {
+    async fetchSourcePages() {
         const today = moment.utc()
         const startDate = today.clone().subtract(MAX_LOOKBACK_DAYS, 'days').startOf('day').toISOString()
         const endDate = today.clone().add(MAX_LOOKAHEAD_DAYS, 'days').endOf('day').toISOString()
@@ -92,12 +111,58 @@ class RecurringEventsService {
     async processAllSourcePages(allSourcePages, result) {
         this.allEvents = allSourcePages.map(page => new Event(page))
 
+        const rolloutDate = moment.tz(RECURRING_SYNC_ROLLOUT_DATE, DEFAULT_TIMEZONE).startOf('day')
+
         for (const event of this.allEvents) {
             try {
+                // Skip events before rollout date
+                if (event.dateTimeMoment && event.dateTimeMoment.isBefore(rolloutDate)) {
+                    this.logger.log(`Skipping event "${event.name}" (${event.dateTimeMoment.format('YYYY-MM-DD')}): before rollout date ${RECURRING_SYNC_ROLLOUT_DATE}`)
+                    result.skipped++
+                    continue
+                }
+
                 this.logger.log(`Processing source page "${event.name}" ...`)
+
+                if (!this._validateRecurringEvent(event, result)) {
+                    continue
+                }
+
                 await this.processSourcePage(event, result)
             } catch (error) {
                 this.logger.error(`Error processing source page "${event.notionPageId}": ${error}`)
+                result.errors.push(`Page ${event.notionPageId}: ${error.message}`)
+            }
+        }
+    }
+
+    async processAllSourcePagesAutomatic(allSourcePages, result) {
+        this.allEvents = allSourcePages.map(page => new Event(page))
+
+        const latestEvents = this.findLatestEventPerRecurringId(this.allEvents)
+
+        this.logger.log(`Found ${latestEvents.length} unique recurring event groups`)
+
+        const rolloutDate = moment.tz(RECURRING_SYNC_ROLLOUT_DATE, DEFAULT_TIMEZONE).startOf('day')
+
+        for (const event of latestEvents) {
+            try {
+                // Skip events before rollout date
+                if (event.dateTimeMoment && event.dateTimeMoment.isBefore(rolloutDate)) {
+                    this.logger.log(`Skipping event "${event.name}" (${event.dateTimeMoment.format('YYYY-MM-DD')}): before rollout date ${RECURRING_SYNC_ROLLOUT_DATE}`)
+                    result.skipped++
+                    continue
+                }
+
+                this.logger.log(`Processing latest event for Recurring ID "${event.recurringId}": ${event.name}`)
+
+                if (!this._validateRecurringEventForAutoSync(event, result)) {
+                    continue
+                }
+
+                await this.processSourcePage(event, result)
+            } catch (error) {
+                this.logger.error(`Error processing event "${event.notionPageId}": ${error}`)
                 result.errors.push(`Page ${event.notionPageId}: ${error.message}`)
             }
         }
@@ -191,10 +256,6 @@ class RecurringEventsService {
     /* #region Source Page Processing */
 
     async processSourcePage(event, result) {
-        if (!this._validateRecurringEvent(event, result)) {
-            return
-        }
-
         await this.stampRecurringId(event)
 
         const futureEvents = this.findFutureEvents(event)
@@ -230,6 +291,29 @@ class RecurringEventsService {
             if (event.recurringId !== sourceEvent.recurringId) { return false }
             return event.dateTimeMoment && event.dateTimeMoment.isAfter(sourceEvent.dateTimeMoment)
         })
+    }
+
+    findLatestEventPerRecurringId(events) {
+        const eventsByRecurringId = new Map()
+
+        for (const event of events) {
+            if (!event.recurringId) continue
+
+            if (!eventsByRecurringId.has(event.recurringId)) {
+                eventsByRecurringId.set(event.recurringId, [])
+            }
+            eventsByRecurringId.get(event.recurringId).push(event)
+        }
+
+        const latestEvents = []
+        for (const eventGroup of eventsByRecurringId.values()) {
+            const sorted = eventGroup.sort((a, b) =>
+                b.dateTimeMoment.valueOf() - a.dateTimeMoment.valueOf()
+            )
+            latestEvents.push(sorted[0])
+        }
+
+        return latestEvents
     }
 
     async updateAllFutureEvents(futureEvents, sourceEvent, result) {
@@ -444,10 +528,33 @@ class RecurringEventsService {
     _validateRecurringEvent(event, result) {
         if (!event.isValid()) {
             const reason = event.getValidationFailureReason()
-            this.logger.log(`Skipping page ${event.name}: ${reason}`)
+            this.logger.log(`Skipping page "${event.name}": ${reason}`)
             result.skipped++
             return false
         }
+        return true
+    }
+
+    _validateRecurringEventForAutoSync(event, result) {
+        if (!event.frequency || !event.dateTime || event.cadence < 1 || event.lookaheadNumber < 1) {
+            const reason = event.getValidationFailureReasonForAutoSync()
+            this.logger.log(`Skipping page "${event.name}": ${reason}`)
+            result.skipped++
+            return false
+        }
+
+        if (event.frequency !== 'Daily' && event.frequency !== 'Weekly') {
+            this.logger.log(`Skipping page "${event.name}": Unsupported frequency`)
+            result.skipped++
+            return false
+        }
+
+        if (event.frequency === 'Weekly' && event.recurringDays.length === 0) {
+            this.logger.log(`Skipping page "${event.name}": Weekly frequency requires recurring days`)
+            result.skipped++
+            return false
+        }
+
         return true
     }
 
@@ -643,6 +750,17 @@ class Event {
             return 'Weekly frequency requires recurring days'
         }
         if (!this.isRecurringSource) return 'Not marked as recurring source'
+        return 'Unknown'
+    }
+
+    getValidationFailureReasonForAutoSync() {
+        if (!this.frequency) return 'Missing frequency'
+        if (!this.dateTime) return 'Missing date'
+        if (this.cadence < 1) return 'Invalid cadence (< 1)'
+        if (this.lookaheadNumber < 1) return 'Invalid lookahead number (< 1)'
+        if (this.frequency === 'Weekly' && this.recurringDays.length === 0) {
+            return 'Weekly frequency requires recurring days'
+        }
         return 'Unknown'
     }
 }
