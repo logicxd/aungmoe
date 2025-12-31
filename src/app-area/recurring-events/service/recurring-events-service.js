@@ -13,7 +13,7 @@ const MAX_WEEKLY_CADENCE = 4
 const MAX_WEEKLY_LOOKAHEAD = 8
 const MAX_DAILY_CADENCE = 30
 const MAX_DAILY_LOOKAHEAD = 60
-const AUTO_SYNC_ROLLOUT_DATE = '2026-01-18' // Only process events from this date onwards for automatic sync
+const RECURRING_SYNC_ROLLOUT_DATE = '2026-01-11' // Only process events from this date onwards for automatic sync
 
 /* #endregion */
 
@@ -111,8 +111,17 @@ class RecurringEventsService {
     async processAllSourcePages(allSourcePages, result) {
         this.allEvents = allSourcePages.map(page => new Event(page))
 
+        const rolloutDate = moment.tz(RECURRING_SYNC_ROLLOUT_DATE, DEFAULT_TIMEZONE).startOf('day')
+
         for (const event of this.allEvents) {
             try {
+                // Skip events before rollout date
+                if (event.dateTimeMoment && event.dateTimeMoment.isBefore(rolloutDate)) {
+                    this.logger.log(`Skipping event "${event.name}" (${event.dateTimeMoment.format('YYYY-MM-DD')}): before rollout date ${RECURRING_SYNC_ROLLOUT_DATE}`)
+                    result.skipped++
+                    continue
+                }
+
                 this.logger.log(`Processing source page "${event.name}" ...`)
 
                 if (!this._validateRecurringEvent(event, result)) {
@@ -134,13 +143,13 @@ class RecurringEventsService {
 
         this.logger.log(`Found ${latestEvents.length} unique recurring event groups`)
 
-        const rolloutDate = moment.tz(AUTO_SYNC_ROLLOUT_DATE, DEFAULT_TIMEZONE).startOf('day')
+        const rolloutDate = moment.tz(RECURRING_SYNC_ROLLOUT_DATE, DEFAULT_TIMEZONE).startOf('day')
 
         for (const event of latestEvents) {
             try {
                 // Skip events before rollout date
                 if (event.dateTimeMoment && event.dateTimeMoment.isBefore(rolloutDate)) {
-                    this.logger.log(`Skipping event "${event.name}" (${event.dateTimeMoment.format('YYYY-MM-DD')}): before rollout date ${AUTO_SYNC_ROLLOUT_DATE}`)
+                    this.logger.log(`Skipping event "${event.name}" (${event.dateTimeMoment.format('YYYY-MM-DD')}): before rollout date ${RECURRING_SYNC_ROLLOUT_DATE}`)
                     result.skipped++
                     continue
                 }
@@ -519,7 +528,7 @@ class RecurringEventsService {
     _validateRecurringEvent(event, result) {
         if (!event.isValid()) {
             const reason = event.getValidationFailureReason()
-            this.logger.log(`Skipping page ${event.name}: ${reason}`)
+            this.logger.log(`Skipping page "${event.name}": ${reason}`)
             result.skipped++
             return false
         }
@@ -529,19 +538,19 @@ class RecurringEventsService {
     _validateRecurringEventForAutoSync(event, result) {
         if (!event.frequency || !event.dateTime || event.cadence < 1 || event.lookaheadNumber < 1) {
             const reason = event.getValidationFailureReasonForAutoSync()
-            this.logger.log(`Skipping page ${event.name}: ${reason}`)
+            this.logger.log(`Skipping page "${event.name}": ${reason}`)
             result.skipped++
             return false
         }
 
         if (event.frequency !== 'Daily' && event.frequency !== 'Weekly') {
-            this.logger.log(`Skipping page ${event.name}: Unsupported frequency`)
+            this.logger.log(`Skipping page "${event.name}": Unsupported frequency`)
             result.skipped++
             return false
         }
 
         if (event.frequency === 'Weekly' && event.recurringDays.length === 0) {
-            this.logger.log(`Skipping page ${event.name}: Weekly frequency requires recurring days`)
+            this.logger.log(`Skipping page "${event.name}": Weekly frequency requires recurring days`)
             result.skipped++
             return false
         }
