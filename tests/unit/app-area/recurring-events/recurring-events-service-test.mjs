@@ -1369,7 +1369,7 @@ describe('RecurringEventsService - Past Source Events', () => {
             const filter = queryCall[2]
             const startDate = filter.and[0].property === 'Date' ? filter.and[0].date.on_or_after : null
 
-            const expectedStartDate = testBaseDate.clone().subtract(60, 'days').startOf('day')
+            const expectedStartDate = testBaseDate.clone().subtract(30, 'days').startOf('day')
             const actualStartDate = moment.utc(startDate)
 
             expect(actualStartDate.format('YYYY-MM-DD')).toBe(expectedStartDate.format('YYYY-MM-DD'))
@@ -1398,7 +1398,7 @@ describe('RecurringEventsService - Past Source Events', () => {
             const filter = queryCall[2]
             const startDate = filter.and[0].property === 'Date' ? filter.and[0].date.on_or_after : null
 
-            const expectedStartDate = testBaseDate.clone().subtract(60, 'days').startOf('day')
+            const expectedStartDate = testBaseDate.clone().subtract(30, 'days').startOf('day')
             const actualStartDate = moment.utc(startDate)
 
             expect(actualStartDate.format('YYYY-MM-DD')).toBe(expectedStartDate.format('YYYY-MM-DD'))
@@ -1426,7 +1426,7 @@ describe('RecurringEventsService - Past Source Events', () => {
             const filter = queryCall[2]
             const startDate = filter.and[0].property === 'Date' ? filter.and[0].date.on_or_after : null
 
-            const expectedStartDate = testBaseDate.clone().subtract(60, 'days').startOf('day')
+            const expectedStartDate = testBaseDate.clone().subtract(30, 'days').startOf('day')
             const actualStartDate = moment.utc(startDate)
 
             expect(actualStartDate.format('YYYY-MM-DD')).toBe(expectedStartDate.format('YYYY-MM-DD'))
