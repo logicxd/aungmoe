@@ -8,6 +8,7 @@ var unfluff = require('unfluff');
 var cheerio = require('cheerio');
 var controllerUtility = require('../../utility')
 var readControllerUtility = require('../read-controller-utility')
+var readNovelService = require('./service/read-novel-service')
 var path = require('path');
 /* #endregion */
 
@@ -36,16 +37,15 @@ function loadSetupPage(req, res) {
 
 /* #region  Novel Read Page */
 async function loadReadPage(req, res) {
-    var html = '';
+    const chaptersToLoad = parseInt(req.query.chaptersPerPage) || 1;
+    const validatedChaptersToLoad = Math.min(Math.max(chaptersToLoad, 1), 5);
+
+    let chapters = [];
     try {
-        html = await rp({
-            url: req.query.url,
-            headers: {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/38.0.2125.111 Safari/537.36'
-            },
-            json: true
-        })
-        loadedCheerio = cheerio.load(html)
+        chapters = await readNovelService.fetchMultipleChapters(req.query.url, validatedChaptersToLoad);
+        if (chapters.length === 0) {
+            throw new Error('No chapters could be fetched');
+        }
     } catch (error) {
         console.log(error);
         res.render('error', {
@@ -53,28 +53,57 @@ async function loadReadPage(req, res) {
             description: 'Something went wrong!',
             css: ['/css/default.css']
         });
-        return
+        return;
     }
 
-    var data = unfluff(html);
-    var textTitles = readControllerUtility.findTextTitle(data.title, loadedCheerio);
-    var paragraphs = data.text.split('\n\n')
-    var nextPageLink = readControllerUtility.findNextPageLink(data.links, loadedCheerio, req.query.url)
+    const processedChapters = preprocessChaptersWithGlobalIds(chapters);
+    const firstChapter = chapters[0];
+    const lastChapter = chapters[chapters.length - 1];
+    const skipAheadUrl = lastChapter.nextPageLink;
 
-    await readControllerUtility.updateBookmarkIfNeeded(req, req.query.bookmark, textTitles[0], req.query.url, nextPageLink)
+    await readControllerUtility.updateBookmarkIfNeeded(
+        req,
+        req.query.bookmark,
+        firstChapter.title,
+        req.query.url,
+        skipAheadUrl
+    );
 
     res.render(path.join(__dirname, 'view/read'), {
-        title: `${data.title || 'Unknown'} - Aung Moe`,
-        description: `${data.title}`,
+        title: `${firstChapter.title || 'Unknown'} - Aung Moe`,
+        description: `${firstChapter.title}`,
         css: [`${route}/css/read.css`, global.css.animate_css],
         js: [`${route}/js/read.js`, global.js.noSleep],
-        textTitle: textTitles[0],
-        textAlternativeTitles: readControllerUtility.getAlternativeTitleString(textTitles),
-        textParagraphs: paragraphs,
-        didError: html === '',
+        chapters: processedChapters,
+        didError: false,
         currentPageLink: req.query.url,
-        nextPageLink: nextPageLink,
+        nextPageLink: skipAheadUrl,
         bookmark: req.query.bookmark
+    });
+}
+
+/**
+ * Pre-processes chapters to add global paragraph IDs
+ * @param {Array} chapters - Array of chapter objects
+ * @returns {Array} - Processed chapters with paragraphs containing global IDs
+ */
+function preprocessChaptersWithGlobalIds(chapters) {
+    let globalParagraphIndex = 0;
+
+    return chapters.map(chapter => {
+        const paragraphsWithIds = chapter.paragraphs.map(text => {
+            return {
+                text: text,
+                globalId: globalParagraphIndex++
+            };
+        });
+
+        return {
+            title: chapter.title,
+            alternativeTitles: chapter.alternativeTitles,
+            paragraphs: paragraphsWithIds,
+            nextPageLink: chapter.nextPageLink
+        };
     });
 }
 /* #endregion */
