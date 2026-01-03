@@ -109,7 +109,8 @@ function saveSettings() {
         wordsPerMinute: $('#words-per-minute').val(),
         autoscrollTTS: $('#autoscroll-text-to-speech').is(':checked'),
         autoscrollTTSRate: $('#text-to-speech-rate').val(),
-        selectedVoice: $("#text-to-speech-voice-select").val()
+        selectedVoice: $("#text-to-speech-voice-select").val(),
+        chaptersPerPage: $('#chapters-per-page').val()
     };
     settings.urlChanged = currentUrl !== settings.url;
     settings.wordsPerMinute = settings.wordsPerMinute <= 0 ? 270 : settings.wordsPerMinute;
@@ -120,7 +121,8 @@ function saveSettings() {
     localStorage.setItem('wordsPerMinute', settings.wordsPerMinute);
     localStorage.setItem('autoscrollTTS', settings.autoscrollTTS);
     localStorage.setItem('autoscrollTTSRate', settings.autoscrollTTSRate);
-    localStorage.setItem('selectedVoice', settings.selectedVoice)
+    localStorage.setItem('selectedVoice', settings.selectedVoice);
+    localStorage.setItem('chaptersPerPage', settings.chaptersPerPage);
 
     global.isAutoScrolling = settings.autoscrollRead || settings.autoscrollTTS;
 
@@ -135,6 +137,11 @@ function updateDefaultValues() {
     $('#autoscroll-text-to-speech').prop('checked', localStorage.getItem('autoscrollTTS') === 'true');
     if (localStorage.getItem('autoscrollTTSRate')) {
         $('#text-to-speech-rate').val(localStorage.getItem('autoscrollTTSRate'))
+    }
+    if (localStorage.getItem('chaptersPerPage')) {
+        $('#chapters-per-page').val(localStorage.getItem('chaptersPerPage'))
+    } else {
+        $('#chapters-per-page').val('1')
     }
     updateStateOfValues();
 }
@@ -336,6 +343,8 @@ function changePage(url) {
     if (bookmarkId) {
         href += `&bookmark=${bookmarkId}`
     }
+    const chaptersPerPage = localStorage.getItem('chaptersPerPage') || '1'
+    href += `&chaptersPerPage=${chaptersPerPage}`
     window.location.href = href;
 }
 

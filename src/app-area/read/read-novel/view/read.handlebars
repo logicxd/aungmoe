@@ -15,15 +15,20 @@
             </button>
         </div>
     {{else}}
-        <h3>{{ textTitle }}</h3>
-        {{#if textAlternativeTitles }}
-        <h6>Alternative titles: {{ textAlternativeTitles }}</h6>
-        {{/if}}
-        <div class="flow-text tap-to-scroll">
-            {{#each textParagraphs}}
-            <p id="text-paragraph-{{@index}}">{{ this }}</p>
-            {{/each}}
-        </div>
+        {{#each chapters}}
+            {{#unless @first}}
+                <div class="divider chapter-divider"></div>
+            {{/unless}}
+            <h3 class="chapter-title">{{ this.title }}</h3>
+            {{#if this.alternativeTitles }}
+            <h6>Alternative titles: {{ this.alternativeTitles }}</h6>
+            {{/if}}
+            <div class="flow-text tap-to-scroll">
+                {{#each this.paragraphs}}
+                <p id="text-paragraph-{{ this.globalId }}">{{ this.text }}</p>
+                {{/each}}
+            </div>
+        {{/each}}
         <div class="divider"></div>
         <p class="center" id="end-of-page">This is the end of the page</p>
         <div class="row">
@@ -160,6 +165,13 @@
                 <input id="autoload-next" type="checkbox"/>
                 <span>Automatically load next page</span>
             </label>
+        </div>
+        <div class="row">
+            <div class="range-field col s12">
+                <label for="chapters-per-page">Chapters per Page (1-5)</label>
+                <input id="chapters-per-page" value="1" type="range" min="1" max="5">
+                <span class="helper-text">Load multiple chapters at once. Higher values mean longer initial load times.</span>
+            </div>
         </div>
     </div>
     <div class="modal-footer">

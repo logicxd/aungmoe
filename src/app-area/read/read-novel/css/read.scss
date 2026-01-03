@@ -14,6 +14,21 @@ $shift-pixel: 8px;
     background-color: $my-dark-color;
 }
 
+// Chapter dividers and titles for multi-chapter loading
+.chapter-divider {
+    margin: 3rem 0;
+    border: none;
+    border-top: 2px solid #9e9e9e;
+    opacity: 0.5;
+}
+
+.chapter-title {
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+    color: #1976d2;
+    font-weight: 500;
+}
+
 #fixed-controls-bar-container {
     width: $fixed-play-btn-width;
     height: $fixed-play-btn-height;
