@@ -8,7 +8,30 @@ var global = {
     utter: null
 };
 
+function ensureChaptersPerPageInUrl() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const currentChaptersPerPage = urlParams.get('chaptersPerPage');
+
+    // If the parameter is already in the URL, do nothing
+    if (currentChaptersPerPage) {
+        return;
+    }
+
+    // Get the user's saved preference from localStorage (default to '1')
+    const savedChaptersPerPage = localStorage.getItem('chaptersPerPage') || '1';
+
+    // If the saved preference is '1' (the default), no need to redirect
+    if (savedChaptersPerPage === '1') {
+        return;
+    }
+
+    // Add the chaptersPerPage parameter and redirect
+    urlParams.set('chaptersPerPage', savedChaptersPerPage);
+    window.location.search = urlParams.toString();
+}
+
 $(document).ready(function () {
+    ensureChaptersPerPageInUrl();
     updateDefaultValues();
     initializeValuesOnLoad();
     $('.modal').modal();
