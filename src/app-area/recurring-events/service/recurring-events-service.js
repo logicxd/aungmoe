@@ -353,8 +353,9 @@ class RecurringEventsService {
                 updatedDates.push(newExpectedDate.format('YYYY-MM-DDTHH:mm'))
                 result.updated++
             } catch (error) {
-                this.logger.error(`Error updating event ${futureEvent.notionPageId}: ${error}`)
-                result.errors.push(`Update ${futureEvent.notionPageId}: ${error.message}`)
+                const errorMessage = error.response?.data?.message || error.message || error
+                this.logger.error(`Error updating event ${futureEvent.notionPageId}: ${errorMessage}`, error.stack)
+                result.errors.push(`Update ${futureEvent.notionPageId}: ${errorMessage}`)
             }
         }
 
@@ -390,8 +391,9 @@ class RecurringEventsService {
                 this.logger.log(`Created new event on ${newEventStartDate.format()} from source ${sourceEvent.name}`)
                 result.created++
             } catch (error) {
-                this.logger.error(`Error creating event for ${newEventStartDate.format()}: ${error.response.data.message || error}`)
-                result.errors.push(`Create ${newEventStartDate.format()}: ${error.message}`)
+                const errorMessage = error.response?.data?.message || error.message || error
+                this.logger.error(`Error creating event for ${newEventStartDate.format()}: ${errorMessage}`, error.stack)
+                result.errors.push(`Create ${newEventStartDate.format()}: ${errorMessage}`)
             }
         }
     }
@@ -520,8 +522,8 @@ class RecurringEventsService {
     }
 
     _handleProcessingError(error, result) {
-        const errorMessage = error.response?.data?.message || error.message || 'Unknown error'
-        this.logger.error(`Error in processRecurringEvents: ${errorMessage}`)
+        const errorMessage = error.response?.data?.message || error.message || error
+        this.logger.error(`Error in processRecurringEvents: ${errorMessage}`, error.stack)
         result.errors.push(errorMessage)
     }
 
@@ -663,6 +665,11 @@ class RecurringEventsService {
         return blocks.map(block => {
             // Strip out read-only fields that Notion API doesn't accept when creating blocks
             const { id, created_time, last_edited_time, created_by, last_edited_by, has_children, archived, ...cleanBlock } = block
+
+            // Notion API validation fix: strip out null icons if they exist in block data
+            if (cleanBlock[block.type] && cleanBlock[block.type].icon === null) {
+                delete cleanBlock[block.type].icon
+            }
 
             // If the block has children, recursively process them
             if (block[block.type]?.children) {
