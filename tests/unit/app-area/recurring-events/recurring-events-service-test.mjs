@@ -1204,7 +1204,7 @@ describe('RecurringEventsService - Service Methods', () => {
 
             await service.processRecurringEvents(null)
 
-            expect(mockLogger.error).toHaveBeenCalledWith(expect.stringContaining('Database error'), expect.any(String))
+            expect(mockLogger.error).toHaveBeenCalledWith(expect.stringContaining('Database error'))
         })
     })
 })

@@ -130,7 +130,7 @@ class RecurringEventsService {
 
                 await this.processSourcePage(event, result)
             } catch (error) {
-                this.logger.error(`Error processing source page "${event.notionPageId}": ${error}`)
+                this._logError(`Error processing source page "${event.notionPageId}"`, error)
                 result.errors.push(`Page ${event.notionPageId}: ${error.message}`)
             }
         }
@@ -162,7 +162,7 @@ class RecurringEventsService {
 
                 await this.processSourcePage(event, result)
             } catch (error) {
-                this.logger.error(`Error processing event "${event.notionPageId}": ${error}`)
+                this._logError(`Error processing event "${event.notionPageId}"`, error)
                 result.errors.push(`Page ${event.notionPageId}: ${error.message}`)
             }
         }
@@ -353,9 +353,8 @@ class RecurringEventsService {
                 updatedDates.push(newExpectedDate.format('YYYY-MM-DDTHH:mm'))
                 result.updated++
             } catch (error) {
-                const errorMessage = error.response?.data?.message || error.message || error
-                this.logger.error(`Error updating event ${futureEvent.notionPageId}: ${errorMessage}`, error.stack)
-                result.errors.push(`Update ${futureEvent.notionPageId}: ${errorMessage}`)
+                this._logError(`Error updating event ${futureEvent.notionPageId}`, error)
+                result.errors.push(`Update ${futureEvent.notionPageId}: ${error.message}`)
             }
         }
 
@@ -391,9 +390,8 @@ class RecurringEventsService {
                 this.logger.log(`Created new event on ${newEventStartDate.format()} from source ${sourceEvent.name}`)
                 result.created++
             } catch (error) {
-                const errorMessage = error.response?.data?.message || error.message || error
-                this.logger.error(`Error creating event for ${newEventStartDate.format()}: ${errorMessage}`, error.stack)
-                result.errors.push(`Create ${newEventStartDate.format()}: ${errorMessage}`)
+                this._logError(`Error creating event for ${newEventStartDate.format()}`, error)
+                result.errors.push(`Create ${newEventStartDate.format()}: ${error.message}`)
             }
         }
     }
@@ -406,7 +404,7 @@ class RecurringEventsService {
                 }
             })
         } catch (error) {
-            this.logger.error(`Error clearing Recurring Source flag for page ${event.notionPageId}: ${error}`)
+            this._logError(`Error clearing Recurring Source flag for page ${event.notionPageId}`, error)
             result.errors.push(`Mark processed ${event.notionPageId}: ${error.message}`)
         }
     }
@@ -522,9 +520,16 @@ class RecurringEventsService {
     }
 
     _handleProcessingError(error, result) {
+        this._logError('Error in processRecurringEvents', error)
         const errorMessage = error.response?.data?.message || error.message || error
-        this.logger.error(`Error in processRecurringEvents: ${errorMessage}`, error.stack)
         result.errors.push(errorMessage)
+    }
+
+    _logError(message, error) {
+        const errorMessage = error.response?.data?.message || error.message || error
+        const stack = error.stack || new Error().stack
+        const requestData = error.config?.data ? `\nRequest Data: ${error.config.data}` : ''
+        this.logger.error(`${message}: ${errorMessage}${requestData}\nStack: ${stack}`)
     }
 
     _validateRecurringEvent(event, result) {
@@ -666,7 +671,7 @@ class RecurringEventsService {
             // Strip out read-only fields that Notion API doesn't accept when creating blocks
             const { id, created_time, last_edited_time, created_by, last_edited_by, has_children, archived, ...cleanBlock } = block
 
-            // Notion API validation fix: strip out null icons if they exist in block data
+            // Strip out null icons if they exist in block data
             if (cleanBlock[block.type] && cleanBlock[block.type].icon === null) {
                 delete cleanBlock[block.type].icon
             }
